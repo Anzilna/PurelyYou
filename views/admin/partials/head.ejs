@@ -1,0 +1,50 @@
+<!-- Main Content -->
+<main class="flex-1">
+    <!-- Top Navigation -->
+    <header class="flex items-center justify-between p-6 bg-gray-50 ">
+      
+
+
+      <%typeof title === 'undefined' ? title='' : title%>
+      <%typeof route === 'undefined' ? route='' : route%>
+      <%typeof mainroute === 'undefined' ? mainroute='' : mainroute%>
+      <%typeof subroute === 'undefined' ? subroute='' : subroute%>
+
+
+
+      <div class="flex flex-col">
+        
+         <a href="" class="no-underline text-slate-600"> <h2 class="text-2xl font-semibold"><%= title %></h2></a>
+         <div class="flex flex-row">     
+          <% if(route){ %>
+             <a href="<%=`/admin/${route}` %>" class="no-underline text-slate-600"><p class="text-sm font-semibold"><%=route %></p></a>
+             <% }else{ %>
+          <a href="<%=`/admin/${subroute}` %>" class="no-underline text-slate-600"><p class="text-sm font-semibold"><%= subroute %></p></a>
+          <a href="<%=`/admin/${subroute}/${mainroute}` %>" class="no-underline text-slate-600"><p class="text-sm font-semibold">/<%=mainroute %></p></a>
+
+          <% } %>
+        </div>
+          
+
+
+    
+      </div>
+      
+
+      <div class="flex items-center space-x-4 ">
+        <!-- Search Bar -->
+        <div class="relative flex-row flex">
+           
+          <input
+            type="text"
+            placeholder="Search"
+            class="pl-3 pr-4 py-2 text-sm border rounded-lg focus:ring-2 focus:ring-gray-300 focus:outline-none"
+          />
+          <div class="w-10 h-15 flex justify-center ">
+            <a href="/admin/logout"><i class="bi bi-box-arrow-in-right ml-4 fs-3 text-black"></i></a>
+        </div>
+
+        </div>
+      
+      </div>
+    </header>

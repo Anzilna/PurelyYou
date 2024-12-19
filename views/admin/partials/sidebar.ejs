@@ -1,0 +1,32 @@
+<div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside class="min-w-[250px] bg-white shadow-md  rounded-r-3xl">
+      <div class="p-6 mb-6 mt-4 flex justify-center">
+        <h1 class="text-xl font-bold text-black border-b-4 border-black">PurelyYou.</h1>
+      </div>
+      <nav class="mt-6 space-y-3">
+        <a href="/admin/dashboard" class="flex items-center px-4 py-[12px] text-sm font-medium text-gray-600 hover:rounded-xl ease-in <% if(side.includes('Dashboard')){ %>  border-r-4 border-black  <% } %> hover:text-white hover:bg-black no-underline duration-300">
+            <i class="bi bi-view-list mr-2 fs-5"></i>       
+             <span class="">Dashboard</span>
+        </a>
+        <a href="/admin/products" class="flex items-center px-4 py-[12px] text-sm font-medium text-gray-600 hover:rounded-xl ease-in <% if(side.includes('Products')){ %>  border-r-4 border-black  <% } %> hover:text-white hover:bg-black no-underline duration-300">
+            <i class="bi bi-basket mr-2 fs-5"></i>
+            <span class="">Products</span>
+        </a>
+       
+        <a href="/admin/customers" class="flex items-center px-4 py-[12px] text-sm font-medium text-gray-600 hover:rounded-xl ease-in <% if(side.includes('Customers')){ %> border-r-4 border-black  <% } %>  hover:text-white hover:bg-black no-underline duration-300">
+            <i class="bi bi-people mr-2 fs-5"></i>
+            <span class="">Customers</span>
+        </a>
+       
+        <a href="/admin/categories" class="flex items-center px-4 py-[12px] text-sm font-medium text-gray-600 hover:rounded-xl ease-in <% if(side.includes('Categories')){ %>  border-r-4 border-black  <% } %> hover:text-white hover:bg-black no-underline duration-300">
+        <i class="bi bi-boxes mr-2 fs-5"></i>
+            <span class="">Categories</span>
+        </a>
+        
+       
+        
+       
+      </nav>
+    </aside>

@@ -1,0 +1,151 @@
+<%- include("partials/header"); -%>
+
+<div class="flex flex-col min-h-screen">
+  <div class="flex flex-grow">
+    <div class="flex flex-col w-full md:w-1/2 flex-grow">
+      <div
+        class="flex h-[20%] justify-center items-center pt-8 md:justify-start md:pl-12"
+      >
+        <a href="#" class="pb-2 text-2xl font-bold text-gray-900">PurelyYou.</a>
+      </div>
+
+      <div
+        class="min-h-screen flex flex-col justify-center items-center flex-grow lg:w-[28rem] mx-auto md:px-6"
+      >
+        <p class="text-left text-3xl font-bold">Enter your otp</p>
+        <p class="mt-2 text-left text-gray-500">otp is send via your email</p>
+
+        <form class="flex flex-col pt-3 md:pt-8 w-full">
+          <div class="mb-12 flex flex-col pt-4">
+            <div
+              class="password error text-red-500"
+              id="error-otp-confirm"
+            ></div>
+            <div
+              class="focus-within:border-b-gray-500 relative flex overflow-hidden border-b-2 transition"
+            >
+              <input
+                type="text"
+                id="login-otp"
+                name="otp"
+                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none"
+                placeholder="Please enter your otp"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            class="w-full rounded-lg bg-gray-900 px-4 py-2 text-center text-base font-semibold text-white shadow-md ring-gray-500 ring-offset-2 transition focus:ring-2"
+          >
+            submit
+          </button>
+        </form>
+        <p class="text-gray-600 text-sm text-center mt-4" id="timermain">
+          Resend OTP in:
+          <span " class="text-red-500 font-semibold">00:<span id="timer" class="text-red-500 font-semibold">30 </span></span>
+        </p>
+        <div id="resendotp" class="py-12 text-center hidden">
+          <p class="whitespace-nowrap text-gray-600">
+            Don't recieve otp?
+            <a
+              href=""
+              class="underline-offset-4 font-semibold text-gray-900 underline"
+              id="sendagain"
+              >Send again.</a
+            >
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="pointer-events-none relative hidden w-1/2 min-h-screen select-none bg-black md:block"
+    >
+      <div class="absolute bottom-0 z-10 px-8 text-black opacity-100">
+        <p class="mb-8 text-3xl font-semibold leading-10">
+          We work 10x faster than our competitors and stay consistent. While
+          they're bogged down with technical debt, we're releasing new features.
+        </p>
+      </div>
+      <img
+        class="absolute top-0 h-full w-full object-cover opacity-90"
+        src="/images/frizzfree.jpg"
+        alt="Background"
+      />
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.querySelector("form");
+      const resendotp = document.getElementById("resendotp");
+      const timer = document.getElementById("timer");
+      const timermain = document.getElementById("timermain");
+      const otperror = document.getElementById("error-otp-confirm");
+
+      resendotptimer();
+      function resendotptimer() {
+        console.log("inside timer");
+
+        let countDown = 5;
+        const newCountdown = setInterval(() => {
+          timer.textContent = `${countDown.toString().padStart(2,'0')}`;
+          countDown--;
+
+          if (countDown < 0) {
+            clearInterval(newCountdown);
+            timermain.style.display = "none";
+            resendotp.style.display = "block";
+          }
+        }, 1000);
+      }
+
+
+
+      
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        otperror.textContent = "";
+        const userentredotp = document.getElementById("login-otp").value;
+        try {
+          const fetchresult = await fetch("/user/emailotp", {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userentredotp }),
+          });
+          console.log("after fetch");
+
+          const result = await fetchresult.json();
+          console.log(result);
+          if (result.message) {
+            otperror.textContent = result.message || "";
+            otperror.style.color = "red";
+
+          }
+          if (result.login) {
+            location.assign("/user/login");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+
+      const sendagainid = document.getElementById("sendagain");
+      sendagainid.addEventListener("click", async (e) => {
+        e.preventDefault();
+        console.log("clicked");
+        try {
+          const result = await fetch("/user/newemailotp", {
+            method: "post",
+          });
+          const jsonresult = await result.json();
+          if (jsonresult.otp) otperror.textContent = jsonresult.otp || "";
+          otperror.style.color = "green";
+        } catch (error) {
+          console.log("error in otp new fetch");
+        }
+      });
+    });
+  </script>
+  <%- include('partials/footer'); -%>
+</div>

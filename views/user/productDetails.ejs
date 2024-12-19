@@ -1,0 +1,194 @@
+<%- include("partials/header"); -%>
+<%- include("partials/navbar"); -%>
+<body class="mt-[90px] font-roboto">
+  <% if (product) { %>
+  <div class="p-10 md:flex-row flex-col flex h-auto justify-center gap-10">
+    <!-- Image Section -->
+    <div class="w-full flex flex-col items-end">
+      <!-- Main Image with Zoom -->
+      <div class="relative group ">
+        <div id="imageContainer" class="relative h-[700px] w-[600px] overflow-hidden">
+          <img 
+            id="mainImage" 
+            src="<%= product.images[0] %>" 
+            class="object-cover w-full h-full transition-transform duration-300" 
+            alt="">
+          <!-- Zoom Lens -->
+          <div 
+            id="zoomLens" 
+            class="absolute hidden bg-opacity-40 bg-gray-300 rounded-full border border-gray-400"
+            style="width: 150px; height: 150px;">
+          </div>
+        </div>
+      <!-- Sub Images -->
+      <div class="flex gap-2 items-start justify-start py-3">
+        <% product.images.forEach((image, index) => { %>
+        <img 
+          src="<%= image %>" 
+          class="h-[100px]   border border-transparent hover:border-gray-500 duration-200 cursor-pointer w-[70px] sub-image" 
+          alt="" 
+          onclick="updateMainImage('<%= image %>')" 
+          data-index="<%= index %>">
+        <% }) %>
+      </div>
+    </div>
+
+    </div>
+    <!-- Product Details Section -->
+    <div class="w-full flex flex-col gap-3 justify-start">
+      <div>
+        <h1 class="text-5xl font-normal leading-[50px]"><%= product.productname %></h1>
+      </div>
+      <div class="flex justify-start space-x-1 text-black items-center text-2xl mt-2">
+        ★★★★☆<span class="text-center text-xl px-2">1263 Reviews</span>
+      </div>
+      <div class="leading-6">
+        <p><%= product.description %></p>
+      </div>
+      <div>
+        <% if(!product.stockstatus.includes("Out Of Stock")){ %>
+
+        <div class="border-gray-200 flex max-w-[400px] max-h-[200px] border-1 mt-3 rounded-xl relative p-12">
+          <p class="absolute top-[-18px] left-0 bg-white text-xl font-normal px-2">PRICE</p>
+     <div class="flex gap-2 justify-center items-center">
+        <h2 class="font-normal text-xl">MRP</h2>
+        <div class=" grow">
+          <span class="text-black font-bold text-4xl"><%= `₹${product.saleprice}` %></span>
+          <% if(product.discountpercentage){ %>
+          <span class="line-through text-gray-500 text-sm "><%= `₹${product.regularprice}` %></span>
+       <% } %>
+        </div>
+      </div>
+        </div>
+        
+      </div>
+      <% }else{ %>
+        <div class="my-7 text-4xl"><h1>
+          Out Of Stock
+        </h1></div>
+      <% } %>
+
+      <div class="flex gap-2">
+        <div class="flex items-center border-1 border-slate-600 space-x-2">
+          <!-- Decrement Button -->
+          <button class="px-3 py-2 text-md font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity()">-</button>
+          <span id="quantity" class="text-xl font-light">1</span>
+          <!-- Increment Button -->
+          <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="incrementQuantity()">+</button>
+        </div>
+        <div>
+          <% if(!product.stockstatus.includes("Out Of Stock")){  %>
+          <button class="px-[70px] h-full py-[10px] text-white bg-black"> ADD TO CART</button>
+          <% }else{ %>
+            <button class="px-[70px] h-full py-[10px] text-white bg-black"> OUT OF STOCK</button>
+            <% } %>
+        </div>
+        <div class="flex justify-center items-center cursor-pointer">
+          <i class="bi bi-heart fs-2"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+  <% } %>
+  <div class="flex gap-2 w-full p-10">
+    <section class="w-full bg-white">
+      <div class="container ">
+        <h2 class="text-2xl font-bold mb-6">New Launches</h2>
+  
+        <div class="overflow-x-auto scrollbar-hide">
+          <div class="grid grid-flow-col auto-cols-[250px] gap-6 h-auto cursor-pointer">
+            <% if (products) { %>
+              <% products.forEach((product) => { %>
+                <div class="flex flex-col bg-white rounded-md relative group h-full p-4" onclick="getProduct('<%= product._id %>')">
+                  <% if (product.discountpercentage) { %>
+                    <div class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10">
+                      <%= `-${product.discountpercentage}%` %>
+                    </div>
+                  <% } %>
+                  <div class="overflow-hidden h-[300px] w-full flex justify-center">
+                    <img src="<%= product.images[0] %>" alt="Product Name" class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                  </div>
+                  <div class="flex flex-col flex-grow justify-start items-start mt-4 text-left">
+                    <h3 class="text-lg font-semibold relative">
+                      <%= product.productname %>
+                      <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-500 group-hover:w-full"></div>
+                    </h3>
+                    <p class="text-gray-500 text-sm mt-2"><%= Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '' %></p>
+                    <div class="flex justify-start space-x-1 text-black text-sm mt-2">★★★★☆</div>
+                    <div class="mt-2 mb-2">
+                      <span class="text-black font-bold text-lg"><%= `₹${product.saleprice}` %></span>
+                      <%if(product.discountpercentage){  %>
+                      <span class="line-through text-gray-500 text-sm ml-2"><%= `₹${product.regularprice}` %></span>
+                      <% } %>
+
+                    </div>
+                  </div>
+                  <button class="mt-auto bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all">Add to cart</button>
+                </div>
+              <% }) %>
+            <% } %>
+          </div>
+        </div>
+        </div>
+        </div>
+  <script>
+    const mainImage = document.getElementById("mainImage");
+    const zoomLens = document.getElementById("zoomLens");
+    const imageContainer = document.getElementById("imageContainer");
+    const subImages = document.querySelectorAll(".sub-image");
+
+    function updateMainImage(imageSrc) {
+      mainImage.src = imageSrc;
+    }
+
+    function getProduct(id){
+ console.log(id);
+        location.assign(`/user/home/productdetails/${id}`)
+    }
+
+    window.onload = () => {
+      subImages.forEach((img) => (img.style.opacity = "0.5"));
+    };
+    subImages.forEach((subImage) => {
+      subImage.addEventListener("mouseover", () => {
+        subImages.forEach((img) => img.style.opacity = "0.5"); // Set all sub-images to semi-transparent
+        subImage.style.opacity = "1"; // Highlight the hovered image
+      });
+
+      subImage.addEventListener("mouseout", () => {
+        subImages.forEach((img) => img.style.opacity = "0.5"); // Reset all sub-images to semi-transparent
+      });
+    });
+
+    imageContainer.addEventListener("mousemove", (e) => {
+      zoomLens.style.display = "block";
+
+      const rect = imageContainer.getBoundingClientRect();
+      const lensSize = zoomLens.offsetWidth / 2;
+
+      // Calculate lens position
+      let lensX = e.clientX - rect.left - lensSize;
+      let lensY = e.clientY - rect.top - lensSize;
+
+      // Prevent lens from going outside the image boundaries
+      lensX = Math.max(0, Math.min(lensX, rect.width - zoomLens.offsetWidth));
+      lensY = Math.max(0, Math.min(lensY, rect.height - zoomLens.offsetHeight));
+
+      // Move lens
+      zoomLens.style.left = lensX + "px";
+      zoomLens.style.top = lensY + "px";
+
+      // Apply zoom effect on the main image
+      const zoomLevel = 2; // Adjust zoom level
+      mainImage.style.transformOrigin = `${(lensX / rect.width) * 100}% ${(lensY / rect.height) * 100}%`;
+      mainImage.style.transform = `scale(${zoomLevel})`;
+    });
+
+    // Hide lens and reset image zoom on mouse leave
+    imageContainer.addEventListener("mouseleave", () => {
+      zoomLens.style.display = "none";
+      mainImage.style.transform = "scale(1)";
+    });
+  </script>
+  <%- include('partials/footer'); -%>
+

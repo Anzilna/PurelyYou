@@ -1,0 +1,174 @@
+<%- include("partials/adminHeader"); -%>
+<body class="bg-gray-50 font-sans text-gray-800">
+
+  <!-- Main Container -->
+
+  <%- include("partials/sidebar"); -%>
+  <%- include("partials/Head"); -%>
+
+  <!-- Main Content Area -->
+   <% if(category){ %>
+  <div class="p-6 mt-3">
+    <div class="w-full max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-xl font-semibold text-black mb-4 text-center">Edit Category</h2>
+      <form class="space-y-4" enctype="multipart/form-data">
+        <!-- Category Name -->
+         <input type="hidden" name="categoryId" value="<%=category._id  %>">
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">Category Name</label>
+          <div class="password error text-red-500 mb-1" id="error-categoryname"></div>
+          <input
+            type="text"
+            name="categoryName"
+            value="<%=category.categoryname  %>"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">Description</label>
+          <div class="password error text-red-500 mb-1" id="error-description"></div>
+
+          <textarea
+            name="description"
+            rows="3"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          ><%=category.description  %></textarea>
+        </div>
+
+        <!-- Category Icon -->
+        <div>
+          <label class="block text-sm font-medium text-black ">Category Icon</label>
+          <div class="password error text-red-500 mb-1" id="error-image"></div>
+          <div class="flex items-center flex-row  justify-center px-3 pt-2 border border-gray-300 rounded-lg bg-white shadow-sm">
+            <span id="file-name-display " class=" text-gray-500 text-sm justify-center flex">
+                <img class="w-16 h-14 mr-2 mt-2 rounded-3" id="oldcategoryimage" src="/uploads/<%=category.image %>" alt="">
+                
+                <div class="flex"><p class="mr-2 mt-2"  id="oldcategoryname"><%= category.image %></p></div>
+            </span>
+            <button
+              type="button"
+              id="remove-file-btn"
+              class="text-red-500 hover:text-red-800 text-sm"
+              style="display: none;"
+            >
+              Remove
+            </button>
+            <label
+              for="file-upload"
+              class="cursor-pointer px-3 py-1 whitespace-nowrap  text-white bg-black rounded-md hover:bg-gray-800 focus:ring-2 focus:ring-black"
+            id="changefile"
+              >
+              change File
+            </label>
+            <img class="w-2 h-2" src="" alt="">
+            <input id="file-upload" name="categoryIcon"          
+            type="file" class="hidden" />
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-between items-center">
+          <button
+            type="button"
+            class="px-4 py-2 text-black border border-black rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-gray-400"
+            onclick="back()"
+            >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-4 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-black"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <% }else{ %>
+    <p>no data found</p>
+    <% } %>
+
+
+  <script>
+    const fileInput = document.getElementById('file-upload');
+    const fileInputValue = fileInput.files[0];
+
+    console.log("asasas",fileInputValue);
+
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const removeFileButton = document.getElementById('remove-file-btn');
+    const changefile=document.getElementById('changefile')
+    const imageError=document.getElementById('error-image')
+     const descriptionError=document.getElementById('error-description')
+     const categorynameError=document.getElementById('error-categoryname')
+     const oldcategoryname=document.getElementById('oldcategoryname')
+     const oldcategoryimage=document.getElementById('oldcategoryimage')
+
+    // Handle file change
+    fileInput.addEventListener('change', (e) => {
+           e.preventDefault();
+
+      const selectedFile = e.target.files[0];
+      console.log("selectedFile is here",selectedFile);
+      
+      if (selectedFile) {
+        removeFileButton.style.display = 'inline'; // Show the "Remove" button
+        changefile.style.display='none'
+        oldcategoryimage.style.display='none'
+        oldcategoryname.style.marginTop='10px'
+        oldcategoryname.textContent = selectedFile.name;
+      } else {
+        fileNameDisplay.textContent = 'No file chosen';
+        removeFileButton.style.display = 'none'; // Hide the "Remove" button if no file is selected
+      }
+    });
+
+    // Clear file input and reset UI when the "Remove" button is clicked
+    removeFileButton.addEventListener('click', (e) => {
+        location.reload()
+      fileInput.value = ''; // Clear file selection
+      fileNameDisplay.textContent = 'No file chosen';
+      choosefile.style.display='inline'
+      removeFileButton.style.display = 'none'; // Hide the remove button
+    });
+
+    // Handle form submission
+    document.querySelector('form').addEventListener('submit', async(e) => {
+      e.preventDefault()
+      console.log('Form submission intercepted'); // Debugging
+      imageError.textContent=""
+          descriptionError.textContent=""
+          categorynameError.textContent=""
+      const formData = new FormData(e.target);
+      try {
+        const fetchResult = await fetch('/admin/categories/editcategories', {
+          method: 'put',
+          body: formData,
+        });
+
+        const result = await fetchResult.json();
+        if(result.saved){
+              location.assign('/admin/categories')
+        };
+        if(result.err){
+          console.log(result.err);
+          
+          imageError.textContent=result.err.image||''
+          descriptionError.textContent=result.err.description||''
+          categorynameError.textContent=result.err.categoryname||''
+
+        }
+      } catch (error) {
+        alert('Error adding category. Please try again.');
+      }
+
+    });
+    function back(){
+      location.assign('/admin/categories')
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+
+const {Router}=require('express')
+const router=Router()
+const adminController=require('../controlls/admincontroller')
+const adminAuth=require('../../middleware/jwtAuthAdmin')
+const multerStorage=require('../../helpers/multerConfig')
+const {checklogin}=require('../../middleware/checkLogedin')
+
+router.get('/login',adminController.adminLoginGet)
+router.post('/login',adminController.adminLoginPost)
+router.get('/logout',adminController.adminLogoutGet)
+router.post('/signup',adminController.adminSignupPost)
+router.get('/dashboard',adminAuth,adminController.adminHomeGet)
+router.get('/products',adminAuth,adminController.adminProducts)
+router.delete('/products/deleteproduct/:id',adminAuth,adminController.adminProductsDelete)
+router.get('/products/editproduct/:id',adminAuth,adminController.adminProductsEdit)
+router.get('/products/addproduct',adminAuth,adminController.adminProductsAdd)
+router.post('/products/addproduct',multerStorage.array('images'),adminAuth,adminController.adminProductsAddPost)
+router.post('/products/editproduct',multerStorage.array('images'),adminAuth,adminController.adminProductsEditPost)
+router.delete('/products/editproduct/removeimage',adminAuth,adminController.adminProductsRemoveImage)
+router.get('/customers',adminAuth,adminController.adminCustomers)
+router.delete('/customers/deleteustomer/:id',adminAuth,adminController.adminUserDelete)
+router.get('/customers/addcustomers',adminAuth,adminController.adminCustomersAdd)
+router.post('/customers/addcustomers',adminAuth,adminController.adminCustomersAddPost)
+router.get('/customers/editcustomers/:id',adminAuth,adminController.adminCustomersEdit)
+router.put('/customers/editcustomers',adminAuth,adminController.adminCustomersEditPut)
+router.get('/categories',adminAuth,adminController.adminCategories)
+router.get('/categories/addcategories',adminAuth,adminController.adminCategoriesAdd)
+router.get('/categories/editcategories/:id',adminAuth,adminController.adminCategoriesEdit)
+router.put('/categories/editcategories',multerStorage.single('categoryIcon'),adminAuth,adminController.adminCategoriesEditPut)
+router.post('/categories/addcategories',multerStorage.single('categoryIcon'),adminAuth,adminController.adminCategoriesAddPost)
+router.delete('/categories/deletecategories/:id',adminAuth,adminController.adminCategoriesDelete)
+
+
+
+module.exports=router

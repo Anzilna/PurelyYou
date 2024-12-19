@@ -1,0 +1,511 @@
+<%- include("partials/adminHeader"); -%>
+<!-- Main Container -->
+<%- include("partials/sidebar"); -%> <%- include("partials/Head"); -%>
+<div class="p-6">
+  <% if (product) { %>
+  <div class="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+    <!-- Heading -->
+    <div class="flex justify-center">
+      <h2 class="text-2xl font-semibold text-black mb-4">Edit Product</h2>
+    </div>
+
+    <form
+      id="productForm"
+      class="space-y-4 grid grid-cols-1 lg:grid-cols-2 gap-6"
+      enctype="multipart/form-data"
+      data-id="<%= product._id %>"
+    >
+      <!-- Left Side -->
+      <div class="space-y-4">
+        <!-- Product Name -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Product Name</label
+          >
+          <div class="error text-red-500 mb-1" id="error-productname"></div>
+          <input
+            type="text"
+            name="productname"
+            value="<%= product.productname %>"
+            placeholder="Enter product name"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+
+        <!-- Price -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Regular Price</label
+          >
+          <div class="error text-red-500 mb-1" id="error-price"></div>
+          <input
+            type="number"
+            value="<%= product.regularprice %>"
+            name="regularprice"
+            placeholder="Enter price"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+
+        <!-- Stock -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">Stock</label>
+          <div class="error text-red-500 mb-1" id="error-stock"></div>
+          <input
+            type="number"
+            name="stock"
+            value="<%= product.stock %>"
+            placeholder="Enter stock quantity"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Category</label
+          >
+          <div class="error text-red-500 mb-1" id="error-category"></div>
+          <select
+            id="categoryselection"
+            name="category"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          >
+            <% if (category && category.length > 0) { %>
+            <option value="<%= product.category %>" data-categoryname="<%= product.categoryname %>"selected>
+              <% if (product && product.categoryname) { %> <%=
+              product.categoryname %> <% } else { %> Select an option <% } %>
+            </option>
+            <% category.forEach((cat) => { %>
+            <option
+              value="<%= cat._id %>"
+              data-categoryname="<%= cat.categoryname %>"
+              class="text-black"
+            >
+              <%= cat.categoryname %>
+            </option>
+            <% }); %> <% } else { %>
+            <option value="" disabled selected>
+              No categories are available
+            </option>
+            <% } %>
+          </select>
+        </div>
+
+        <!-- mlQuantity -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Select Quantity (ml)</label
+          >
+          <select
+            name="mlQuantity"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          >
+          <% if (product && product.mlQuantity) { %>
+            <option value="<%= product.mlQuantity%>"  selected>
+               <%= product.mlQuantity
+              %> <% } else { %> Select an option <% } %>
+            </option>
+            <option value="10ml">10ml</option>
+            <option value="30ml">30ml</option>
+            <option value="100ml">100ml</option>
+          </select>
+        </div>
+
+        <!-- Product Code -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Product Code</label
+          >
+          <input
+            type="text"
+            name="productcode"
+            value="<%= product.productcode %>"
+            placeholder="Enter product code"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+
+        <!-- Ingredients -->
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Ingredients</label
+          >
+          <input
+            type="text"
+            name="ingredients"
+            value="<%= Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '' %>"
+            placeholder="Enter tags (comma-separated)"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+      </div>
+
+      <!-- Right Side -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Description</label
+          >
+          <div class="error text-red-500 mb-1" id="error-description"></div>
+          <textarea
+            name="description"
+            placeholder="Enter product description"
+            rows="9"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          >
+<%= product.description %></textarea
+          >
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-black mb-1"
+            >Discount Percentage</label
+          >
+          <input
+            type="number"
+            name="discountpercentage"
+            value="<%= product.discountpercentage%>"
+            placeholder="Enter discount percentage"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          />
+        </div>
+
+        <!-- Product Images -->
+        <div>
+          <label class="flex text-sm font-medium text-black mb-1"
+            >Product Images</label
+          >
+          <div class="error text-red-500 mb-1" id="error-images"></div>
+          <% if (product.images) { %>
+          <div class="flex flex-row space-x-4">
+            <% product.images.forEach((image, index) => { %>
+            <div
+              id="editimage-<%= index %>"
+              class="relative inline-block w-16 h-16 existing-image"
+            >
+              <!-- Delete Icon -->
+              <button
+                data-image="<%= image %>"
+                data-id="<%= product._id %>"
+                data-id="<%= index %>"
+
+                class="removeimagebtn absolute top-1 left-1 text-red-500 text-lg rounded-full w-4 h-4 flex items-center justify-center focus:outline-none"
+              >
+                ✕
+              </button>
+              <!-- Image -->
+              <img
+                src="<%= image %>"
+                class="flex w-16 h-16 object-cover rounded-lg"
+                alt="product image"
+              />
+            </div>
+            <% }); %>
+          </div>
+          <% } %>
+          <div id="file-container" class="space-y-2"></div>
+          <button
+            type="button"
+            id="add-more-files"
+            class="text-sm text-black hover:text-gray-500 p-2"
+          >
+            <i class="bi bi-folder-plus fs-3"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="col-span-1 lg:col-span-2 flex justify-between items-center">
+        <button
+          type="button"
+          class="px-4 py-2 text-black border border-black rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-gray-400"
+          onclick="back()"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-black"
+        >
+          Save Changes
+        </button>
+      </div>
+    </form>
+  </div>
+  <% } else { %>
+  <p>No data found</p>
+  <% } %>
+</div>
+<!-- Cropping Modal -->
+<div id="crop-modal" class="hidden">
+    <div class="fixed max-h-screen inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75">
+      <div class="bg-white rounded-lg shadow-lg p-4 max-w-lg w-full max-h-screen overflow-auto">
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">Crop Image</h3>
+        <div class="cropper-container max-h-screen">
+          <img id="cropper-image" src="" alt="To Crop" class="max-w-full max-h-screen">
+        </div>
+        <div class="mt-4 flex justify-end space-x-4">
+          <button id="crop-cancel" class="px-4 py-2 text-red-500 hover:text-red-800">Cancel</button>
+          <button id="crop-save" class="px-4 py-2 text-white bg-black rounded-md hover:bg-gray-800">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const selection = document.getElementById("categoryselection");
+    const fileContainer = document.getElementById("file-container");
+    const addMoreFilesButton = document.getElementById("add-more-files");
+    const cropModal = document.getElementById("crop-modal");
+    const cropperImage = document.getElementById("cropper-image");
+    const cropCancel = document.getElementById("crop-cancel");
+    const cropSave = document.getElementById("crop-save");
+    const form = document.querySelector("form");
+    const removeImageButtons = document.querySelectorAll(".removeimagebtn");
+    let existingImageCount = document.querySelectorAll(".existing-image").length; // Track existing images
+
+    const errors = {
+      productname: document.getElementById("error-productname"),
+      price: document.getElementById("error-price"),
+      stock: document.getElementById("error-stock"),
+      category: document.getElementById("error-category"),
+      description: document.getElementById("error-description"),
+      images: document.getElementById("error-images"),
+    };
+
+    let cropper;
+    let imageArray = [];
+    let categorySelection;
+
+    function back() {
+      location.assign('/admin/products');
+      console.log("back");
+
+    }
+const defaultSelectedOption = selection.selectedOptions[0];
+if (defaultSelectedOption) {
+  categorySelection = defaultSelectedOption.dataset.categoryname;
+  console.log("Default Category:", categorySelection);
+}
+    selection.addEventListener("change", (e) => {
+      const SelectedOption = e.target.selectedOptions[0];
+      categorySelection = SelectedOption.dataset.categoryname;
+      console.log(categorySelection);
+    });
+
+    addMoreFilesButton.addEventListener("click", () => {
+      if (fileContainer.children.length >= 4) {
+        alert("You can only upload up to 4 files.");
+        return;
+      }
+
+      const fileInputDiv = document.createElement("div");
+      fileInputDiv.className = "flex items-center space-x-3 mt-3";
+      fileInputDiv.innerHTML = `
+        <label class="cursor-pointer px-3 py-1  text-white bg-black rounded-md hover:bg-gray-800 focus:ring-2 focus:ring-black">
+          Choose File
+          <input type="file" name="images" class="hidden file-input" accept="image/*" />
+        </label>
+        <span class="file-name-display text-gray-500 text-sm">No file chosen</span>
+        <button type="button" class="remove-file-btn text-red-500 pt-2 hover:text-red-800 text-sm"><i class="bi bi-x-lg fs-5"></i></button>
+      `;
+
+      fileContainer.appendChild(fileInputDiv);
+
+      const fileInput = fileInputDiv.querySelector(".file-input");
+      const fileNameDisplay = fileInputDiv.querySelector(".file-name-display");
+      const removeFileButton1 = fileInputDiv.querySelector(".remove-file-btn");
+
+      fileInput.addEventListener("change", (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+          fileNameDisplay.textContent = selectedFile.name;
+          removeFileButton1.style.display='none'
+          handleCrop(selectedFile);
+        } else {
+          fileNameDisplay.textContent = "No file chosen";
+        }
+      });
+
+      removeFileButton1.addEventListener("click", () => {
+        fileInputDiv.remove();
+      });
+    });
+
+    // Handle cropping
+    function handleCrop(file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        cropperImage.src = reader.result;
+        cropModal.classList.remove("hidden");
+        cropper = new Cropper(cropperImage, {
+          aspectRatio: NaN,
+          viewMode: 1,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Cancel cropping
+    cropCancel.addEventListener("click", () => {
+      cropModal.classList.add("hidden");
+      cropper?.destroy();
+    });
+
+    // Save cropped image
+    cropSave.addEventListener("click", () => {
+      const croppedCanvas = cropper.getCroppedCanvas();
+      croppedCanvas.toBlob((blob) => {
+        const newFile = new File([blob], "cropped-image.jpg", {
+          type: "image/jpeg",
+        });
+        imageArray.push(newFile);
+      });
+      cropModal.classList.add("hidden");
+      cropper?.destroy();
+    });
+
+    removeImageButtons.forEach((button) => {
+      button.addEventListener("click", async (e) => {
+        e.preventDefault();
+
+        const image = e.target.dataset.image;
+        const id = e.target.dataset.id;
+        const index = e.target.dataset.index;
+
+
+        console.log("Removing image:", image, "at id:", id);
+        try {
+          const fetchResult = await fetch(
+            "/admin/products/editproduct/removeimage",
+            {
+              method: "DELETE",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ image, id }),
+            }
+          );
+
+          const result = await fetchResult.json();
+
+          if (result.success) {
+            console.log("Image removed successfully");
+            const imageDiv = document.getElementById(`editimage-${index}`);
+            if (imageDiv) imageDiv.remove();
+            location.reload();
+          } else {
+            console.error("Failed to remove image:", result.message);
+          }
+        } catch (error) {
+          console.error("Error removing image:", error);
+        }
+      });
+    });
+    // Form validation
+    function validateForm(formData) {
+      let isValid = true;
+
+      // Reset error messages
+      Object.values(errors).forEach((error) => {
+        error.textContent = "";
+      });
+
+      // Product name
+      if (!formData.get("productname")) {
+        errors.productname.textContent = "Product name is required.";
+        isValid = false;
+      }
+
+      // Price
+      if (!formData.get("regularprice")) {
+        errors.price.textContent = "Price is required.";
+        isValid = false;
+      }
+
+      // Stock
+      if (!formData.get("stock")) {
+        errors.stock.textContent = "Stock is required.";
+        isValid = false;
+      }
+
+      // Category
+      if (!formData.get("category")) {
+        errors.category.textContent = "Please select a category.";
+        isValid = false;
+      }
+
+      // Description
+      if (!formData.get("description")) {
+        errors.description.textContent = "Description is required.";
+        isValid = false;
+      }
+
+      const totalImages = existingImageCount + imageArray.length;
+    if (totalImages < 3) {
+      errors.images.textContent = "Please upload at least 3 images.";
+      isValid = false;
+    }
+      return isValid;
+    }
+
+    // Handle form submission
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = removeFromFormData(new FormData(e.target), "images");
+      const tags = formData.get("ingredients") || "";
+      const id=e.target.dataset.id
+      const arrayIngredients = tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag);
+      formData.set("ingredients", JSON.stringify(arrayIngredients));
+      formData.set("categoryname", categorySelection);
+      formData.set("id", id);
+
+
+
+      if (!validateForm(formData)) {
+        return;
+      }
+
+      imageArray.forEach((image) => {
+        formData.append("images", image);
+      });
+
+      const fetchResult = await fetch("/admin/products/editproduct", {
+        method: "post",
+        body: formData,
+      });
+
+      const fetchResultJSON = await fetchResult.json();
+
+      if (fetchResultJSON.saved) {
+        alert("Product saved successfully!");
+        location.assign("/admin/products");
+      } else {
+        alert("Failed to edit product. Please try again.");
+      }
+    });
+
+    // Helper function to remove a key from FormData
+    function removeFromFormData(formData, keyToRemove) {
+      const newFormData = new FormData();
+      for (let [key, value] of formData.entries()) {
+        if (key !== keyToRemove) {
+          newFormData.append(key, value);
+        }
+      }
+      return newFormData;
+    }
+
+  
+
+    // function deleteImage() {
+    //     console.log("dele");
+
+    // }
+  });
+</script>
+</body>
+</html>

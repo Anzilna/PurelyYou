@@ -1,0 +1,179 @@
+<%- include("partials/header"); -%>
+<%- include("partials/navbar"); -%>
+<body class="mt-[85px] font-roboto">
+  <div class="flex flex-col h-auto">
+    <div id="carouselExampleCaptions" class="carousel slide cursor-pointer">
+      <div class="carousel-indicators">
+        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2" aria-label="Slide 3"></button>
+      </div>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <div class="flex items-center justify-between">
+            <img src="/images/7_6a3285a5-f428-4be5-941a-b018f9.jpg" class="d-block w-full h-[600px] object-contain" alt="...">
+            <div class="w-1/2 py-4 flex justify-center items-center">
+              <div class="text-center">
+                <h5 class="text-2xl font-bold">Salicylic Acid Face Serum</h5>
+                <p class="text-lg mt-2">A daily gentle exfoliant with 2% salicylic acid that wards off acne, blackheads and keeps your oils in check for that flawless matt looking skin.</p>
+                <a href="#" class="no-underline mt-4 inline-block bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-all">View More</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon filter invert-0 brightness-0" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+      </button>
+      <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+        <span class="carousel-control-next-icon filter invert-0 brightness-0" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+      </button>
+    </div>
+  
+    <div class="flex gap-2 w-full p-10">
+      <section class="w-full bg-white">
+        <div class="container ">
+          <h2 class="text-2xl font-bold mb-6">New Launches</h2>
+    
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="grid grid-flow-col auto-cols-[250px] gap-6 h-auto cursor-pointer">
+              <% if (products) { %>
+                <% products.forEach((product) => { %>
+                  <div class="flex flex-col bg-white rounded-md relative group h-full p-4" onclick="getProduct('<%= product._id %>')">
+                    <% if (product.discountpercentage) { %>
+                      <div class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10">
+                        <%= `-${product.discountpercentage}%` %>
+                      </div>
+                    <% } %>
+                    <div class="overflow-hidden h-[300px] w-full flex justify-center">
+                      <img src="<%= product.images[0] %>" alt="Product Name" class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                    </div>
+                    <div class="flex flex-col flex-grow justify-start items-start mt-4 text-left">
+                      <h3 class="text-lg font-semibold relative">
+                        <%= product.productname %>
+                        <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-500 group-hover:w-full"></div>
+                      </h3>
+                      <p class="text-gray-500 text-sm mt-2"><%= Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '' %></p>
+                      <div class="flex justify-start space-x-1 text-black text-sm mt-2">★★★★☆</div>
+                      <div class="mt-2 mb-2">
+                        <span class="text-black font-bold text-lg"><%= `₹${product.saleprice}` %></span>
+                        <%if(product.discountpercentage){  %>
+                        <span class="line-through text-gray-500 text-sm ml-2"><%= `₹${product.regularprice}` %></span>
+                        <% } %>
+
+                      </div>
+                    </div>
+                    <button class="mt-auto bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all">Add to cart</button>
+                  </div>
+                <% }) %>
+              <% } %>
+            </div>
+          </div>
+    
+          <div class="flex justify-center mt-8">
+            <button class="border border-black font-semibold px-6 py-2  hover:bg-black hover:text-white transition-all" onclick="viewall()">View all products</button>
+          </div>
+        </div>
+      </section>
+    </div>
+    
+  </div>
+
+
+  <div class="p-6 m-3">
+<div class="flex  justify-center ">
+  <h1 class="font-semibold text-3xl">The future of personal care is here</h1>
+</div>
+<div class="flex  justify-center m-2">
+  <h1>Embrace PurelyYou, where each element is chosen for its scientific merit, offering you authentic, effective skincare solutions.  </h1>
+</div>
+  </div>
+
+  <div class="h-auto p-10">
+    <div class="mb-3 flex justify-center md:justify-start">
+      <h1 class="text-2xl font-bold px-3">Shop by Category</h1>
+    </div>
+  
+    <% if (category) { %>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center p-3 rounded-lg">
+        <% category.forEach((category) => { %>
+          <div class="relative group transition-all duration-200 cursor-pointer" onclick="categoryview('<%=category._id %>')">
+            <!-- Image with zoom effect on hover -->
+            <div class="overflow-hidden">
+              <img 
+                src="<%= `/uploads/${category.image}` %>" 
+                class="h-[250px] w-[250px] object-cover transform transition-all duration-200 group-hover:scale-110"
+                alt="<%= category.categoryname %>"
+              />
+            </div>
+  
+            <!-- Category Name with smooth underline animation -->
+            <div class="text-center mt-3 relative">
+              <p class="text-xl font-semibold inline-block relative transition-all duration-300 ">
+                <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-black transition-all duration-300 group-hover:w-full"></span>
+                <%= category.categoryname %>
+              </p>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+  </div>
+  
+
+  <div class="p-6 m-3">
+    <div class="flex  justify-center ">
+      <h1 class="font-semibold text-3xl">Subscribe To Newsletter</h1>
+    </div>
+    <div class="flex  justify-center p-3">
+      <h1>Subscribe to our newsletter to get amazing offers in future.</h1>
+    </div>
+    <div class="flex justify-center p-5">
+      <form action="">
+        <input type="text" name="newsletter"   
+          class="p-3 rounded-md border-2 border-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-800 transition-all duration-300 transform focus:scale-10"
+        placeholder="Enter your email">
+        <button type="submit" class="text-white bg-black rounded-md p-3">Get in touch</button>
+      </form>
+    </div>
+      </div>
+
+
+<script>
+    // const productContainer = document.getElementById("productContainer");
+    // const prevButton = document.getElementById("prevButton");
+    // const nextButton = document.getElementById("nextButton");
+  
+    // let scrollAmount = 250; // Width of a single card + gap
+  
+    // // Scroll Left
+    // prevButton.addEventListener("click", () => {
+    //   productContainer.scrollBy({
+    //     left: -scrollAmount,
+    //     behavior: "smooth",
+    //   });
+    // });
+  
+    // // Scroll Right
+    // nextButton.addEventListener("click", () => {
+    //   productContainer.scrollBy({
+    //     left: scrollAmount,
+    //     behavior: "smooth",
+    //   });
+    // });
+
+    function getProduct(id){
+ console.log(id);
+        location.assign(`/user/home/productdetails/${id}`)
+    }
+    function viewall(){
+      location.assign('/user/home/viewallproducts')
+    }
+    function categoryview(id){
+
+    }
+  </script>
+  <%- include('partials/footer'); -%>
+
