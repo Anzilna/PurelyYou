@@ -69,8 +69,80 @@ const otpSchema =new mongoose.Schema({
         type:Date
     }
 },{timestamps:true})
-otpSchema.index({otpexpire:1},{expireAfterSeconds:300})
+otpSchema.index({ otpexpire: 1 }, { expireAfterSeconds: 300 });
+
+const cartSchema = new mongoose.Schema({
+    userId: {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'users', 
+      required: true,
+    },
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId, 
+          ref: 'products', 
+          required: true,
+        },
+        productname:{
+           type:String,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1, 
+        },
+        saleprice: {
+          type: Number,
+          required: true,
+        },
+        regularprice: {
+          type: Number,
+          required: true,
+        },
+        discountprice:{
+          type: Number,
+          default:0
+        }
+      },
+    ],
+    totalamount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    totalregularamount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    totaldiscountamount: {
+      type: Number,
+      default: 0,
+    },
+  },{timestamps:true});
+
+  // Pre-save hook to calculate totals
+  cartSchema.pre('save', function (next) {
+    let totalSalePrice = 0;
+    let totalRegularPrice = 0;
+    let totalDiscountPrice = 0;
+  
+    this.items.forEach((item) => {
+      totalSalePrice += item.saleprice * item.quantity; 
+      totalRegularPrice += item.regularprice * item.quantity; 
+      totalDiscountPrice += item.discountprice * item.quantity; 
+    });
+  
+    this.totalamount = totalSalePrice;
+    this.totalregularamount = totalRegularPrice;
+    this.totaldiscountamount = Math.round(totalDiscountPrice); 
+    next();
+  });
+  
+
 module.exports={
     Otp:mongoose.model('otp',otpSchema),
-    User:mongoose.model('user',userSchema)
+    User:mongoose.model('user',userSchema),
+    Cart:mongoose.model('cart',cartSchema)
 }

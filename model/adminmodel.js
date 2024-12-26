@@ -131,6 +131,10 @@ const ProductSchema=new mongoose.Schema({
   isListed:{
     type:Boolean,
     default:true
+  },
+  discountedprice:{
+    type:Number,
+    default:0
   }
 
 },{

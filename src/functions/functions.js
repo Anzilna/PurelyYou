@@ -44,15 +44,14 @@ const sendEmailAndStore = async (email, otp,type) => {
    await otpuser.save()
    console.log("Stored in mongodb otp");
 
-    return result; // Return detailed result for debugging/logging
+    return result; 
   } catch (error) {
     console.error('Failed to send email and store:', error.message);
-    throw new Error('Failed to send OTP email and store'); // Propagate error for better handling
+    throw new Error('Failed to send OTP email and store'); 
   }
 };
 
 
-//error handling in Adminschema
 const errorHandling = (err) => {
   const error = {
     email: "",

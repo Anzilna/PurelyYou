@@ -101,7 +101,7 @@
         <% category.forEach((category) => { %>
           <div class="relative group transition-all duration-200 cursor-pointer categoryview" >
             <!-- Image with zoom effect on hover -->
-             <div onclick="categoryview()" data-categoryid="<%= category._id  %>">
+             <div onclick="categoryview('<%= category._id  %>')" >
               <div class="overflow-hidden">
                 <img 
                   src="<%= `/uploads/${category.image}` %>" 
@@ -184,7 +184,7 @@
      function categoryview(id){
       console.log("logiii");
       
-      location.assign(`/user/home/viewallproducts/${id}?viewid=allcategory`)
+      location.assign(`/user/home/products/viewallproducts/${id}?viewid=allcategory`)
      }
     function getProduct(id){
  console.log(id);
@@ -193,9 +193,7 @@
     function viewall(){
       location.assign('/user/home/products/viewallproducts/11?viewid=newlaunches')
     }
-    function categoryview(id){
-
-    }
+   
   </script>
   <%- include('partials/footer'); -%>
 

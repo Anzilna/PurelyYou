@@ -2,14 +2,16 @@
 <%- include("partials/navbar"); -%>
 <body class="mt-[90px] font-roboto">
   <% if (product) { %>
+    <div id="notification" class=" text-sm mt-2 ">
+    </div>
   <div class="p-10 md:flex-row flex-col flex h-auto justify-center gap-10">
     <div class="w-full flex flex-col items-end">
       <div class="relative group ">
-        <div id="imageContainer" class="relative h-[700px] w-[600px] overflow-hidden">
+        <div id="imageContainer" class="relative h-[750px] w-[600px] overflow-hidden">
           <img 
             id="mainImage" 
             src="<%= product.images[0] %>" 
-            class="object-cover w-full h-full transition-transform duration-300" 
+            class="object-contain w-full h-full transition-transform duration-300" 
             alt="">
           <div 
             id="zoomLens" 
@@ -67,26 +69,43 @@
           Out Of Stock
         </h1></div>
       <% } %>
-
+      
       <div class="flex gap-2">
-        <div class="flex items-center border-1 border-slate-600 space-x-2">
-          <!-- Decrement Button -->
-          <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity()">-</button>
-          <span id="quantity" class="text-xl font-light">1</span>
-          <!-- Increment Button -->
-          <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="incrementQuantity()">+</button>
+        
+        <div class="flex items-center justify-center space-x-4">
+          <!-- Quantity Buttons -->
+          <div class="flex items-center border max-w-[120px] border-slate-600 space-x-2">
+            <!-- Decrement Button -->
+            <button
+              class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200"
+              onclick="decrementQuantity()"
+            >
+              -
+            </button>
+            <span id="quantity" class="text-xl font-light">1</span>
+            <!-- Increment Button -->
+            <button
+              class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200"
+              onclick="incrementQuantity()"
+            >
+              +
+            </button>
+          </div>
+     
         </div>
+       
         <div>
-          <% if(!product.stockstatus.includes("Out Of Stock")){  %>
-          <button class="px-[70px] h-full py-[10px] text-white bg-black"> ADD TO CART</button>
-          <% }else{ %>
-            <button class="px-[70px] h-full py-[10px] text-white bg-black"> OUT OF STOCK</button>
-            <% } %>
+          <% if (!product.stockstatus.includes("Out Of Stock")) { %>
+            <button class="px-[70px] h-full py-[10px] text-white bg-black" onclick="addtocart('<%=product._id %>','<%= product.stock %>')">ADD TO CART</button>
+          <% } else { %>
+            <button class="px-[70px] h-full py-[10px] text-white bg-black">OUT OF STOCK</button>
+          <% } %>
         </div>
         <div class="flex justify-center items-center cursor-pointer">
           <i class="bi bi-heart fs-2"></i>
         </div>
       </div>
+      
     </div>
   </div>
   <% } %>
@@ -133,63 +152,194 @@
         </div>
         </div>
   <script>
-    const mainImage = document.getElementById("mainImage");
-    const zoomLens = document.getElementById("zoomLens");
-    const imageContainer = document.getElementById("imageContainer");
-    const subImages = document.querySelectorAll(".sub-image");
+   const mainImage = document.getElementById("mainImage");
+const zoomLens = document.getElementById("zoomLens");
+const imageContainer = document.getElementById("imageContainer");
+const subImages = document.querySelectorAll(".sub-image");
+const notification = document.getElementById("notification");
 
-    function updateMainImage(imageSrc) {
-      mainImage.src = imageSrc;
-    }
+let quantity = 1; 
 
-    function getProduct(id){
- console.log(id);
-        location.assign(`/user/home/productdetails/${id}`)
-    }
+// Function to increment quantity
+function incrementQuantity() {
+  quantity++;
+  updateQuantity();
+  hideNotification(); // Hide the notification if visible
+}
 
-    window.onload = () => {
-      subImages.forEach((img) => (img.style.opacity = "0.5"));
-    };
-    subImages.forEach((subImage) => {
-      subImage.addEventListener("mouseover", () => {
-        subImages.forEach((img) => img.style.opacity = "0.5"); // Set all sub-images to semi-transparent
-        subImage.style.opacity = "1"; // Highlight the hovered image
+async function addtocart(id, stock) {
+  const quantityToSend = quantity;
+  console.log(stock, id);
+
+  // Ensure the product stock is passed to the template and is available here
+  if (quantityToSend > stock) {
+    // Show the error notification if the quantity exceeds stock
+    showNotification(
+      `Sorry, we only have ${stock} items in stock.`,
+      "error"
+    ); // Pass 'error' to show red alert
+  } else {
+    // Proceed with adding the item to the cart if stock is sufficient
+    try {
+      const fetchResult = await fetch('/user/home/productdetails/addtocart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          productId: id,
+          quantity: quantityToSend
+        })
       });
 
-      subImage.addEventListener("mouseout", () => {
-        subImages.forEach((img) => img.style.opacity = "0.5"); // Reset all sub-images to semi-transparent
-      });
-    });
+      const result = await fetchResult.json();
+      if (result.success) {
+        // Show success message
+        showNotification(
+          "Product successfully added to cart!",
+          "success"
+        ); // Pass 'success' to show green alert
+      } else if (result.message) {
+        // Show error message from server response
+        showNotification(result.message, "error");
+      }
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      showNotification(
+        "An error occurred while adding the product to the cart. Please try again.",
+        "error"
+      );
+    }
+  }
+}
 
-    imageContainer.addEventListener("mousemove", (e) => {
-      zoomLens.style.display = "block";
+// Function to decrement quantity
+function decrementQuantity() {
+  if (quantity > 1) {
+    quantity--;
+    hideNotification(); // Hide the notification if visible
+  } else {
+    showNotification("Quantity must be a positive number!", "error"); // Show notification when quantity is <= 1
+  }
+  updateQuantity();
+}
 
-      const rect = imageContainer.getBoundingClientRect();
-      const lensSize = zoomLens.offsetWidth / 2;
+// Function to update the displayed quantity
+function updateQuantity() {
+  document.getElementById("quantity").textContent = quantity;
+}
 
-      // Calculate lens position
-      let lensX = e.clientX - rect.left - lensSize;
-      let lensY = e.clientY - rect.top - lensSize;
+function showNotification(message, type) {
+  const notification = document.getElementById("notification");
 
-      // Prevent lens from going outside the image boundaries
-      lensX = Math.max(0, Math.min(lensX, rect.width - zoomLens.offsetWidth));
-      lensY = Math.max(0, Math.min(lensY, rect.height - zoomLens.offsetHeight));
+  // Clear existing classes
+  notification.className = "";
 
-      // Move lens
-      zoomLens.style.left = lensX + "px";
-      zoomLens.style.top = lensY + "px";
+  // Add common classes for the notification
+  notification.classList.add(
+    "p-4",
+    "mb-4",
+    "text-sm",
+    "rounded-lg",
+    "fixed",
+    "top-9", // Position from the top
+    "right-4", // Position from the right
+    "z-50", // Ensures it's above other content
+    "min-w-[150px]", // Sets a max-width
+    "role",
+    "alert"
+  );
 
-      // Apply zoom effect on the main image
-      const zoomLevel = 2; // Adjust zoom level
-      mainImage.style.transformOrigin = `${(lensX / rect.width) * 100}% ${(lensY / rect.height) * 100}%`;
-      mainImage.style.transform = `scale(${zoomLevel})`;
-    });
+  // Add specific styles based on the type of notification
+  if (type === "success") {
+    notification.classList.add(
+      "text-green-800",
+      "bg-green-50",
+      "dark:bg-gray-800",
+      "dark:text-green-400"
+    );
+  } else if (type === "error") {
+    notification.classList.add(
+      "text-red-800",
+      "bg-red-50",
+      "dark:bg-gray-800",
+      "dark:text-red-400"
+    );
+  }
 
-    // Hide lens and reset image zoom on mouse leave
-    imageContainer.addEventListener("mouseleave", () => {
-      zoomLens.style.display = "none";
-      mainImage.style.transform = "scale(1)";
-    });
+  // Update the message content
+  notification.innerHTML = `<span class="font-medium">${
+    type === "success" ? "Success!" : "Error!"
+  }</span> ${message}`;
+
+  // Make the notification visible
+  notification.classList.remove("hidden");
+
+  // Automatically hide the notification after 5 seconds
+  setTimeout(() => {
+    hideNotification();
+  }, 5000);
+}
+
+// Function to hide the notification
+function hideNotification() {
+  const notification = document.getElementById("notification");
+  notification.className = "hidden"; // Hide the alert
+}
+
+
+function updateMainImage(imageSrc) {
+  mainImage.src = imageSrc;
+}
+
+function getProduct(id) {
+  console.log(id);
+  location.assign(`/user/home/productdetails/${id}`);
+}
+
+window.onload = () => {
+  subImages.forEach((img) => (img.style.opacity = "0.5"));
+};
+subImages.forEach((subImage) => {
+  subImage.addEventListener("mouseover", () => {
+    subImages.forEach((img) => img.style.opacity = "0.5"); // Set all sub-images to semi-transparent
+    subImage.style.opacity = "1"; // Highlight the hovered image
+  });
+
+  subImage.addEventListener("mouseout", () => {
+    subImages.forEach((img) => img.style.opacity = "0.5"); // Reset all sub-images to semi-transparent
+  });
+});
+
+imageContainer.addEventListener("mousemove", (e) => {
+  zoomLens.style.display = "block";
+
+  const rect = imageContainer.getBoundingClientRect();
+  const lensSize = zoomLens.offsetWidth / 2;
+
+  // Calculate lens position
+  let lensX = e.clientX - rect.left - lensSize;
+  let lensY = e.clientY - rect.top - lensSize;
+
+  // Prevent lens from going outside the image boundaries
+  lensX = Math.max(0, Math.min(lensX, rect.width - zoomLens.offsetWidth));
+  lensY = Math.max(0, Math.min(lensY, rect.height - zoomLens.offsetHeight));
+
+  // Move lens
+  zoomLens.style.left = lensX + "px";
+  zoomLens.style.top = lensY + "px";
+
+  // Apply zoom effect on the main image
+  const zoomLevel = 2; // Adjust zoom level
+  mainImage.style.transformOrigin = `${(lensX / rect.width) * 100}% ${(lensY / rect.height) * 100}%`;
+  mainImage.style.transform = `scale(${zoomLevel})`;
+});
+
+// Hide lens and reset image zoom on mouse leave
+imageContainer.addEventListener("mouseleave", () => {
+  zoomLens.style.display = "none";
+  mainImage.style.transform = "scale(1)";
+});
   </script>
   <%- include('partials/footer'); -%>
 

@@ -10,7 +10,7 @@ require('dotenv').config()
             console.error("JWT verification error:", err.message); // Log the error for debugging
             return res.redirect("/user/login");
         } else {
-            req.user = decodedToken;
+            req.user = decodedToken.id;
             next();
         }
     });

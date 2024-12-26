@@ -1,0 +1,98 @@
+<%- include("partials/header"); -%>
+<body class=" bg-gray-100 ">
+
+    <div class="relative flex items-center justify-between p-4 text-xs">
+        <!-- Back to Shopping Cart Section -->
+        <div class="flex items-center space-x-1 text-gray-700 ">
+            <a href="/user/home/shoppingcart" class="flex justify-center">
+                <i class="bi bi-arrow-left-short  fs-4"></i>
+                <button class="focus:outline-none ">
+                  Back to Shopping Cart
+                </button>
+            </a>
+        
+        </div>
+      
+        <!-- Centered Brand Name -->
+        <h1 class="absolute left-1/2 transform -translate-x-1/2 font-bold text-xl text-gray-800">
+          PurelyYou
+        </h1>
+      </div>
+      <div class="flex justify-center text-3xl py-4 font-semibold">
+        <h1>Checkout</h1>
+      </div>
+
+      <div class="p-6">
+        <!-- My Information Section -->
+        <div class="mb-4 border border-gray-300 rounded-lg">
+          <div
+            class="flex justify-between items-center p-4 bg-gray-100 cursor-pointer"
+            onclick="toggleDropdown('infoDropdown')"
+          >
+            <h2 class="font-bold">My information</h2>
+            <button class="text-gray-600 hover:text-black">Edit</button>
+          </div>
+          <div id="infoDropdown" class="hidden p-4 bg-white">
+            <label class="block mb-2 text-sm font-medium">Name</label>
+            <input
+              type="text"
+              value="MOHAMMED ANZIL N A"
+              class="w-full p-2 border border-gray-300 rounded-lg"
+            />
+            <label class="block mt-4 mb-2 text-sm font-medium">Email</label>
+            <input
+              type="email"
+              value="anziln422@gmail.com"
+              class="w-full p-2 border border-gray-300 rounded-lg"
+            />
+          </div>
+        </div>
+      
+        <!-- Billing Address Section -->
+        <div class="mb-4 border border-gray-300 rounded-lg">
+          <div
+            class="flex justify-between items-center p-4 bg-gray-100 cursor-pointer"
+            onclick="toggleDropdown('billingDropdown')"
+          >
+            <h2 class="font-bold">Billing address</h2>
+            <button class="text-gray-600 hover:text-black">Edit</button>
+          </div>
+          <div id="billingDropdown" class="hidden p-4 bg-white">
+            <label class="block mb-2 text-sm font-medium">Address</label>
+            <textarea
+              class="w-full p-2 border border-gray-300 rounded-lg"
+              rows="3"
+            >House Njarekattil thrissur velikulangara Njarekattil(house) thrissur velikulangara p.o 680699 Mukundapuram</textarea>
+          </div>
+        </div>
+      
+        <!-- Delivery Section -->
+        <div class="mb-4 border border-gray-300 rounded-lg">
+          <div
+            class="flex justify-between items-center p-4 bg-gray-100 cursor-pointer"
+            onclick="toggleDropdown('deliveryDropdown')"
+          >
+            <h2 class="font-bold">Delivery</h2>
+            <button class="text-gray-600 hover:text-black">Edit</button>
+          </div>
+          <div id="deliveryDropdown" class="hidden p-4 bg-white">
+            <label class="block mb-2 text-sm font-medium">Phone</label>
+            <input
+              type="tel"
+              value="+91 89431 76823"
+              class="w-full p-2 border border-gray-300 rounded-lg"
+            />
+            <label class="block mt-4 mb-2 text-sm font-medium">Delivery Address</label>
+            <textarea
+              class="w-full p-2 border border-gray-300 rounded-lg"
+              rows="3"
+            >House Njarekattil thrissur velikulangara Njarekattil(house) thrissur velikulangara p.o 680699 Mukundapuram</textarea>
+          </div>
+        </div>
+      </div>
+      <script>
+        function toggleDropdown(id) {
+          const dropdown = document.getElementById(id);
+          dropdown.classList.toggle("hidden");
+        }
+      </script>

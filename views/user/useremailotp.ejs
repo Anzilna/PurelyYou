@@ -81,7 +81,12 @@
       const timer = document.getElementById("timer");
       const timermain = document.getElementById("timermain");
       const otperror = document.getElementById("error-otp-confirm");
-
+       let queryParams;
+       if(window.location.search){
+        queryParams=window.location.search
+        console.log(queryParams);
+        
+       }
       resendotptimer();
       function resendotptimer() {
         console.log("inside timer");
@@ -98,17 +103,23 @@
           }
         }, 1000);
       }
-
-
-
-      
-
       form.addEventListener("submit", async (e) => {
+        let UrlToPost="/user/emailotp";
+        if(queryParams){
+          UrlToPost=`/user/emailotp${queryParams}`;
+console.log("done",UrlToPost);
+
+        }
         e.preventDefault();
         otperror.textContent = "";
         const userentredotp = document.getElementById("login-otp").value;
+        if (!/^\d+$/.test(userentredotp)) {
+      otperror.textContent = "Please enter a valid numeric OTP.";
+      otperror.style.color = "red";
+      return;
+    }
         try {
-          const fetchresult = await fetch("/user/emailotp", {
+          const fetchresult = await fetch(UrlToPost, {
             method: "post",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userentredotp }),
@@ -125,6 +136,11 @@
           if (result.login) {
             location.assign("/user/login");
           }
+          if(result.newpassword)
+          {
+            location.assign("/user/newpassword");
+
+          }
         } catch (error) {
           console.log(error);
         }
@@ -133,9 +149,15 @@
       const sendagainid = document.getElementById("sendagain");
       sendagainid.addEventListener("click", async (e) => {
         e.preventDefault();
+        let UrlToPost="/user/newemailotp";
+        if(queryParams){
+          UrlToPost=`/user/newemailotp${queryParams}`;
+console.log("done",UrlToPost);
+
+        }
         console.log("clicked");
         try {
-          const result = await fetch("/user/newemailotp", {
+          const result = await fetch(UrlToPost, {
             method: "post",
           });
           const jsonresult = await result.json();

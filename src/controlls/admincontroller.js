@@ -229,7 +229,7 @@ module.exports.adminProductsEditPost = async (req, res) => {
 
     const stockstatus = stock <= 0 ? "Out Of Stock" : stock <= 10 ? "Low Quantity" : "Available";
     const discountedprice = (regularprice * discountpercentage) / 100;
-    const saleprice = regularprice - discountedprice;
+    const saleprice = Math.round(regularprice - discountedprice); 
 
     product.productname = productname;
     product.regularprice = regularprice;
@@ -243,7 +243,7 @@ module.exports.adminProductsEditPost = async (req, res) => {
     product.discountpercentage = discountpercentage;
     product.saleprice = saleprice;
     product.stockstatus = stockstatus;
-
+    product.discountedprice=discountedprice;
     if (images.length > 0) {
       product.images = [...product.images, ...images];
     }
@@ -315,7 +315,7 @@ files.forEach(({filename})=> {
 
 const stockstatus = stock <= 0 ? 'Out Of Stock' : stock <= 10 ? 'Low Quantity' : 'Available';
 const discountedprice=regularprice*discountpercentage/100
-const saleprice=regularprice-discountedprice;
+const saleprice = Math.round(regularprice - discountedprice);
 const newProduct = new ProductModel({
   productname,
   regularprice,
@@ -329,7 +329,8 @@ const newProduct = new ProductModel({
   categoryname,
   discountpercentage,
   saleprice,
-  stockstatus
+  stockstatus,
+  discountedprice
 })
 try {
   await newProduct.save()
