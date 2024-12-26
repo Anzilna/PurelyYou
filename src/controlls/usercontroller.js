@@ -15,12 +15,32 @@ const { CategoryModel,ProductModel } = require("../../model/adminmodel");
 
 async function categoiesFind (){
   try {
-    const category =await CategoryModel.find()
+    const category =await CategoryModel.find({isActive:true})
     return category
   } catch (error) {
     console.log(error);
     
   }
+}
+async function productFind(limitCount){
+  if(limitCount){
+    try {
+      const product =await ProductModel.find({isListed:true}).limit(limitCount)
+      return product
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }else{
+    try {
+      const product =await ProductModel.find({isListed:true})
+      return product
+    } catch (error) {
+      console.log(error);
+      
+    }
+  }
+ 
 }
 
 
@@ -57,6 +77,22 @@ else{
 }
 
 };
+//forgot password
+
+module.exports.forgotPassword = (req, res) => {
+  res.render('user/forgotPassword')
+  };
+
+  module.exports.forgotPasswordPost = async(req, res) => {
+    const {email} =req.body
+    console.log(("foundddddddd",email));
+
+    const user=await User.findOne({email})
+    console.log(user);
+    
+    if(!user)res.status(404).json({failed:"Enter a registered email"})
+      
+    };
 //userlogout
 
 module.exports.userLogoutGet = (req, res) => {
@@ -152,9 +188,15 @@ module.exports.newuseremailotppost = async (req, res) => {
 //user home
 module.exports.userhomeget =async (req, res) => {
   try {
-    const category=await CategoryModel.find()
-    const products=await ProductModel.find()
-    res.render("user/userhome",{category,products});
+    const DaysAgo = new Date();
+    DaysAgo.setDate(DaysAgo.getDate() - 30);
+    const category=await categoiesFind()
+    const recentLaunchProducts = await ProductModel.find({
+      isListed:true,
+      createdAt: { $gte: DaysAgo } 
+    }).sort({createdAt:-1}).limit(8);
+
+    res.render("user/userhome",{category,products:recentLaunchProducts});
   } catch (error) {
     console.log(error);
     
@@ -167,9 +209,15 @@ module.exports.ProductDetails = async(req, res) => {
  console.log(id);
  try {
   const product =await ProductModel.findById(id)
-  const products = await ProductModel.find()
+  const products = await ProductModel.find({isListed:true,category:product.category}).limit(8)
+  const filterArray = products.filter((prd)=>{
+    return  prd._id.toString()!==product._id.toString()
+  })
+  console.log(product._id);
+  
+  console.log(filterArray);
   const category = await categoiesFind()
- res.render('user/productDetails',{product,products,category})
+ res.render('user/productDetails',{product,products:filterArray,category})
  } catch (error) {
   console.log(error);
   
@@ -179,21 +227,64 @@ module.exports.ProductDetails = async(req, res) => {
 
 
 module.exports.viewallproducts=async(req,res)=>{
-
-  const id=req.query.id
-  if(id.includes('shopall')){
+  const viewid=req.query.viewid
+  const id=req.params.id
+  if(viewid.includes('shopall')){
     try {
       const category=await categoiesFind()
-  const products= await ProductModel.find()
-  res.render('user/viewallPage',{category,products})
+  const products= await ProductModel.find({isListed:true}).populate({
+    path:'category',
+    match:{
+      isActive:true
+    }
+  })
+  
+  const filteredProducts = products.filter(product => product.category);
+
+  res.render('user/viewallPage',{category,products:filteredProducts})
     } catch (error) {
       console.log(error);
       
     }
+  }if(viewid.includes('newlaunches')){
+    const DaysAgo = new Date();
+    DaysAgo.setDate(DaysAgo.getDate() - 30);
+    const category=await categoiesFind()
+    const recentLaunchProducts = await ProductModel.find({
+      isListed:true,
+      createdAt: { $gte: DaysAgo } 
+    }).sort({createdAt:-1});
+    
+    res.render('user/viewallPage', {
+      category, 
+      products: recentLaunchProducts
+    });    
   }
-
-
-
+  if (id && typeof viewid === 'string' && viewid.includes('allcategory')) {
+    try {
+      const category=await categoiesFind()
+      const products = await ProductModel.find({
+        isListed:true,
+        category:id
+      }).populate({
+        path: 'category',
+        match: {
+          isActive:true
+        }
+      });
+  
+      const filteredProducts = products.filter(product => product.category);
+  
+      res.render('user/viewallPage', {
+        category, 
+        products: filteredProducts
+      });
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      res.status(500).send('An error occurred while fetching products.');
+    }
+  }
+  
 }
 
 // passport user google login session below this

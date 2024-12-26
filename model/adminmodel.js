@@ -60,7 +60,12 @@ const categorySchema=new mongoose.Schema({
         validator:function(value){
                 return value!==null&&value.trim()!=='';
         }}
+    },
+    isActive:{
+        type:Boolean,
+        default:true
     }
+
 },{
     timestamps:true
 })
@@ -122,6 +127,10 @@ const ProductSchema=new mongoose.Schema({
     type:String,
     enum:["Out Of Stock","Low Quantity","Available"],
     required:true
+  },
+  isListed:{
+    type:Boolean,
+    default:true
   }
 
 },{

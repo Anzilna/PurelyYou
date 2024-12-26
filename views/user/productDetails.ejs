@@ -3,9 +3,7 @@
 <body class="mt-[90px] font-roboto">
   <% if (product) { %>
   <div class="p-10 md:flex-row flex-col flex h-auto justify-center gap-10">
-    <!-- Image Section -->
     <div class="w-full flex flex-col items-end">
-      <!-- Main Image with Zoom -->
       <div class="relative group ">
         <div id="imageContainer" class="relative h-[700px] w-[600px] overflow-hidden">
           <img 
@@ -13,14 +11,12 @@
             src="<%= product.images[0] %>" 
             class="object-cover w-full h-full transition-transform duration-300" 
             alt="">
-          <!-- Zoom Lens -->
           <div 
             id="zoomLens" 
             class="absolute hidden bg-opacity-40 bg-gray-300 rounded-full border border-gray-400"
             style="width: 150px; height: 150px;">
           </div>
         </div>
-      <!-- Sub Images -->
       <div class="flex gap-2 items-start justify-start py-3">
         <% product.images.forEach((image, index) => { %>
         <img 
@@ -34,7 +30,6 @@
     </div>
 
     </div>
-    <!-- Product Details Section -->
     <div class="w-full flex flex-col gap-3 justify-start">
       <div>
         <h1 class="text-5xl font-normal leading-[50px]"><%= product.productname %></h1>
@@ -45,11 +40,11 @@
       <div class="leading-6">
         <p><%= product.description %></p>
       </div>
-      <div>
         <% if(!product.stockstatus.includes("Out Of Stock")){ %>
+          <div>
 
-        <div class="border-gray-200 flex max-w-[400px] max-h-[200px] border-1 mt-3 rounded-xl relative p-12">
-          <p class="absolute top-[-18px] left-0 bg-white text-xl font-normal px-2">PRICE</p>
+        <div class="border-gray-200 flex max-w-full max-h-[200px] border-1 mt-3 rounded-xl relative px-12 py-8">
+          <p class="absolute top-[-13px] left-0 bg-white text-xl font-normal px-2">PRICE</p>
      <div class="flex gap-2 justify-center items-center">
         <h2 class="font-normal text-xl">MRP</h2>
         <div class=" grow">
@@ -62,6 +57,11 @@
         </div>
         
       </div>
+      <% if(product.stock<10) {%>
+      <div class="w-full py-2 px-3 rounded-md bg-red-200 text-red-600 text-base font-semibold">
+       <%=`Hurry! Only ${product.stock} items left in stock.`  %> 
+      </div>
+      <% } %>
       <% }else{ %>
         <div class="my-7 text-4xl"><h1>
           Out Of Stock
@@ -71,7 +71,7 @@
       <div class="flex gap-2">
         <div class="flex items-center border-1 border-slate-600 space-x-2">
           <!-- Decrement Button -->
-          <button class="px-3 py-2 text-md font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity()">-</button>
+          <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity()">-</button>
           <span id="quantity" class="text-xl font-light">1</span>
           <!-- Increment Button -->
           <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="incrementQuantity()">+</button>
@@ -90,10 +90,11 @@
     </div>
   </div>
   <% } %>
+  
   <div class="flex gap-2 w-full p-10">
     <section class="w-full bg-white">
       <div class="container ">
-        <h2 class="text-2xl font-bold mb-6">New Launches</h2>
+        <h2 class="text-2xl font-bold mb-6">Recomended Products</h2>
   
         <div class="overflow-x-auto scrollbar-hide">
           <div class="grid grid-flow-col auto-cols-[250px] gap-6 h-auto cursor-pointer">

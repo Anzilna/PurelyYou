@@ -95,7 +95,7 @@ module.exports.adminCategoriesAddPost = async(req, res) => {
 };
 module.exports.adminCategoriesEditPut = async (req, res) => {
   try {
-    const { categoryId,categoryName, description } = req.body;
+    const { categoryId,categoryName,isActive,description } = req.body;
     const image = req.file ? req.file.filename : null;
 
     // Find the category by its identifier (assumes req.params.id contains the category ID)
@@ -104,10 +104,11 @@ module.exports.adminCategoriesEditPut = async (req, res) => {
     if (!updatedCategory) {
       return res.status(404).json({ error: "Category not found" });
     }
-
+     const status=isActive==='true'?true:false
     // Update the fields conditionally
     if (categoryName) updatedCategory.categoryname = categoryName;
     if (description) updatedCategory.description = description;
+    if (isActive) updatedCategory.isActive = status;
     if (image) updatedCategory.image = image; // Only update if an image is sent
 
     await updatedCategory.validate();
@@ -243,9 +244,10 @@ module.exports.adminProductsEditPost = async (req, res) => {
     product.saleprice = saleprice;
     product.stockstatus = stockstatus;
 
-    if (files.length > 0) {
-      product.images = images;
+    if (images.length > 0) {
+      product.images = [...product.images, ...images];
     }
+    
 
     await product.save();
     res.status(200).json({ saved: "Product updated successfully" });
@@ -255,17 +257,26 @@ module.exports.adminProductsEditPost = async (req, res) => {
   }
 };
 
-module.exports.adminProductsDelete = async(req, res) => {
+module.exports.adminListProducts = async(req, res) => {
   const id = req.params.id
-  console.log(id);
+  const { isListed } = req.body;
   
   try {
     
-    const user=await ProductModel.findByIdAndDelete(id)
-    res.json({deleted:"user deleted"})
+    const user=await ProductModel.findByIdAndUpdate(id,
+      {isListed},
+      {new:true}
+    )
+    if(user){
+      res.status(200).json({updated:true})
+    }else{
+      res.status(200).json({updated:false})
+
+    }
     
   } catch (error) {
-    console.log("err in finding delete user",error);
+    console.error('Error updating product listing status:', error);
+    res.status(500).json({ updated: false, error: 'Internal server error' });
     
   }
   

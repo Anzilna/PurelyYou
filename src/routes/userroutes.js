@@ -14,11 +14,13 @@ router.post('/signup',userController.usersignuppost)
 router.get('/emailotp',userController.useremailotpget)
 router.post('/emailotp',userController.useremailotppost)
 router.post('/newemailotp',userController.newuseremailotppost)
+router.get('/forgotpassword',userController.forgotPassword)
+router.post('/forgotpassword',checkUser,userController.forgotPasswordPost)
 router.get("/google/auth",userController.googleLoginRoute);
 router.get("/auth/google/callback",userController.googleAuthCallback);
 router.get('/home',checkUser,userController.userhomeget)
-router.get('/home/productdetails/:id',checkUser,jwtAuthentication,userController.ProductDetails)
-router.get('/home/products/viewallproducts',checkUser,jwtAuthentication,userController.viewallproducts)
+router.get('/home/productdetails/:id',checkUser,userController.ProductDetails)
+router.get('/home/products/viewallproducts/:id',checkUser,userController.viewallproducts)
 
 
 

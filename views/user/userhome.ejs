@@ -34,7 +34,7 @@
   
     <div class="flex gap-2 w-full p-10">
       <section class="w-full bg-white">
-        <div class="container ">
+        <div class="container py-6">
           <h2 class="text-2xl font-bold mb-6">New Launches</h2>
     
           <div class="overflow-x-auto scrollbar-hide">
@@ -99,23 +99,26 @@
     <% if (category) { %>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center p-3 rounded-lg">
         <% category.forEach((category) => { %>
-          <div class="relative group transition-all duration-200 cursor-pointer" onclick="categoryview('<%=category._id %>')">
+          <div class="relative group transition-all duration-200 cursor-pointer categoryview" >
             <!-- Image with zoom effect on hover -->
-            <div class="overflow-hidden">
-              <img 
-                src="<%= `/uploads/${category.image}` %>" 
-                class="h-[250px] w-[250px] object-cover transform transition-all duration-200 group-hover:scale-110"
-                alt="<%= category.categoryname %>"
-              />
-            </div>
-  
-            <!-- Category Name with smooth underline animation -->
-            <div class="text-center mt-3 relative">
-              <p class="text-xl font-semibold inline-block relative transition-all duration-300 ">
-                <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-black transition-all duration-300 group-hover:w-full"></span>
-                <%= category.categoryname %>
-              </p>
-            </div>
+             <div onclick="categoryview()" data-categoryid="<%= category._id  %>">
+              <div class="overflow-hidden">
+                <img 
+                  src="<%= `/uploads/${category.image}` %>" 
+                  class="h-[250px] w-[250px] object-cover transform transition-all duration-200 group-hover:scale-110"
+                  alt="<%= category.categoryname %>"
+                />
+              </div>
+    
+              <!-- Category Name with smooth underline animation -->
+              <div class="text-center mt-3 relative">
+                <p class="text-xl font-semibold inline-block relative transition-all duration-300 ">
+                  <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-black transition-all duration-300 group-hover:w-full"></span>
+                  <%= category.categoryname %>
+                </p>
+              </div>
+             </div>
+          
           </div>
         <% }); %>
       </div>
@@ -164,12 +167,31 @@
     //   });
     // });
 
+//     document.querySelector('.grid').addEventListener('click', (e) => {
+//   const categoryElement = e.target.closest('.categoryview'); // Find the closest .categoryview div
+//   if (categoryElement) {
+//     const categoryId = categoryElement.getAttribute('data-categoryid'); // Get the category ID
+//     console.log(`Category ID: ${categoryId}`);
+//   }
+// });
+
+
+//     document.querySelecto('categoryview').addEventListener('click',(e)=>{
+//       e.preventDefault()
+// console.log(e.target.dataset.categoryid);
+
+//     })
+     function categoryview(id){
+      console.log("logiii");
+      
+      location.assign(`/user/home/viewallproducts/${id}?viewid=allcategory`)
+     }
     function getProduct(id){
  console.log(id);
         location.assign(`/user/home/productdetails/${id}`)
     }
     function viewall(){
-      location.assign('/user/home/viewallproducts')
+      location.assign('/user/home/products/viewallproducts/11?viewid=newlaunches')
     }
     function categoryview(id){
 

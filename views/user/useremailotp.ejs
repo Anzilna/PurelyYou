@@ -86,7 +86,7 @@
       function resendotptimer() {
         console.log("inside timer");
 
-        let countDown = 5;
+        let countDown = 30;
         const newCountdown = setInterval(() => {
           timer.textContent = `${countDown.toString().padStart(2,'0')}`;
           countDown--;

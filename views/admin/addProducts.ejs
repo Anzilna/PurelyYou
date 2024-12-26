@@ -122,6 +122,7 @@
 
         <div>
           <label class="block text-sm font-medium text-black mb-1">Discount Percentage</label>
+          <div class="error text-red-500 mb-1" id="error-discountpercentage"></div>
           <input
             type="number"
             name="discountpercentage"
@@ -147,8 +148,8 @@
         <button
           type="button"
           class="px-4 py-2 text-black border border-black rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-gray-400"
-          onclick="back()"
-        >
+          id="backbtn"
+          >
           Cancel
         </button>
         <button
@@ -183,198 +184,225 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const selection = document.getElementById('categoryselection');
-    const fileContainer = document.getElementById('file-container');
-    const addMoreFilesButton = document.getElementById('add-more-files');
-    const cropModal = document.getElementById('crop-modal');
-    const cropperImage = document.getElementById('cropper-image');
-    const cropCancel = document.getElementById('crop-cancel');
-    const cropSave = document.getElementById('crop-save');
-    const form = document.querySelector('form');
-    const errors = {
-      productname: document.getElementById('error-productname'),
-      price: document.getElementById('error-price'),
-      stock: document.getElementById('error-stock'),
-      category: document.getElementById('error-category'),
-      description: document.getElementById('error-description'),
-      images: document.getElementById('error-images'),
-    };
-  
-    let cropper;
-    let imageArray = [];
-    let categorySelection;
-  
-    selection.addEventListener('change', (e) => {
-      const SelectedOption = e.target.selectedOptions[0];
-      categorySelection = SelectedOption.dataset.categoryname;
-      console.log(categorySelection);
-    });
-  
-    addMoreFilesButton.addEventListener('click', () => {
-      if (fileContainer.children.length >= 4) {
-        alert('You can only upload up to 4 files.');
-        return;
-      }
-  
-      const fileInputDiv = document.createElement('div');
-      fileInputDiv.className = 'flex items-center space-x-3';
-      fileInputDiv.innerHTML = `
-        <label class="cursor-pointer px-3 py-1 text-white bg-black rounded-md hover:bg-gray-800 focus:ring-2 focus:ring-black">
-          Choose File
-          <input type="file" name="images" class="hidden file-input" accept="image/*" />
-        </label>
-        <span class="file-name-display text-gray-500 text-sm">No file chosen</span>
-        <button type="button" class="remove-file-btn text-red-500 hover:text-red-800 text-sm"><i class="bi bi-x-lg fs-5"></i></button>
-      `;
-  
-      fileContainer.appendChild(fileInputDiv);
-  
-      const fileInput = fileInputDiv.querySelector('.file-input');
-      const fileNameDisplay = fileInputDiv.querySelector('.file-name-display');
-      const removeFileButton = fileInputDiv.querySelector('.remove-file-btn');
-  
-      fileInput.addEventListener('change', (e) => {
-        const selectedFile = e.target.files[0];
-        if (selectedFile) {
-          fileNameDisplay.textContent = selectedFile.name;
-          handleCrop(selectedFile);
-        } else {
+  const selection = document.getElementById('categoryselection');
+  const fileContainer = document.getElementById('file-container');
+  const addMoreFilesButton = document.getElementById('add-more-files');
+  const cropModal = document.getElementById('crop-modal');
+  const cropperImage = document.getElementById('cropper-image');
+  const cropCancel = document.getElementById('crop-cancel');
+  const cropSave = document.getElementById('crop-save');
+  const form = document.querySelector('form');
+  const errors = {
+    productname: document.getElementById('error-productname'),
+    price: document.getElementById('error-price'),
+    stock: document.getElementById('error-stock'),
+    category: document.getElementById('error-category'),
+    description: document.getElementById('error-description'),
+    images: document.getElementById('error-images'),
+    discountpercentage:document.getElementById('error-discountpercentage')
+  };
+
+  let cropper;
+  let imageArray = [];
+  let categorySelection;
+
+  selection.addEventListener('change', (e) => {
+    const SelectedOption = e.target.selectedOptions[0];
+    categorySelection = SelectedOption.dataset.categoryname;
+    console.log(categorySelection);
+  });
+
+  addMoreFilesButton.addEventListener('click', () => {
+    if (fileContainer.children.length >= 4) {
+      alert('You can only upload up to 4 files.');
+      return;
+    }
+
+    const fileInputDiv = document.createElement('div');
+    fileInputDiv.className = 'flex items-center space-x-3';
+    fileInputDiv.innerHTML = `
+      <label class="cursor-pointer px-3 py-1 text-white bg-black rounded-md hover:bg-gray-800 focus:ring-2 focus:ring-black">
+        Choose File
+        <input type="file" name="images" class="hidden file-input" accept="image/*" />
+      </label>
+      <span class="file-name-display text-gray-500 text-sm">No file chosen</span>
+      <button type="button" class="remove-file-btn text-red-500 hover:text-red-800 text-sm"><i class="bi bi-x-lg fs-5"></i></button>
+    `;
+
+    fileContainer.appendChild(fileInputDiv);
+
+    const fileInput = fileInputDiv.querySelector('.file-input');
+    const fileNameDisplay = fileInputDiv.querySelector('.file-name-display');
+    const removeFileButton = fileInputDiv.querySelector('.remove-file-btn');
+
+    fileInput.addEventListener('change', (e) => {
+      const selectedFile = e.target.files[0];
+      if (selectedFile) {
+        if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(selectedFile.type)) {
+
+          errors.images.textContent='Only image files (JPEG, PNG, GIF, WebP) are allowed'
+          fileInput.value = '';
           fileNameDisplay.textContent = 'No file chosen';
+          return;
         }
-      });
-  
-      removeFileButton.addEventListener('click', () => {
-        fileInputDiv.remove();
-      });
-    });
-  
-    // Handle cropping
-    function handleCrop(file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        cropperImage.src = reader.result;
-        cropModal.classList.remove('hidden');
-        cropper = new Cropper(cropperImage, {
-          aspectRatio: NaN,
-          viewMode: 1,
-        });
-      };
-      reader.readAsDataURL(file);
-    }
-  
-    // Cancel cropping
-    cropCancel.addEventListener('click', () => {
-      cropModal.classList.add('hidden');
-      cropper?.destroy();
-    });
-  
-    // Save cropped image
-    cropSave.addEventListener('click', () => {
-      const croppedCanvas = cropper.getCroppedCanvas();
-      croppedCanvas.toBlob((blob) => {
-        const newFile = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
-        imageArray.push(newFile);
-      });
-      cropModal.classList.add('hidden');
-      cropper?.destroy();
-    });
-  
-    // Form validation
-    function validateForm(formData) {
-      let isValid = true;
-  
-      // Reset error messages
-      Object.values(errors).forEach((error) => {
-        error.textContent = '';
-      });
-  
-      // Product name
-      if (!formData.get('productname')) {
-        errors.productname.textContent = 'Product name is required.';
-        isValid = false;
-      }
-  
-      // Price
-      if (!formData.get('regularprice')) {
-        errors.price.textContent = 'Price is required.';
-        isValid = false;
-      }
-  
-      // Stock
-      if (!formData.get('stock')) {
-        errors.stock.textContent = 'Stock is required.';
-        isValid = false;
-      }
-  
-      // Category
-      if (!formData.get('category')) {
-        errors.category.textContent = 'Please select a category.';
-        isValid = false;
-      }
-  
-      // Description
-      if (!formData.get('description')) {
-        errors.description.textContent = 'Description is required.';
-        isValid = false;
-      }
-  
-      // Images
-      if (imageArray.length < 3) {
-        errors.images.textContent = 'Please upload at least 3 images.';
-        isValid = false;
-      }
-  
-      return isValid;
-    }
-  
-    // Handle form submission
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-  
-      const formData = removeFromFormData(new FormData(e.target), 'images');
-      const tags = formData.get('ingredients') || '';
-      const arrayIngredients = tags.split(',').map((tag) => tag.trim()).filter((tag) => tag);
-      formData.set('ingredients', arrayIngredients);
-      formData.set('categoryname', categorySelection);
-  
-      if (!validateForm(formData)) {
-        return;
-      }
-  
-      imageArray.forEach((image) => {
-        formData.append('images', image);
-      });
-  
-      const fetchResult = await fetch('/admin/products/addproduct', {
-        method: 'post',
-        body: formData,
-      });
-  
-      const fetchResultJSON = await fetchResult.json();
-  
-      if (fetchResultJSON.saved) {
-        alert('Product added successfully!');
-        location.assign('/admin/products');
+        
+        fileNameDisplay.textContent = selectedFile.name;
+        removeFileButton.style.display='none'
+        handleCrop(selectedFile);
+
       } else {
-        alert('Failed to add product. Please try again.');
+        fileNameDisplay.textContent = 'No file chosen';
       }
     });
-  
-    // Helper function to remove a key from FormData
-    function removeFromFormData(formData, keyToRemove) {
-      const newFormData = new FormData();
-      for (let [key, value] of formData.entries()) {
-        if (key !== keyToRemove) {
-          newFormData.append(key, value);
+
+    removeFileButton.addEventListener('click', () => {
+      fileInputDiv.remove();
+    });
+  });
+
+  // Handle cropping
+  function handleCrop(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      cropperImage.src = reader.result;
+      cropModal.classList.remove('hidden');
+      cropper = new Cropper(cropperImage, {
+        aspectRatio: NaN,
+        viewMode: 1,
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Cancel cropping
+  cropCancel.addEventListener('click', () => {
+    cropModal.classList.add('hidden');
+    cropper?.destroy();
+  });
+
+  // Save cropped image
+  cropSave.addEventListener('click', () => {
+    const croppedCanvas = cropper.getCroppedCanvas();
+    croppedCanvas.toBlob((blob) => {
+      const newFile = new File([blob], 'cropped-image.jpg', { type: 'image/jpeg' });
+      imageArray.push(newFile);
+    });
+    cropModal.classList.add('hidden');
+    cropper?.destroy();
+  });
+
+  // Form validation
+  function validateForm(formData) {
+    let isValid = true;
+
+    // Reset error messages
+    Object.values(errors).forEach((error) => {
+      error.textContent = '';
+    });
+
+    // Product name: Minimum 3 characters
+    const productName = formData.get('productname');
+    if (!productName || productName.length < 3) {
+      errors.productname.textContent = 'Product name must be at least 3 characters long.';
+      isValid = false;
+    }
+
+    // Price: Must be a positive number
+    const price = formData.get('regularprice');
+    if (!price || price <= 0) {
+      errors.price.textContent = 'Price must be a positive number.';
+      isValid = false;
+    }
+
+    // Stock: Must be a positive number
+    const stock = formData.get('stock');
+    if (!stock || stock <= 0) {
+      errors.stock.textContent = 'Stock must be a positive number.';
+      isValid = false;
+    }
+    const discountpercentage = formData.get('discountpercentage');
+    if (!discountpercentage || discountpercentage <= 0) {
+      errors.discountpercentage.textContent = 'discountpercentage must be a positive number.';
+      isValid = false;
+    }
+    // Category: Required
+    if (!formData.get('category')) {
+      errors.category.textContent = 'Please select a category.';
+      isValid = false;
+    }
+
+    // Description: Required
+    if (!formData.get('description')) {
+      errors.description.textContent = 'Description is required.';
+      isValid = false;
+    }
+
+    // Images: Validate number and file type
+    if (imageArray.length < 3) {
+      errors.images.textContent = 'Please upload at least 3 images.';
+      isValid = false;
+    } else {
+      for (const image of imageArray) {
+        if (!['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(image.type)) {
+          errors.images.textContent = 'All uploaded files must be valid image formats (JPEG, PNG, GIF, or WebP).';
+          isValid = false;
+          break;
         }
       }
-      return newFormData;
     }
-  
-    function back() {
+
+    return isValid;
+  }
+
+  // Handle form submission
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = removeFromFormData(new FormData(e.target), 'images');
+    const tags = formData.get('ingredients') || '';
+    const arrayIngredients = tags.split(',').map((tag) => tag.trim()).filter((tag) => tag);
+    formData.set('ingredients', arrayIngredients);
+    formData.set('categoryname', categorySelection);
+
+    if (!validateForm(formData)) {
+      return;
+    }
+
+    imageArray.forEach((image) => {
+      formData.append('images', image);
+    });
+
+    const fetchResult = await fetch('/admin/products/addproduct', {
+      method: 'post',
+      body: formData,
+    });
+
+    const fetchResultJSON = await fetchResult.json();
+
+    if (fetchResultJSON.saved) {
+      alert('Product added successfully!');
       location.assign('/admin/products');
+    } else {
+      alert('Failed to add product. Please try again.');
     }
   });
+
+  // Helper function to remove a key from FormData
+  function removeFromFormData(formData, keyToRemove) {
+    const newFormData = new FormData();
+    for (let [key, value] of formData.entries()) {
+      if (key !== keyToRemove) {
+        newFormData.append(key, value);
+      }
+    }
+    return newFormData;
+  }
+
+  document.getElementById('backbtn').addEventListener('click', (e) => {
+    location.assign('/admin/products');
+  });
+});
+
   </script>
   
 </body>

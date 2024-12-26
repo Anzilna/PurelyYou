@@ -219,7 +219,7 @@
         <button
           type="button"
           class="px-4 py-2 text-black border border-black rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-gray-400"
-          onclick="back()"
+          id="backbtn"
         >
           Cancel
         </button>
@@ -459,7 +459,7 @@ if (defaultSelectedOption) {
         .split(",")
         .map((tag) => tag.trim())
         .filter((tag) => tag);
-      formData.set("ingredients", JSON.stringify(arrayIngredients));
+      formData.set("ingredients", arrayIngredients);
       formData.set("categoryname", categorySelection);
       formData.set("id", id);
 
@@ -498,7 +498,9 @@ if (defaultSelectedOption) {
       }
       return newFormData;
     }
-
+   document.getElementById('backbtn').addEventListener('click',(e)=>{
+      location.assign('/admin/products')
+   })
   
 
     // function deleteImage() {
