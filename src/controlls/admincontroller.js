@@ -1,6 +1,6 @@
-const { AdminModel,CategoryModel,ProductModel } = require("../../model/adminmodel");
+const { AdminModel,CategoryModel,ProductModel, CouponModel } = require("../../model/adminmodel");
 const functions = require("../functions/functions");
-const {User}=require('../../model/usermodel')
+const {User,Order}=require('../../model/usermodel')
 const bcrypt=require('bcrypt')
 const jwtTokenCreation = require("../functions/jwttoken");
 const passport = require("passport");
@@ -98,21 +98,19 @@ module.exports.adminCategoriesEditPut = async (req, res) => {
     const { categoryId,categoryName,isActive,description } = req.body;
     const image = req.file ? req.file.filename : null;
 
-    // Find the category by its identifier (assumes req.params.id contains the category ID)
     const updatedCategory = await CategoryModel.findById(categoryId);
 
     if (!updatedCategory) {
       return res.status(404).json({ error: "Category not found" });
     }
      const status=isActive==='true'?true:false
-    // Update the fields conditionally
     if (categoryName) updatedCategory.categoryname = categoryName;
     if (description) updatedCategory.description = description;
     if (isActive) updatedCategory.isActive = status;
-    if (image) updatedCategory.image = image; // Only update if an image is sent
+    if (image) updatedCategory.image = image; 
 
     await updatedCategory.validate();
-    await updatedCategory.save(); // Save changes to the database
+    await updatedCategory.save(); 
 
     res.status(200).json({ saved: "Category updated successfully", updatedCategory });
   } catch (error) {
@@ -166,6 +164,22 @@ module.exports.adminProductsEdit = async(req, res) => {
   }
  
 };
+
+
+module.exports.filter= async(req, res) => {
+  const filterBasedOn = req.query.stockstatus
+  console.log(id);
+  try {
+    const products =await ProductModel.find({stockstatus:filterBasedOn}) 
+    
+    
+    res.render("admin/editProduct",{products,subroute:"products",mainroute:'editproducts',title:"Editproducts",side:"Products"});
+  } catch (error) {
+    console.log("error in category id fetching");
+  }
+ 
+};
+
 module.exports.adminProductsRemoveImage= async(req, res) => {
   const {image,id} = req.body
 
@@ -215,13 +229,11 @@ module.exports.adminProductsEditPost = async (req, res) => {
     discountpercentage,
   } = req.body;
 
-  // Process uploaded files
   files.forEach(({ filename }) => {
     images.push(`${/uploads/}${filename}`);
   });
 
   try {
-    // Fetch the existing product by ID
     const product = await ProductModel.findById(id);
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
@@ -345,7 +357,6 @@ try {
 
 
 
-//customers or user session
 module.exports.adminUserDelete = async(req, res) => {
 const id = req.params.id
 console.log(id);
@@ -373,6 +384,52 @@ try {
     
 }
 };
+
+
+module.exports.adminOffers= async(req, res) => {
+
+  try {
+      
+      res.render("admin/offers",{route:"offers",mainroute:'addoffers',title:"Offers",side:"Offers"});
+  } catch (error) {
+      console.log(error);
+      
+  }
+  };
+
+  module.exports.adminAddOffersPost = async(req, res) => {
+
+   console.log(req.body);
+   
+    };
+  module.exports.  adminAddOffersGet  = async(req, res) => {
+
+    try {
+        
+        res.render("admin/addoffers",{subroute:'offers',mainroute:"addoffers",title:"Offers",side:"Offers"});
+    } catch (error) {
+        console.log(error);
+        
+    }
+    };
+  
+module.exports.adminOrders= async(req, res) => {
+
+  try {
+      const Orders=await Order.find().sort({updatedAt:-1})
+      
+      res.render("admin/orders",{Orders,route:"orders",title:"Orders",side:"Orders"});
+  } catch (error) {
+      console.log(error);
+      
+  }
+  };
+  module.exports.adminOrdersPut= async(req, res) => {
+
+    console.log(req.body);
+    
+    };
+  
 module.exports.adminCustomersAdd = (req, res) => {
   res.render("admin/addCustomers",{subroute:"customers",mainroute:'addcustomers',title:"AddCustomers",side:"Customers"});
 };
@@ -402,28 +459,88 @@ module.exports.adminCustomersEditPut = async (req, res) => {
   const { email, status, username, id, password = null } = req.body;
 
   try {
-      // Fetch user by ID
       const user = await User.findById(id);
       if (!user) {
           return res.status(404).json({ error: "User not found" });
       }
 
-      // Update fields only if they are provided
       if (password && password.trim() !== '') {
-          user.password = password; // This will trigger the pre-save middleware
+          user.password = password; 
       }
       if (email) user.email = email;
       if (status) user.status = status;
       if (username) user.username = username;
 
-      // Save updated user
       await user.save();
       res.status(200).json({ updated: "User updated successfully" });
   } catch (error) {
       console.error(error);
 
-      // Handle errors
       const afterErrorHandling = functions.errorHandling(error);
       res.status(500).json({ err: afterErrorHandling });
   }
 };
+
+module.exports.adminOrdersDetailsGet = async (req, res) => {
+  try {
+    const orderId = req.params.id
+    const order = await Order.findById(orderId).populate('items.productId')
+    console.log(orderId);
+    
+    res.render("admin/orderDetails",{order,subroute:"orders",mainroute:'orderdetails',title:"Orderdetails",side:"Orders"});
+  } catch (error) {
+    console.log(error);
+    
+  }
+
+};
+
+module.exports.adminCoupons = async (req, res) => {
+  try {
+    // const orderId = req.params.id
+    // const order = await Order.findById(orderId).populate('items.productId')
+    // console.log(orderId);
+    
+    res.render("admin/Coupons",{route:'coupons',title:"Coupons",side:"Coupons"});
+  } catch (error) {
+    console.log(error);
+    
+  }
+
+};
+
+
+
+module.exports.adminAddCoupon = async (req, res) => {
+  try {
+    res.render("admin/addCoupon",{subroute:"coupons",mainroute:'addcoupons',title:"Addcoupons",side:"Coupons"});
+  } catch (error) {
+    console.log(error);
+    
+  }
+
+};
+
+
+module.exports.couponDetailsGet = async (req, res) => {
+  try {
+    const coupon = await CouponModel.findById(req.params.id);
+
+    if (!coupon) {
+      return res.status(404).send("Coupon not found");
+    }
+
+    res.render("admin/editCoupon", {
+      subroute: "coupons",
+      mainroute: "editcoupons",
+      title: "Edit Coupons",
+      side: "Coupons",
+      coupon: coupon 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+};
+
+

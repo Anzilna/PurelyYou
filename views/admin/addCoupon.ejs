@@ -1,0 +1,246 @@
+<%- include("partials/adminHeader"); -%>
+<body class="bg-gray-100 font-sans text-gray-800">
+  <%- include("partials/sidebar"); -%>
+  <%- include("partials/Head"); -%>
+
+  <div class="p-6 mt-3">
+    <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-8">
+      <h2 class="text-3xl font-semibold text-black mb-8 text-center">Add a New Coupon</h2>
+      <form class="space-y-6" id="coupon-form">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Coupon Code</label>
+            <div class="error text-red-500 mb-1" id="error-couponCode"></div>
+            <input
+              type="text"
+              name="couponCode"
+              placeholder="Enter coupon code"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+              oninput="this.value = this.value.toUpperCase()"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Discount Percentage</label>
+            <div class="error text-red-500 mb-1" id="error-discount"></div>
+            <input
+              type="number"
+              name="discountPercentage"
+              placeholder="Enter discount percentage"
+              min="1"
+              max="100"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Start Date</label>
+            <div class="error text-red-500 mb-1" id="error-startDate"></div>
+            <input
+              type="date"
+              name="startDate"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">End Date</label>
+            <div class="error text-red-500 mb-1" id="error-endDate"></div>
+            <input
+              type="date"
+              name="endDate"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Minimum Amount</label>
+            <div class="error text-red-500 mb-1" id="error-minAmount"></div>
+            <input
+              type="number"
+              name="minAmount"
+              placeholder="Enter minimum amount"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+              min="0"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Maximum Amount</label>
+            <div class="error text-red-500 mb-1" id="error-maxAmount"></div>
+            <input
+              type="number"
+              name="maxAmount"
+              placeholder="Enter maximum amount"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+              min="0"
+            />
+          </div>
+
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-medium text-black mb-1">Eligibility Criteria</label>
+            <div class="error text-red-500 mb-1" id="error-eligibilityCriteria"></div>
+            <textarea
+              name="eligibilityCriteria"
+              placeholder="Describe eligibility criteria for the coupon"
+              rows="3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+            ></textarea>
+          </div>
+
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-medium text-black mb-1">Description</label>
+            <div class="error text-red-500 mb-1" id="error-description"></div>
+            <textarea
+              name="description"
+              placeholder="Type description here"
+              rows="3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+              required
+            ></textarea>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">Usage Limit</label>
+          <div class="error text-red-500 mb-1" id="error-usageLimit"></div>
+          <input
+            type="number"
+            name="usageLimit"
+            placeholder="Enter usage limit"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            min="1"
+          />
+          <div class="mt-2 flex items-center">
+            <input
+              type="checkbox"
+              id="no-usage-limit"
+              name="noUsageLimit"
+              class="mr-2"
+            />
+            <label for="no-usage-limit" class="text-sm font-medium text-black">No usage limit</label>
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center mt-6">
+          <button
+            type="button"
+            class="px-6 py-2 text-black border border-black rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-gray-400"
+            onclick="back()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-black"
+          >
+            Create Coupon
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('coupon-form');
+
+    form.querySelectorAll('input, textarea').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const errorElement = document.getElementById(`error-${e.target.name}`);
+        if (errorElement) {
+          errorElement.textContent = ''; 
+        }
+      });
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
+
+      // Retrieve form data
+      const couponCode = form.couponCode.value.trim();
+      const discountPercentage = form.discountPercentage.value.trim();
+      const startDate = form.startDate.value;
+      const endDate = form.endDate.value;
+      const minAmount = form.minAmount.value.trim();
+      const maxAmount = form.maxAmount.value.trim();
+      const eligibilityCriteria = form.eligibilityCriteria.value.trim();
+      const description = form.description.value.trim();
+      const usageLimit = form.usageLimit.value.trim();
+      const noUsageLimit = form.noUsageLimit.checked;
+
+      let isValid = true;
+
+      // Validate coupon code
+      if (!couponCode) {
+        document.getElementById('error-couponCode').textContent = 'Coupon code is required.';
+        isValid = false;
+      }
+
+      // Validate discount percentage
+      if (!discountPercentage || isNaN(discountPercentage) || discountPercentage <= 0 || discountPercentage > 100) {
+        document.getElementById('error-discount').textContent = 'Enter a valid discount percentage (1-100).';
+        isValid = false;
+      }
+
+      if (!startDate || !endDate || new Date(startDate) >= new Date(endDate)) {
+        document.getElementById('error-endDate').textContent = 'End date must be later than the start date.';
+        isValid = false;
+      }
+
+      if (!noUsageLimit && (!usageLimit || isNaN(usageLimit) || usageLimit <= 0)) {
+        document.getElementById('error-usageLimit').textContent = 'Enter a valid usage limit.';
+        isValid = false;
+      }
+
+      if (!isValid) {
+        return; 
+      }
+
+      const formData = new FormData(e.target);
+      const formObject = {};
+      formData.forEach((value, key) => {
+        formObject[key] = value;
+      });
+      formObject.noUsageLimit = noUsageLimit;
+
+      try {
+        const response = await fetch('/admin/coupons/addcoupon/fetch', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formObject), 
+        });
+
+        const result = await response.json();
+
+        if (result.saved) {
+          location.assign('/admin/coupons');
+        } else if (result.errors) {
+          Object.entries(result.errors).forEach(([key, error]) => {
+            const errorElement = document.getElementById(`error-${key}`);
+            if (errorElement) {
+              errorElement.textContent = error;
+            }
+          });
+        }
+      } catch (err) {
+        alert('Error while submitting the form. Please try again.');
+      }
+    });
+
+    function back() {
+      location.assign('/admin/coupons');
+    }
+  </script>
+</body>
+</html>

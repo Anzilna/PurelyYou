@@ -1,0 +1,220 @@
+<%- include("partials/header"); -%>
+<body class="mt-[90px] bg-gray-50 font-roboto">
+  <%- include("partials/navbar"); -%> <%-
+  include("partials/headerForUserManagement"); -%>
+
+  <div class="grid-cols-12 grid p-14 gap-3">
+    <!-- User management side bar -->
+    <%- include("partials/sidebarForUserManagement"); -%>
+
+    <div class="col-span-8">
+      <div class="font-light text-lg pb-[40px] flex justify-start">
+        <p>Edit your account details below</p>
+      </div>
+      <div class="grid grid-cols-12 gap-7">
+        <div class="col-span-8 bg-white">
+          <div class="p-4 grid grid-cols-1 gap-3">
+            <div class="flex text-sm justify-start font-medium">
+              Edit Details
+            </div>
+            <div class="flex flex-col">
+              <div id="editDetails" class="w-full mt-2">
+                <form id="editDetailsForm" action="">
+                  <div class="flex flex-col gap-2">
+                    <div class="text-xs">Personal Information</div>
+                    <div>
+                      <label for="name" class="text-sm">Name</label>
+                      <input
+                        class="w-full border focus:outline-none focus:border-transparent p-2"
+                        type="text"
+                        id="name"
+                        name="name"
+                        value="<%= user.username || '' %>"
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+                    <div>
+                      <label for="email" class="text-sm">Email</label>
+                      <input
+                        class="w-full border focus:outline-none focus:border-transparent p-2"
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="<%= user.email || '' %>"
+                        readonly
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+                    <div>
+                      <label for="phone" class="text-sm">Phone</label>
+                      <input
+                        class="w-full border focus:outline-none focus:border-transparent p-2"
+                        type="text"
+                        id="phone"
+                        name="phone"
+                        value="<%= user.phone || '' %>"
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+                    <div>
+                      <label for="dob" class="text-sm">Date of Birth</label>
+                      <input
+                        class="w-full border focus:outline-none focus:border-transparent p-2"
+                        type="date"
+                        id="dob"
+                        name="dob"
+                        value="<%= user.dob ? user.dob.toISOString().split('T')[0] : '' %>"
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+                  </div>
+                  <div class="justify-center flex flex-col mt-2">
+                    <div class="flex justify-center">
+                      <button
+                        type="submit"
+                        class="mt-2 py-[15px] px-[80px] bg-black text-white text-xs"
+                      >
+                        Save
+                      </button>
+                    </div>
+                    <div class="flex justify-center">
+                      <button
+                        type="button"
+                        class="mt-2 py-3 px-[70px] text-xs"
+                        onclick="cancel()"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Right space -->
+    </div>
+  </div>
+  <div id="notification" class="hidden"></div>
+
+  <script>
+    document
+      .getElementById("editDetailsForm")
+      .addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const form = event.target;
+
+        // Validate form data before submission
+        if (!validateForm(form)) {
+          showNotification("Please correct the highlighted fields.");
+          return;
+        }
+
+        const formData = new FormData(form);
+        const formObject = {};
+        formData.forEach((value, key) => {
+          formObject[key] = value;
+        });
+
+        try {
+          const response = await fetch("/accountsettings/mydetailsedit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(formObject),
+          });
+
+          if (response.ok) {
+            location.assign("/accountsettings");
+            showNotification("Details updated successfully!");
+          } else {
+            const result = await response.json();
+            showNotification(result.message || "Failed to update details.");
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showNotification("Failed to update details. Please try again.");
+        }
+      });
+
+    function showNotification(message) {
+      const notification = document.getElementById("notification");
+
+      notification.className = "";
+
+      notification.classList.add(
+        "p-4",
+        "mb-4",
+        "text-sm",
+        "rounded-lg",
+        "fixed",
+        "bottom-10",
+        "right-4",
+        "z-50",
+        "min-w-[150px]",
+        "text-white",
+        "bg-black",
+        "dark:bg-gray-800",
+        "dark:text-green-400",
+        "role",
+        "alert"
+      );
+
+      notification.innerHTML = ` ${message}`;
+
+      notification.classList.remove("hidden");
+
+      setTimeout(() => {
+        hideNotification();
+      }, 5000);
+    }
+
+    function hideNotification() {
+      const notification = document.getElementById("notification");
+      notification.className = "hidden";
+    }
+
+    function cancel() {
+      location.assign("/accountsettings");
+    }
+
+    function validateForm(form) {
+      let isValid = true;
+      const requiredFields = ["name", "phone", "dob"];
+
+      requiredFields.forEach((field) => {
+        const input = form.querySelector(`[name="${field}"]`);
+        const errorSpan = input.nextElementSibling;
+
+        if (!input.value.trim()) {
+          isValid = false;
+          input.classList.add("border-red-500");
+          if (errorSpan) errorSpan.textContent = `${field} is required.`;
+        } else {
+          input.classList.remove("border-red-500");
+          if (errorSpan) errorSpan.textContent = "";
+        }
+
+        input.addEventListener("input", () => {
+          input.classList.remove("border-red-500");
+          if (errorSpan) errorSpan.textContent = "";
+        });
+      });
+
+      const phone = form.querySelector("[name='phone']");
+      if (phone && !/^\d{10}$/.test(phone.value)) {
+        isValid = false;
+        phone.classList.add("border-red-500");
+        phone.nextElementSibling.textContent =
+          "Phone number must be 10 digits.";
+      }
+
+      return isValid;
+    }
+  </script>
+
+  <%- include('partials/footer'); -%>
+</body>

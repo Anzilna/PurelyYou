@@ -7,6 +7,7 @@
 
 <div class="grid-cols-12 grid p-14 gap-3">
 
+   <!-- User management sidebar -->
    <%- include("partials/sidebarForUserManagement"); -%>
 
     <div class="col-span-8 ">
@@ -67,14 +68,9 @@
         </div>
     </div>
 </div>
-<%- include('partials/footer'); -%>
 
 <script>
-    function editdetails(id) {
-        console.log(id);
-        location.assign(`/accountsettings/mydetailsedit/`);
-    }
+
 </script>
 
-</body>
-</html>
+<%- include('partials/footer'); -%>

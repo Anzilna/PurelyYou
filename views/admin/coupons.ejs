@@ -1,0 +1,160 @@
+<!-- Main Container -->
+<%- include("partials/adminHeader"); -%>
+<%- include("partials/sidebar"); -%>
+<%- include("partials/Head"); -%>
+
+<div class="p-6">
+  <div class="h-auto flex flex-col">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold">Coupons</h3>
+      <a href="/admin/coupons/addcoupon">
+        <button class="bg-black text-white py-2 px-3 rounded-md">Add Coupons</button>
+      </a>
+    </div>
+
+    <div id="fulltable" class="overflow-hidden rounded-lg shadow-md max-h-[500px] overflow-y-auto">
+      <table class="table-auto w-full text-left border border-white">
+        <thead class="bg-white">
+          <tr>
+            <th class="px-6 py-4">Coupon Code</th>
+            <th class="px-6 py-4">Discount Percentage</th>
+            <th class="px-6 py-4">Status</th>
+            <th class="px-6 py-4">Usage Count</th>
+            <th class="px-6 py-4">End Date</th>
+            <th class="px-6 py-4 text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody id="couponsTableBody" class="divide-y divide-gray-300 border bg-white">
+        </tbody>
+      </table>
+    </div>
+
+    <div id="noCouponsMessage" class="p-6 hidden">
+      <p class="text-center text-gray-500">No Coupons found.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="editCouponModal" tabindex="-1" aria-labelledby="editCouponModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCouponModalLabel">Edit Coupon</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="error text-red-500 mb-1" id="error-select"></div>
+        <select id="couponStatus" class="w-full py-2 px-2 border-1 rounded-md border-black">
+          <option value="" selected>Select an option</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="bg-white text-black border-1 border-black rounded-md py-2 px-3" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="bg-black text-white border-1 border-black rounded-md py-2 px-3" id="confirmCouponButton">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const couponsTableBody = document.getElementById("couponsTableBody");
+    const noCouponsMessage = document.getElementById("noCouponsMessage");
+    const fulltable = document.getElementById("fulltable");
+
+    async function fetchCoupons() {
+      try {
+        const response = await fetch("/admin/coupons/fetch", {
+          method: 'GET'
+        });
+        const data = await response.json();
+
+        if (data.coupons && data.coupons.length > 0) {
+          noCouponsMessage.classList.add("hidden");
+          fulltable.classList.remove("hidden");
+
+          data.coupons.forEach((coupon) => {
+            const row = document.createElement("tr");
+            row.classList.add("hover:bg-gray-100", "min-h-[50px]", "cursor-pointer");
+            row.setAttribute("onclick", `handleRowClick('${coupon._id}')`);
+            row.innerHTML = `
+              <td class="px-6 py-3">${coupon.couponCode}</td>
+              <td class="px-6 py-3">${coupon.discountPercentage}%</td>
+              <td class="px-6 py-3 ${coupon.status === "active" ? "text-green-500" : "text-red-500"}">
+                ${coupon.status}
+              </td>
+              <td class="px-6 py-3">${coupon.usageLimit===null?"no limit":coupon.usageLimit}</td>
+              <td class="px-6 py-3">${new Date(coupon.endDate).toLocaleDateString()}</td>
+              <td class="px-6 py-3 text-right">
+                <button
+                  class="text-gray-600 hover:text-black mx-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#editCouponModal"
+                  data-coupon-id="${coupon._id}">
+                  <i class="bi bi-card-checklist"></i>
+                </button>
+              </td>
+            `;
+            couponsTableBody.appendChild(row);
+          });
+        } else {
+          noCouponsMessage.classList.remove("hidden");
+          fulltable.classList.add("hidden");
+        }
+      } catch (error) {
+        console.error("Error fetching coupons:", error);
+
+        noCouponsMessage.classList.remove("hidden");
+        fulltable.classList.add("hidden");
+      }
+    }
+
+    fetchCoupons();
+
+    let couponIdToEdit = null;
+    const editCouponModal = document.getElementById("editCouponModal");
+    const confirmCouponButton = document.getElementById("confirmCouponButton");
+    const errorSelect = document.getElementById("error-select");
+
+    editCouponModal.addEventListener("show.bs.modal", (event) => {
+      const button = event.relatedTarget;
+      couponIdToEdit = button.getAttribute("data-coupon-id");
+    });
+
+    confirmCouponButton.addEventListener("click", async () => {
+      if (!couponIdToEdit) return;
+
+      const couponStatus = document.getElementById("couponStatus").value;
+      if (!couponStatus) {
+        errorSelect.textContent = "Please select a valid option.";
+        return;
+      }
+
+      try {
+        const response = await fetch(`/admin/coupons/editcoupon/${couponIdToEdit}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: couponStatus }),
+        });
+
+        const result = await response.json();
+        if (result.updated) {
+          location.reload();
+        } else {
+          alert("Failed to update coupon status.");
+        }
+      } catch (error) {
+        console.error("Error updating coupon status:", error);
+        alert("An error occurred while updating the coupon status.");
+      }
+    });
+  });
+
+  function handleRowClick(couponId) {
+    console.log("Row clicked! Coupon ID:", couponId);
+    location.assign(`/admin/coupons/coupondetails/${couponId}`);
+  }
+</script>

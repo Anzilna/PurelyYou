@@ -1,84 +1,105 @@
-
-<div class="fixed px-5 top-0 left-0 z-50 bg-white flex w-full h-auto border-b-2 border-gray-100 shadow-black ">
-    <!-- Left -->
-    <div id="left-div" class="flex justify-center items-center w-auto md:w-1/2 p-4">
-      <a href="/user/home" class="text-2xl font-bold text-gray-900">PurelyYou.</a>
-    </div>
-  
-    <div class="flex-grow flex justify-center items-center">
-        <div class="hidden lg:flex bg-white flex-row space-x-6">
-          <div class="flex justify-center items-center ">
-            <a href="/user/home" class="text-black group">
-              <p class="relative inline-block">
-        Home               
-         <span class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-              </p>
-            </a>
-          </div>
-          <div class="flex justify-center items-center ">
-            <a href="/user/home/products/viewallproducts/11?viewid=shopall" class="text-black group">
-              <p class="relative inline-block">
-        Shop               
-         <span class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-              </p>
-            </a>
-          </div>
-          <% if(category){ %>
-            <% category.forEach(cat => { %>
-              <div class="flex justify-center items-center " >
-                <a href="<%=`/user/home/products/viewallproducts/${cat._id}?viewid=allcategory`  %>" class="text-black group">
-                  <p class="relative inline-block">
-                    <%= cat.categoryname %>
-                    <span class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-                  </p>
-                </a>
-              </div>
-            <% }); %>
-          <% } %>
-          <div class="flex justify-center items-center ">
-            <a href="" class="text-black group">
-              <p class="relative inline-block">
-                About Us     
-                <span class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-              </p>
-            </a>
-          </div>
-        </div>
-      </div>
-      
-  
-    <!-- Right -->
-    <div id="right-div" class="flex gap-4 mr-4 text-xl justify-center font-normal text-black items-center">
-    
-      <a href="" class="text-black text-xl pr-1 flex justify-center items-center">
-        <i class="bi bi-search "></i>
-      </a>
-     
-      <a href="/user/home/shoppingcart" class="text-black text-xl p-0 flex justify-center items-center">
-        <i class="bi bi-bag "></i>
-      </a>
-      <% if(localsUser){ %>
-      <a href="/user/home/accountsettings" class="text-black text-xl p-0 flex justify-center items-center">
-        <i class="bi bi-person " style="font-size: 27px;"></i>
-      </a>
-      
-      
-      <a href="/user/logout" class="text-black text-xl pr-[4px] pt-[1px] flex justify-center items-center">
-        <i class="bi bi-box-arrow-left  " style="font-size: 25px;"></i>
-      </a>
-      <% }else{ %>
-        <div class="flex justify-center items-center ">
-          <a href="/user/login" class="text-black group">
-            <p class="relative inline-block">
-              login
-              <span class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></span>
-            </p>
-          </a>
-        </div>
-        <% } %>
-    </div>
-    
-    
-   
+<div
+  class="fixed px-5 py-2 top-0 left-0 z-50 bg-white flex justify-between w-full h-auto border-b-2 border-gray-100 shadow-black"
+>
+  <div id="left-div" class="flex justify-center items-center w-auto p-4">
+    <a href="/" class="text-2xl font-bold text-gray-900">PurelyYou.</a>
   </div>
-  
+
+  <div class="flex-grow flex justify-center items-center">
+    <div class="hidden lg:flex bg-white flex-row space-x-6">
+      <div class="flex justify-center items-center">
+        <a href="/" class="text-black group">
+          <p class="relative inline-block">
+            Home
+            <span
+              class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+            ></span>
+          </p>
+        </a>
+      </div>
+      <div class="flex justify-center items-center">
+        <a
+          href="/products/viewallproducts/11?viewid=shopall"
+          class="text-black group"
+        >
+          <p class="relative inline-block">
+            Shop
+            <span
+              class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+            ></span>
+          </p>
+        </a>
+      </div>
+      <% if(category){ %> <% category.forEach(cat => { %>
+      <div class="flex justify-center items-center">
+        <a
+          href="<%=`/products/viewallproducts/${cat._id}?viewid=allcategory` %>"
+          class="text-black group"
+        >
+          <p class="relative inline-block">
+            <%= cat.categoryname %>
+            <span
+              class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+            ></span>
+          </p>
+        </a>
+      </div>
+      <% }); %> <% } %>
+      <div class="flex justify-center items-center">
+        <a href="" class="text-black group">
+          <p class="relative inline-block">
+            About Us
+            <span
+              class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+            ></span>
+          </p>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div
+    id="right-div"
+    class="flex gap-4 mr-4 text-xl justify-center font-normal text-black items-center"
+  >
+    <a
+      href="/favourites"
+      class="text-black text-xl pr-1 flex justify-center items-center"
+    >
+      <i class="bi bi-heart"></i>
+    </a>
+
+    <a
+      href="/shoppingcart"
+      class="text-black text-xl p-0 flex justify-center items-center"
+    >
+      <i class="bi bi-bag"></i>
+    </a>
+    <% if(localsUser){ %>
+    <a
+      href="/accountsettings"
+      class="text-black text-xl p-0 flex justify-center items-center"
+    >
+      <i class="bi bi-person" style="font-size: 27px"></i>
+    </a>
+
+    <a
+      href="/logout"
+      class="text-black text-xl pr-[4px] pt-[1px] flex justify-center items-center"
+    >
+      <i class="bi bi-box-arrow-left" style="font-size: 25px"></i>
+    </a>
+    <% }else{ %>
+    <div class="flex justify-center items-center">
+      <a href="/login" class="text-black group">
+        <p class="relative inline-block">
+          login
+          <span
+            class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+          ></span>
+        </p>
+      </a>
+    </div>
+    <% } %>
+  </div>
+</div>

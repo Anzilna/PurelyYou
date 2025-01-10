@@ -21,7 +21,6 @@ try {
     }
     else{
       console.log(profile);
-         // Safely access the email
          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
 
          if (!email) {

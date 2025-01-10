@@ -140,8 +140,142 @@ const ProductSchema=new mongoose.Schema({
 },{
     timestamps:true
 })
+
+const offerSchema = new mongoose.Schema({
+  offername: {
+    type: String,
+    required: [true, 'Offer name is required.'],
+    trim: true,
+    minlength: [3, 'Offer name must be at least 3 characters long.'],
+    maxlength: [100, 'Offer name must not exceed 100 characters.'],
+  },
+  discountPercentage: {
+    type: Number,
+    required: [true, 'Discount percentage is required.'],
+    min: [1, 'Discount percentage must be at least 1.'],
+    max: [100, 'Discount percentage cannot exceed 100.'],
+  },
+  startDate: {
+    type: Date,
+    required: [true, 'Start date is required.'],
+  },
+  endDate: {
+    type: Date,
+    required: [true, 'End date is required.'],
+    validate: {
+      validator: function (value) {
+        return value > this.startDate;
+      },
+      message: 'End date must be later than the start date.',
+    },
+  },
+  eligibilityCriteria: {
+    type: String,
+    required: [true, 'Eligibility criteria are required.'],
+    trim: true,
+    minlength: [10, 'Eligibility criteria must be at least 10 characters long.'],
+  },
+  description: {
+    type: String,
+    required: [true, 'Description is required.'],
+    trim: true,
+    minlength: [10, 'Description must be at least 10 characters long.'],
+  },
+});
+
+offerSchema.pre('save', function(next) {
+  if (this.startDate) {
+    this.startDate = new Date(this.startDate);
+  }
+
+  if (this.endDate) {
+    this.endDate = new Date(this.endDate);
+  }
+
+  next();  
+});
+
+
+ProductSchema.pre('save', function (next) {
+  if (this.stock > 10) {
+    this.stockstatus = 'Available';
+  } else if (this.stock <= 10 && this.stock > 0) {
+    this.stockstatus = 'Low Quantity';
+  } else {
+    this.stockstatus = 'Out Of Stock';
+  }
+  
+  next(); 
+});
+
+const couponSchema = new mongoose.Schema(
+  {
+    couponCode: {
+      type: String,
+      required: true,
+      unique: true, 
+      uppercase: true, 
+    },
+    discountPercentage: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 100,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
+    },
+    minAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    maxAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    eligibilityCriteria: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    usageLimit: {
+      type: Number,
+      required: function () {
+        return !this.noUsageLimit; 
+      },
+    },
+    noUsageLimit: {
+      type: Boolean,
+      default: false, 
+    },
+    usedBy: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', 
+    }],
+    status: {
+      type: String,
+      enum: ['active', 'inactive'],
+      default: 'active',
+    },
+  },
+  {
+    timestamps: true, 
+  }
+);
+
 module.exports={
     AdminModel:mongoose.model('admin',adminSchema),
     CategoryModel:mongoose.model('categories',categorySchema),
-    ProductModel:mongoose.model('products',ProductSchema)
+    ProductModel:mongoose.model('products',ProductSchema),
+    CouponModel : mongoose.model('Coupon', couponSchema)
 }

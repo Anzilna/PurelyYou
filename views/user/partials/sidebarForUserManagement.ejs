@@ -1,0 +1,76 @@
+<div class="col-span-4">
+  <div class="font-medium text-2xl pb-[40px] flex justify-center">
+    <p>Account Settings</p>
+  </div>
+  <div class="flex flex-col justify-start bg-white rounded-sm">
+    <a href="/accountsettings">
+      <div
+        class="flex justify-start p-3 border-b h-auto w-auto hover:rounded-xl ease-in hover:text-white hover:bg-black <% if(route.side.includes('Account Settings')){ %> border-r-4 border-r-black <% } %> no-underline duration-200 cursor-pointer"
+      >
+        <div>
+          <h3>
+            <span><i class="bi bi-gear p-2"></i></span>Account Settings
+          </h3>
+        </div>
+      </div>
+    </a>
+
+    <a href="/accountsettings/address">
+      <div
+        class="flex border-b justify-start p-3 h-auto w-auto hover:rounded-xl ease-in hover:text-white hover:bg-black <% if(route.side.includes('Address')){ %> border-r-4 border-r-black <% } %> no-underline duration-200 cursor-pointer"
+      >
+        <div>
+          <h3>
+            <span><i class="bi bi-geo-alt p-2"></i></span>Address
+          </h3>
+        </div>
+      </div>
+    </a>
+    <a href="/accountsettings/orders">
+      <div
+        class="flex border-b justify-start p-3 h-auto w-auto hover:rounded-xl ease-in hover:text-white hover:bg-black <% if(route.side.includes('Orders')){ %> border-r-4 border-r-black <% } %> no-underline duration-200 cursor-pointer"
+      >
+        <div>
+          <h3>
+            <span><i class="bi bi-box-seam p-2"></i></span>Orders
+          </h3>
+        </div>
+      </div>
+    </a>
+    <a href="/accountsettings/wallet">
+      <div
+        class="flex border-b justify-start p-3 h-auto w-auto hover:rounded-xl ease-in hover:text-white hover:bg-black <% if(route.side.includes('Wallet')){ %> border-r-4 border-r-black <% } %> no-underline duration-200 cursor-pointer"
+      >
+        <div>
+          <h3>
+            <span><i class="bi bi-wallet2 p-2"></i></span>Wallet
+          </h3>
+        </div>
+      </div>
+    </a>
+
+    <a href="/inviteafriend">
+      <div
+        class="flex border-b justify-start p-3 h-auto w-auto hover:rounded-xl ease-in hover:text-white hover:bg-black <% if(route.side.includes('Invite a Friend')){ %> border-r-4 border-r-black <% } %> no-underline duration-200 cursor-pointer"
+      >
+        <div>
+          <h3>
+            <span><i class="bi bi-person-fill-add p-2"></i> </span>Invite a
+            Friend
+          </h3>
+        </div>
+      </div>
+    </a>
+    <a href="/logout">
+      <div
+        class="flex border-b justify-start p-3 h-auto w-auto hover:rounded-xl ease-in hover:text-white hover:bg-black <% if(route.side.includes('Log Out')){ %> border-r-4 border-r-black <% } %> no-underline duration-200 cursor-pointer"
+      >
+        <div>
+          <h3>
+            <span><i class="bi bi-box-arrow-left p-2"></i></span>Log out
+          </h3>
+        </div>
+      </div>
+    </a>
+  </div>
+</div>

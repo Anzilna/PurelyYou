@@ -83,7 +83,6 @@
     const imageError=document.getElementById('error-image')
      const descriptionError=document.getElementById('error-description')
      const categorynameError=document.getElementById('error-categoryname')
-    // Handle file change
     fileInput.addEventListener('change', (e) => {
            e.preventDefault();
 
@@ -94,23 +93,21 @@
         choosefile.style.display='none'
       } else {
         fileNameDisplay.textContent = 'No file chosen';
-        removeFileButton.style.display = 'none'; // Hide the "Remove" button if no file is selected
+        removeFileButton.style.display = 'none'; 
       }
     });
 
-    // Clear file input and reset UI when the "Remove" button is clicked
     removeFileButton.addEventListener('click', (e) => {
      e.preventDefault();
-      fileInput.value = ''; // Clear file selection
+      fileInput.value = ''; 
       fileNameDisplay.textContent = 'No file chosen';
       choosefile.style.display='inline'
-      removeFileButton.style.display = 'none'; // Hide the remove button
+      removeFileButton.style.display = 'none'; 
     });
 
-    // Handle form submission
     document.querySelector('form').addEventListener('submit', async(e) => {
       e.preventDefault()
-      console.log('Form submission intercepted'); // Debugging
+      console.log('Form submission intercepted'); 
       imageError.textContent=""
           descriptionError.textContent=""
           categorynameError.textContent=""

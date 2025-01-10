@@ -46,5 +46,5 @@ mongoose.connect(url).then(()=>{
 })
 
 
-app.use('/user',userRoutes)
+app.use('/',userRoutes)
 app.use('/admin',adminRoutes)

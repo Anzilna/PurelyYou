@@ -1,0 +1,16 @@
+<% if(route){ %>
+<div class="routes p-4 flex justify-center w-full">
+  <div class="text-sm font-light flex-row">
+    <a href="/"> <%=route.home %> /</a>
+
+    <% if(route.accountsettings){ %>
+    <a href="/<%= route.accountsettings %>"> <%=route.accountsettings %>/ </a>
+    <% } %> <% if(route.subroute){ %>
+    <a href="/<%= route.accountsettings %>/<%= route.subroute %>">
+      <%=route.subroute %>/
+    </a>
+    <% } %>
+    <a href="" class="text-red-600"><%=route.mainroute %> </a>
+  </div>
+</div>
+<% } %>

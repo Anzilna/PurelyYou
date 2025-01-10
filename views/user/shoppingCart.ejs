@@ -3,14 +3,14 @@
 <body class="mt-[80px] font-roboto">
   <div id="notification" class=" text-sm mt-2 ">
   </div>
-  <div class="h-auto flex flex-col">
+  <div class="min-h-screen flex flex-col">
     <div class="flext justify-start">
       <div class="pt-[80px] pb-4 px-[50px]">
         <h1 class="text-4xl font-light">Shopping Cart</h1>
       </div>
     </div>
 
-    <div class="w-full grid-cols-12 grid py-9 px-[80px] gap-3 " id="soppingCartTable">
+    <div class="w-full grid-cols-12  grid py-9 px-[80px] gap-3 " id="soppingCartTable">
       <div class="col-span-8 rounded-lg">
         <div class="overflow-x-auto rounded-lg">
           <table class="min-w-full bg-white border border-gray-200 rounded-md shadow-sm">
@@ -27,7 +27,7 @@
           </table>
         </div>
       </div>
-      <div class="col-span-4" id="totalBox">
+      <div class="col-span-4 justify-center flex " id="totalBox">
         
       </div>
     </div>
@@ -41,33 +41,30 @@
 const totalBox = document.getElementById('totalBox');
 const shoppingCartTable = document.getElementById('soppingCartTable');
 const cartTableBody = document.getElementById('cartTableBody');
-let quantity = 1; // Initial value
-
+let quantity = 1; 
 async function cartItems() {
   try {
-    const fetchResult = await fetch('/user/home/shoppingcartfetch', {
+    const fetchResult = await fetch('/shoppingcartfetch', {
       method: 'get',
     });
 
     const result = await fetchResult.json();
 
-    if (result.cart && result.cart.items.length>0) {
-      
-      
+    if (result.cart && result.cart.items.length > 0) {
 
       cartTableBody.innerHTML = result.cart.items
         .map(item => `
-          <tr class="border-t border-gray-200 " >
-            <td class="py-4 px-6 flex items-center cursor-pointer" onclick="ProductDetail('${item.productId._id}') ">
+          <tr class="border-t border-gray-200">
+            <td class="py-4 px-6 flex items-center cursor-pointer" onclick="ProductDetail('${item.productId._id}')">
               <img src="${item.productId.images[0]}" alt="Product Image" class="w-[60px] h-[60px] mr-4 object-contain" />
               <div>
                 <p class="text-sm font-medium text-gray-800">${item.productId.productname}</p>
-                <p class="text-sm text-gray-600">₹ ${item.productId.saleprice}</p>
+                <p class="text-xs text-gray-600">Rs. ${item.productId.saleprice}</p>
               </div>
             </td>
             <td class="py-4 px-6 text-center">
               <div class="flex items-center justify-center space-x-4">
-                <div class="flex items-center border max-w-[120px] border-slate-600 space-x-2">
+                <div class="flex items-center border max-w-[120px] border-slate-300 space-x-2">
                   <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity('${item.productId._id}')">-</button>
                   <span id="quantity-${item._id}" class="text-md font-light">${item.quantity}</span>
                   <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="incrementQuantity('${item.productId._id}')">+</button>
@@ -76,7 +73,7 @@ async function cartItems() {
               </div>
             </td>
             <td class="py-4 px-6 text-right">
-              <p class="text-sm font-medium text-gray-800">₹ ${item.saleprice}</p>
+              <p class="text-sm font-medium text-gray-800">Rs. ${item.saleprice * item.quantity}</p>
             </td>
           </tr>
         `).join('');
@@ -86,51 +83,46 @@ async function cartItems() {
       const totalDiscountAmount = result.cart.totaldiscountamount;
 
       const discount = totalDiscountAmount; 
-      const deliveryFee = totalAmount > 700 ? 0 : 50;
-      const finalTotal = totalAmount - discount + deliveryFee;
-      
+      const finalTotal = totalAmount - discount;  
+
       let discountSection = '';
       if (discount > 0) {
         discountSection = `
           <div class="flex justify-between">
             <div>Discount</div>
-            <div class="text-red-600">₹ -${discount}</div>
+            <div class="text-red-600">Rs. -${discount}</div>
           </div>
         `;
       }
 
       totalBox.innerHTML = `
-        <div class="h-auto p-3 max-w-[300px] grid grid-rows bg-white border-1 rounded-lg">
+        <div class="h-auto p-3 max-w-[300px] grid border-slate-200  grid-rows bg-white border rounded-lg">
           <div class="grid px-1 mb-1">
             <div class="flex justify-center border-b-[1px]">
-              <div class="pb- font-medium">Cart Summary</div>
+              <div class="pb-2 font-medium">Cart Summary</div>
             </div>
           </div>
           <div class="grid">
             <div class="my-2 flex border-b-[1px] py-3 border-black flex-col gap-2 text-xs">
               <div class="flex justify-between">
                 <div>Order value</div>
-                <div>₹ ${totalAmount}</div>
+                <div>Rs. ${totalAmount}</div>
               </div>
               ${discountSection}
-              <div class="flex justify-between">
-                <div>Delivery</div>
-                <div>₹ ${deliveryFee}</div>
-              </div>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between text-xs font-medium mb-3">
               <div>Total</div>
-              <div>₹ ${finalTotal}</div>
+              <div>Rs. ${finalTotal}</div>
             </div>
-            <div class="w-full mt-2">
+            <div class="w-full mt-2 mb-2">
               <button class="w-full p-2 bg flex bg-black rounded-md text-white justify-center" onclick="checkOutLocation()">Check out</button>
             </div>
-            <div class="flex flex-col gap-1 mb-2">
+            <div class="flex flex-col gap-1 mb-3">
               <div class="flex justify-start text-sm font-bold mt-1">We accept</div>
               <div class="flex justify-between mt-1">
                 <div class="text-xs font-semibold">Cash on delivery</div>
                 <div><img src="/images/UPI-Black.png" class="w-[50px] h-[20px]" alt=""></div>
-                <div><img src="/images/visa.png" class="w-[50px] h-[20px]" alt=""></div>
+                <div><img src="/images/visa.png" class="w-[60px] h-[20px]" alt=""></div>
               </div>
             </div>
             <div class="text-[10px] font-light">
@@ -141,89 +133,40 @@ async function cartItems() {
           </div>
         </div>
       `;
-    }else {
-      totalBox.style.display = 'none';
+    } else {
       shoppingCartTable.innerHTML = `
-        <div class="h-[300px] flex items-center justify-center">
-          <div><h1>Your cart is empty</h1></div>
-        </div>
-      `;
+  <div class="col-span-12 h-[300px] flex items-center justify-center">
+    <div class="flex"><h1>Your cart is empty</h1></div>
+  </div>
+`;
+
     }
 
-    if (result.errormessage ) {
+    if (result.errormessage) {
       totalBox.style.display = 'none';
       shoppingCartTable.innerHTML = `
-        <div class="h-[300px] flex items-center justify-center">
-          <div><h1>Your cart is empty</h1></div>
-        </div>
-      `;
+  <div class="col-span-12 h-[300px] flex items-center justify-center">
+    <div class="flex"><h1>Your cart is empty</h1></div>
+  </div>
+`;
+
     }
   } catch (error) {
     console.log(error);
   }
 }
+   
 
-function showNotification(message, type) {
-  const notification = document.getElementById("notification");
 
-  notification.className = "";
-
-  notification.classList.add(
-    "p-4",
-    "mb-4",
-    "text-sm",
-    "rounded-lg",
-    "fixed",
-    "top-9", 
-    "right-4",
-    "z-50", 
-    "min-w-[150px]", 
-    "role",
-    "alert"
-  );
-
-  if (type === "success") {
-    notification.classList.add(
-      "text-green-800",
-      "bg-green-50",
-      "dark:bg-gray-800",
-      "dark:text-green-400"
-    );
-  } else if (type === "error") {
-    notification.classList.add(
-      "text-red-800",
-      "bg-red-50",
-      "dark:bg-gray-800",
-      "dark:text-red-400"
-    );
-  }
-
-  notification.innerHTML = `<span class="font-medium">${
-    type === "success" ? "Success!" : "Error!"
-  }</span> ${message}`;
-
-  notification.classList.remove("hidden");
-
-  setTimeout(() => {
-    hideNotification();
-  }, 5000);
-}
-
-function hideNotification() {
-  const notification = document.getElementById("notification");
-  notification.className = "hidden"; // Hide the alert
-}
 function checkOutLocation() {
   console.log("click");
-  location.assign('/user/home/shoppingcart/checkout');
+  location.assign('/shoppingcart/checkout');
 }
 
 
 async function incrementQuantity(productId) {
-  try {
-    console.log(`Incrementing quantity for ${productId}`);
-    
-    const response = await fetch('/user/home/cart/quantityedit?quantityEdit=increment', {
+  try {    
+    const response = await fetch('/cart/quantityedit?quantityEdit=increment', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -234,12 +177,10 @@ async function incrementQuantity(productId) {
     const result = await response.json();
 
     if (response.ok) {
-      console.log('Quantity incremented successfully:', result);
       cartItems();
     } else if(result.message) {
       showNotification(
-        `${result.message}`,
-        "error"
+        `${result.message}`
       );
     }
   } catch (error) {
@@ -253,7 +194,7 @@ async function decrementQuantity(productId) {
   try {
     console.log(`Decrementing quantity for ${productId}`);
     
-    const response = await fetch('/user/home/cart/quantityedit?quantityEdit=decrement', {
+    const response = await fetch('/cart/quantityedit?quantityEdit=decrement', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -268,7 +209,9 @@ async function decrementQuantity(productId) {
       cartItems();
     } else {
       console.error('Failed to decrement quantity:', result.error);
-      alert(result.error || 'An error occurred while decrementing the quantity.');
+      showNotification(
+        result.error || 'An error occurred while decrementing the quantity.'   
+         );
     }
   } catch (error) {
     console.error('Error decrementing quantity:', error);
@@ -278,15 +221,15 @@ async function decrementQuantity(productId) {
 // Redirect to Product Details
 function ProductDetail(productId) {
   console.log(`Navigating to product details for ${productId}`);
-  location.assign(`/user/home/productdetails/${productId}`);
+  location.assign(`/productdetails/${productId}`);
 }
 
 function ProductDetail(productId){
-  location.assign(`/user/home/productdetails/${productId}`)
+  location.assign(`/productdetails/${productId}`)
 }
 async function removeProduct(productId) {
   try {
-    const response = await fetch('/user/home/cart/remove', {
+    const response = await fetch('/cart/remove', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -299,14 +242,12 @@ async function removeProduct(productId) {
     if (response.ok) {
       console.log(`Removed product: ${productId}`);
       showNotification(
-        "Product successfully deleted from cart!",
-        "success"
+        "Product successfully deleted from cart!"
       );
       cartItems();
     } else {
       showNotification(
-        "An error occurred while deleting the product from the cart. Please try again.",
-        "error"
+        "An error occurred while deleting the product from the cart. Please try again."
       );
         }
   } catch (error) {
@@ -314,6 +255,42 @@ async function removeProduct(productId) {
   }
 }
 
+function showNotification(message) {
+  const notification = document.getElementById("notification");
+
+  notification.className = "";
+
+  notification.classList.add(
+    "p-4",
+    "mb-4",
+    "text-sm",
+    "rounded-lg",
+    "fixed",
+    "bottom-10",
+    "right-4",
+    "z-50",
+    "min-w-[150px]",
+    "text-white",
+    "bg-black",
+    "dark:bg-gray-800",
+    "dark:text-green-400",
+    "role",
+    "alert"
+  );
+
+  notification.innerHTML = ` ${message}`;
+
+  notification.classList.remove("hidden");
+
+  setTimeout(() => {
+    hideNotification();
+  }, 5000);
+}
+
+function hideNotification() {
+  const notification = document.getElementById("notification");
+  notification.className = "hidden";
+}
 
   </script>
 

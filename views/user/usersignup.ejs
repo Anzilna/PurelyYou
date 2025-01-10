@@ -2,265 +2,319 @@
 
 <!-- Main wrapper using flex to ensure content grows correctly -->
 <div class="flex flex-col min-h-screen">
-
   <!-- Container for the left section and right image -->
   <div class="flex flex-grow">
-
     <!-- Left Section -->
     <div class="flex flex-col w-full md:w-1/2 flex-grow">
       <!-- Damasus Section (fixed height) -->
-      <div class="flex h-[20%] justify-center items-center pt-12 md:justify-start md:pl-12">
-        <a href="#" class=" pb-2 text-2xl font-bold text-gray-900">PurelyYou.</a>
+      <div
+        class="flex h-[20%] justify-center items-center pt-12 md:justify-start md:pl-12"
+      >
+        <a href="#" class="pb-2 text-2xl font-bold text-gray-900">PurelyYou.</a>
       </div>
-      
-      
+
       <!-- Form Section (flex-grow to take available space) -->
-      <div class="flex flex-col justify-center items-center flex-grow lg:w-[28rem] mx-auto md:px-6">
+      <div
+        class="flex flex-col justify-center items-center flex-grow lg:w-[28rem] mx-auto md:px-6"
+      >
         <p class="text-left text-3xl font-bold">Create your account</p>
         <p class="mt-2 text-left text-gray-500">please enter your details.</p>
         <a href="google/auth">
-          <button class="-2 mt-8 flex items-center justify-center rounded-md border px-4 py-1 outline-none ring-gray-400 ring-offset-2 transition focus:ring-2 hover:border-transparent hover:bg-black hover:text-white">
-            <img class="mr-2 h-5" src="https://static.cdnlogo.com/logos/g/35/google-icon.svg" alt="Google" /> Sign up using Google
+          <button
+            class="-2 mt-8 flex items-center justify-center rounded-md border px-4 py-1 outline-none ring-gray-400 ring-offset-2 transition focus:ring-2 hover:border-transparent hover:bg-black hover:text-white"
+          >
+            <img
+              class="mr-2 h-5"
+              src="https://static.cdnlogo.com/logos/g/35/google-icon.svg"
+              alt="Google"
+            />
+            Sign up using Google
           </button>
         </a>
         <div class="relative mt-8 flex h-px place-items-center bg-gray-200">
-          <div class="absolute left-1/2 h-6 w-14 -translate-x-1/2 bg-white text-center text-sm text-gray-500">or</div>
+          <div
+            class="absolute left-1/2 h-6 w-14 -translate-x-1/2 bg-white text-center text-sm text-gray-500"
+          >
+            or
+          </div>
         </div>
-        <div class="relative mt-8 flex h-px place-items-center bg-gray-200">
-        </div>
+        <div
+          class="relative mt-8 flex h-px place-items-center bg-gray-200"
+        ></div>
         <form class="flex flex-col pt-3 md:pt-8 w-full">
           <div class="flex flex-col pt-4">
-            <div class="name error text-red-500 " id="error-name"></div>
+            <div class="name error text-red-500" id="error-name"></div>
 
-            <div class="focus-within:border-b-gray-500 relative flex overflow-hidden border-b-2 transition">
-              
-              <input type="Name" id="login-name" class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none" placeholder="Name" />
-              
-            </div>
-            
-          </div>
-          <div class="flex flex-col pt-4">
-            <div class="email error text-red-500 " id="error-email"></div>
-
-            <div class="focus-within:border-b-gray-500 relative flex overflow-hidden border-b-2 transition">
-              <input type="email" id="login-email" class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none" placeholder="Email" />
-            </div>
-          </div>
-          <div class="flex flex-col pt-4">
-            <div class="password error text-red-500 " id="error-password"></div>
-            <div class="relative flex overflow-hidden border-b-2 focus-within:border-b-gray-500 transition">
-              <input 
-                type="password" 
-                id="login-password" 
-                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none" 
-                placeholder="Password" 
+            <div
+              class="focus-within:border-b-gray-500 relative flex overflow-hidden border-b-2 transition"
+            >
+              <input
+                type="Name"
+                id="login-name"
+                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none"
+                placeholder="Name"
               />
-              <button 
-                type="button" 
-                id="toggle-password-visibility" 
+            </div>
+          </div>
+          <div class="flex flex-col pt-4">
+            <div class="email error text-red-500" id="error-email"></div>
+
+            <div
+              class="focus-within:border-b-gray-500 relative flex overflow-hidden border-b-2 transition"
+            >
+              <input
+                type="email"
+                id="login-email"
+                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none"
+                placeholder="Email"
+              />
+            </div>
+          </div>
+          <div class="flex flex-col pt-4">
+            <div class="password error text-red-500" id="error-password"></div>
+            <div
+              class="relative flex overflow-hidden border-b-2 focus-within:border-b-gray-500 transition"
+            >
+              <input
+                type="password"
+                id="login-password"
+                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none"
+                placeholder="Password"
+              />
+              <button
+                type="button"
+                id="toggle-password-visibility"
                 class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 focus:outline-none"
               >
                 <i class="bi bi-eye-slash"></i>
               </button>
             </div>
           </div>
-          
+
           <div class="flex flex-col pt-4">
-            <div class="password error text-red-500 " id="error-password-confirm"></div>
-            <div class="relative flex overflow-hidden border-b-2 focus-within:border-b-gray-500 transition">
-              <input 
-                type="password" 
-                id="login-password-confirm" 
-                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none" 
-                placeholder="Confirm Password" 
+            <div
+              class="password error text-red-500"
+              id="error-password-confirm"
+            ></div>
+            <div
+              class="relative flex overflow-hidden border-b-2 focus-within:border-b-gray-500 transition"
+            >
+              <input
+                type="password"
+                id="login-password-confirm"
+                class="w-full flex-1 appearance-none border-gray-300 bg-white px-4 py-2 text-base text-gray-700 placeholder-gray-400 focus:outline-none"
+                placeholder="Confirm Password"
               />
-              <button 
-                type="button" 
-                id="toggle-confirm-password-visibility" 
+              <button
+                type="button"
+                id="toggle-confirm-password-visibility"
                 class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 focus:outline-none"
               >
                 <i class="bi bi-eye-slash"></i>
               </button>
             </div>
           </div>
-        
-          <button id="submit-btn" type="submit" class="w-auto my-3 relative rounded-lg bg-gray-900 px-4 py-2 flex justify-center items-center text-base font-semibold text-white shadow-md ring-gray-500 ring-offset-2 transition focus:ring-2">
+
+          <button
+            id="submit-btn"
+            type="submit"
+            class="w-auto my-3 relative rounded-lg bg-gray-900 px-4 py-2 flex justify-center items-center text-base font-semibold text-white shadow-md ring-gray-500 ring-offset-2 transition focus:ring-2"
+          >
             <!-- Button text -->
             <span id="button-text" class="block">Submit</span>
-        
+
             <!-- Loading Spinner (Initially hidden) -->
-            <div id="loading-spinner" class="absolute inset-0 hidden flex justify-center items-center px-4 py-2">
-                <div class="w-5 h-5 border-4 border-t-4 border-gray-100 border-t-black rounded-full animate-spin"></div>
+            <div
+              id="loading-spinner"
+              class="absolute inset-0 hidden flex justify-center items-center px-4 py-2"
+            >
+              <div
+                class="w-5 h-5 border-4 border-t-4 border-gray-100 border-t-black rounded-full animate-spin"
+              ></div>
             </div>
-        </button>
-        
-          
-          
-          
-          
-          
-          
-          
-          
-          
+          </button>
         </form>
         <div class="py-12 text-center">
           <p class="whitespace-nowrap text-gray-600">
             Already have an account?
-            <a href="/user/login" class="underline-offset-4 font-semibold text-gray-900 underline">Log in now.</a>
+            <a
+              href="/login"
+              class="underline-offset-4 font-semibold text-gray-900 underline"
+              >Log in now.</a
+            >
           </p>
         </div>
       </div>
     </div>
 
     <!-- Right Section (Fixed background) -->
-    <div class="pointer-events-non  relative hidden w-1/2 min-h-screen select-none bg-black md:block">
+    <div
+      class="pointer-events-non relative hidden w-1/2 min-h-screen select-none bg-black md:block"
+    >
       <div class="absolute bottom-0 z-10 px-8 text-black opacity-100">
-        <p class="mb-8 text-3xl font-semibold leading-10">We work 10x faster than our competitors and stay consistent. While they're bogged down with technical debt, we're releasing new features.</p>
-        
+        <p class="mb-8 text-3xl font-semibold leading-10">
+          We work 10x faster than our competitors and stay consistent. While
+          they're bogged down with technical debt, we're releasing new features.
+        </p>
       </div>
-      <img class="absolute top-0 h-full w-full object-cover opacity-90" src="/images/frizzfree.jpg" alt="Background" />
+      <img
+        class="absolute top-0 h-full w-full object-cover opacity-90"
+        src="/images/frizzfree.jpg"
+        alt="Background"
+      />
     </div>
   </div>
   <script>
-    const form = document.querySelector('form');
-    const nameInput = document.getElementById('login-name');
-    const emailInput = document.getElementById('login-email');
-    const passwordInput = document.getElementById('login-password');
-    const confirmPasswordInput = document.getElementById('login-password-confirm');
-    const loadingSpinner = document.getElementById('loading-spinner');  // Select the spinner element
-    const buttonText = document.getElementById('button-text');
-    
-    const errorName = document.getElementById('error-name');
-    const errorEmail = document.getElementById('error-email');
-    const errorPassword = document.getElementById('error-password');
-    const errorConfirmPassword = document.getElementById('error-password-confirm');
-  
-    const togglePasswordVisibility = document.getElementById('toggle-password-visibility');
-const toggleConfirmPasswordVisibility = document.getElementById('toggle-confirm-password-visibility');
+    const form = document.querySelector("form");
+    const nameInput = document.getElementById("login-name");
+    const emailInput = document.getElementById("login-email");
+    const passwordInput = document.getElementById("login-password");
+    const confirmPasswordInput = document.getElementById(
+      "login-password-confirm"
+    );
+    const loadingSpinner = document.getElementById("loading-spinner"); // Select the spinner element
+    const buttonText = document.getElementById("button-text");
 
-const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  
+    const errorName = document.getElementById("error-name");
+    const errorEmail = document.getElementById("error-email");
+    const errorPassword = document.getElementById("error-password");
+    const errorConfirmPassword = document.getElementById(
+      "error-password-confirm"
+    );
 
-togglePasswordVisibility.addEventListener('click', () => {
-  const isPasswordVisible = passwordInput.type === 'text';
-  passwordInput.type = isPasswordVisible ? 'password' : 'text';
+    const togglePasswordVisibility = document.getElementById(
+      "toggle-password-visibility"
+    );
+    const toggleConfirmPasswordVisibility = document.getElementById(
+      "toggle-confirm-password-visibility"
+    );
 
-  const icon = togglePasswordVisibility.querySelector('i');
-  icon.classList.toggle('bi-eye-slash', isPasswordVisible);
-  icon.classList.toggle('bi-eye', !isPasswordVisible);
-});
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordPattern =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-toggleConfirmPasswordVisibility.addEventListener('click', () => {
-  const isPasswordVisible = confirmPasswordInput.type === 'text';
-  confirmPasswordInput.type = isPasswordVisible ? 'password' : 'text';
+    togglePasswordVisibility.addEventListener("click", () => {
+      const isPasswordVisible = passwordInput.type === "text";
+      passwordInput.type = isPasswordVisible ? "password" : "text";
 
-  const icon = toggleConfirmPasswordVisibility.querySelector('i');
-  icon.classList.toggle('bi-eye-slash', isPasswordVisible);
-  icon.classList.toggle('bi-eye', !isPasswordVisible);
-});
+      const icon = togglePasswordVisibility.querySelector("i");
+      icon.classList.toggle("bi-eye-slash", isPasswordVisible);
+      icon.classList.toggle("bi-eye", !isPasswordVisible);
+    });
+
+    toggleConfirmPasswordVisibility.addEventListener("click", () => {
+      const isPasswordVisible = confirmPasswordInput.type === "text";
+      confirmPasswordInput.type = isPasswordVisible ? "password" : "text";
+
+      const icon = toggleConfirmPasswordVisibility.querySelector("i");
+      icon.classList.toggle("bi-eye-slash", isPasswordVisible);
+      icon.classList.toggle("bi-eye", !isPasswordVisible);
+    });
     const validateName = () => {
       const name = nameInput.value.trim();
       if (!name || name.length < 3) {
-        errorName.textContent = 'Name must be at least 3 characters long.';
-        nameInput.classList.add('border-red-500');
+        errorName.textContent = "Name must be at least 3 characters long.";
+        nameInput.classList.add("border-red-500");
         return false;
       }
-      errorName.textContent = '';
-      nameInput.classList.remove('border-red-500');
+      errorName.textContent = "";
+      nameInput.classList.remove("border-red-500");
       return true;
     };
-  
+
     const validateEmail = () => {
       const email = emailInput.value.trim();
       if (!emailPattern.test(email)) {
-        errorEmail.textContent = 'Please enter a valid email address.';
-        emailInput.classList.add('border-red-500');
+        errorEmail.textContent = "Please enter a valid email address.";
+        emailInput.classList.add("border-red-500");
         return false;
       }
-      errorEmail.textContent = '';
-      emailInput.classList.remove('border-red-500');
+      errorEmail.textContent = "";
+      emailInput.classList.remove("border-red-500");
       return true;
     };
-  
+
     const validatePassword = () => {
       const password = passwordInput.value.trim();
       if (!passwordPattern.test(password)) {
         errorPassword.textContent =
-          'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.';
-        passwordInput.classList.add('border-red-500');
+          "Password must be at least 8 characters, include an uppercase letter, a number, and a special character.";
+        passwordInput.classList.add("border-red-500");
         return false;
       }
-      errorPassword.textContent = '';
-      passwordInput.classList.remove('border-red-500');
+      errorPassword.textContent = "";
+      passwordInput.classList.remove("border-red-500");
       return true;
     };
-  
+
     const validateConfirmPassword = () => {
       const password = passwordInput.value.trim();
       const confirmPassword = confirmPasswordInput.value.trim();
       if (password !== confirmPassword) {
-        errorConfirmPassword.textContent = 'Passwords do not match.';
-        confirmPasswordInput.classList.add('border-red-500');
+        errorConfirmPassword.textContent = "Passwords do not match.";
+        confirmPasswordInput.classList.add("border-red-500");
         return false;
       }
-      errorConfirmPassword.textContent = '';
-      confirmPasswordInput.classList.remove('border-red-500');
+      errorConfirmPassword.textContent = "";
+      confirmPasswordInput.classList.remove("border-red-500");
       return true;
     };
-  
+
     // Real-time validation
-    nameInput.addEventListener('input', validateName);
-    emailInput.addEventListener('input', validateEmail);
-    passwordInput.addEventListener('input', validatePassword);
-    confirmPasswordInput.addEventListener('input', validateConfirmPassword);
-  
-    form.addEventListener('submit', async (e) => {
+    nameInput.addEventListener("input", validateName);
+    emailInput.addEventListener("input", validateEmail);
+    passwordInput.addEventListener("input", validatePassword);
+    confirmPasswordInput.addEventListener("input", validateConfirmPassword);
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-  
+
       const isNameValid = validateName();
       const isEmailValid = validateEmail();
       const isPasswordValid = validatePassword();
       const isConfirmPasswordValid = validateConfirmPassword();
-  
-      if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
+
+      if (
+        isNameValid &&
+        isEmailValid &&
+        isPasswordValid &&
+        isConfirmPasswordValid
+      ) {
         try {
-          loadingSpinner.classList.remove('hidden');
-          buttonText.classList.add('hidden');
-          const result = await fetch('/user/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+          loadingSpinner.classList.remove("hidden");
+          buttonText.classList.add("hidden");
+          const result = await fetch("/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               name: nameInput.value.trim(),
               email: emailInput.value.trim(),
               password: passwordInput.value.trim(),
             }),
           });
-  
+
           const fetchResult = await result.json();
           console.log(fetchResult);
-  
+
           if (fetchResult.err) {
-            loadingSpinner.classList.add('hidden');  // Hide on error as well
-            buttonText.classList.remove('hidden');
-            errorPassword.textContent = fetchResult.err.password || '';
-            errorName.textContent = fetchResult.err.username || '';
-            errorEmail.textContent = fetchResult.err.email || '';
+            loadingSpinner.classList.add("hidden"); // Hide on error as well
+            buttonText.classList.remove("hidden");
+            errorPassword.textContent = fetchResult.err.password || "";
+            errorName.textContent = fetchResult.err.username || "";
+            errorEmail.textContent = fetchResult.err.email || "";
           } else if (fetchResult.otpsend) {
-            location.assign('/user/emailotp');
-          }else if(fetchResult.message){
-            errorEmail.textContent = fetchResult.message || '';
-            loadingSpinner.classList.add('hidden');  // Hide on error as well
-            buttonText.classList.remove('hidden');
+            location.assign("/emailotp");
+          } else if (fetchResult.message) {
+            errorEmail.textContent = fetchResult.message || "";
+            loadingSpinner.classList.add("hidden"); // Hide on error as well
+            buttonText.classList.remove("hidden");
           }
         } catch (error) {
-          console.log('An error occurred:', error);
+          console.log("An error occurred:", error);
         }
       }
     });
   </script>
-  
-  <%- include('partials/footer'); -%>
 
+  <%- include('partials/footer'); -%>
 </div>

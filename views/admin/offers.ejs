@@ -1,0 +1,167 @@
+<%- include("partials/adminHeader"); -%>
+
+<!-- Main Container -->
+<%- include("partials/sidebar"); -%>
+<%- include("partials/Head"); -%>
+
+<!-- Main Content Area -->
+<div class="p-6">
+  <div class="h-auto flex flex-col">
+ <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold">Offers</h3>
+        <a href="/admin/offers/addoffers">
+          <button class="bg-black text-white py-2 px-3 rounded-md">Add Offers</button>
+        </a>
+      </div>
+
+    <div id="orders-container" class="overflow-hidden rounded-lg shadow-md max-h-[500px] overflow-y-auto">
+      <!-- Orders Table will be populated here by JavaScript -->
+    </div>
+
+    <!-- Pagination -->
+    <!-- <div class="flex justify-end items-center mt-4">
+      <button class="px-4 py-2 mx-1 text-sm bg-gray-300 hover:bg-gray-400 rounded">Previous</button>
+      <button class="px-4 py-2 mx-1 text-sm bg-black text-white hover:bg-gray-500 rounded">1</button>
+      <button class="px-4 py-2 mx-1 text-sm bg-gray-300 hover:bg-gray-400 rounded">2</button>
+      <button class="px-4 py-2 mx-1 text-sm bg-gray-300 hover:bg-gray-400 rounded">Next</button>
+    </div> -->
+  </div>
+</div>
+
+<div class="modal fade" id="listProductModal" tabindex="-1" aria-labelledby="listProductModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="listProductModalLabel">Edit Product Listing</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="error text-red-500 mb-1" id="error-select"></div>
+        <select id="listingStatus" class="w-full py-2 px-2 border-1 rounded-md border-black">
+          <option value="" selected>Select an option</option>
+          <option value="true">processing</option>
+          <option value="false">cancelled</option>
+        </select>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="bg-white text-black border-1 border-black rounded-md py-2 px-3" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="bg-black text-white border-1 border-black rounded-md py-2 px-3" id="confirmListButton">Confirm</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Sample data to simulate the order fetching (in place of EJS)
+  const Orders = [
+    {
+      username: 'John Doe',
+      code: 'ORD12345',
+      orderstatus: 'processing',
+      totalAmount: 100,
+      updatedAt: '2024-12-30T14:30:00Z',
+    },
+    {
+      username: 'Jane Smith',
+      code: 'ORD54321',
+      orderstatus: 'cancelled',
+      totalAmount: 50,
+      updatedAt: '2024-12-29T10:15:00Z',
+    }
+  ];
+
+  // Function to render the orders table
+  function renderOrdersTable(orders) {
+    const ordersContainer = document.getElementById('orders-container');
+    
+    if (orders && orders.length > 0) {
+      let tableHtml = `
+        <table class="table-auto w-full text-left border border-white">
+          <thead class="bg-white">
+            <tr>
+              <th class="px-6 py-4">Name</th>
+              <th class="px-6 py-4">Order code</th>
+              <th class="px-6 py-4">Status</th>
+              <th class="px-6 py-4">Total Amount</th>
+              <th class="px-6 py-4">Date</th>
+              <th class="px-6 py-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-300 border bg-white">
+      `;
+      
+      orders.forEach(order => {
+        tableHtml += `
+          <tr class="hover:bg-gray-100 min-h-[50px]">
+            <td class="px-6 py-3">${order.username}</td>
+            <td class="px-6 py-3">${order.code}</td>
+            <td class="px-6 py-3 ${order.orderstatus === "processing" ? 'text-green-500' : 'text-red-500'}">
+              ${order.orderstatus}
+            </td>
+            <td class="px-6 py-3">${order.totalAmount}</td>
+            <td class="px-6 py-3">${new Date(order.updatedAt).toLocaleString()}</td>
+            <td class="px-6 py-3 text-right">
+              <button class="text-gray-600 hover:text-black mx-2" data-bs-toggle="modal" data-bs-target="#listProductModal" 
+              data-order-id="${order.code}" data-isListed="${order.orderstatus === 'processing'}">
+                <i class="bi bi-card-checklist"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableHtml += '</tbody></table>';
+      ordersContainer.innerHTML = tableHtml;
+    } else {
+      ordersContainer.innerHTML = '<p class="text-center text-gray-500">No Orders found.</p>';
+    }
+  }
+
+  // Initial render
+  renderOrdersTable(Orders);
+
+  let OrderIdToEdit = null;
+  const listProductModal = document.getElementById('listProductModal');
+  const confirmListButton = document.getElementById('confirmListButton');
+  const errorSelect = document.getElementById('error-select');
+
+  // Set up modal to capture the selected order's ID and current status
+  listProductModal.addEventListener('show.bs.modal', (event) => {
+    const button = event.relatedTarget;
+    const orderId = button.getAttribute("data-order-id");
+    const orderStatus = button.getAttribute("data-isListed");
+
+    document.getElementById('listingStatus').value = orderStatus === 'true' ? 'processing' : 'cancelled';
+    OrderIdToEdit = orderId;
+  });
+
+  confirmListButton.addEventListener('click', async () => {
+    if (!OrderIdToEdit) return;
+
+    const listingStatus = document.getElementById('listingStatus').value; // Get selected option
+    if (!listingStatus) {
+      errorSelect.textContent = 'Please select a valid option.';
+      return;
+    }
+
+    try {
+      const fetchResult = await fetch(`/admin/Order/editorder/${OrderIdToEdit}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: listingStatus }), 
+      });
+
+      const fetchResultJSON = await fetchResult.json();
+      if (fetchResultJSON.updated) {
+        location.reload(); 
+      } else {
+        alert('Failed to update order status.');
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error);
+      alert('An error occurred while updating the order status.');
+    }
+  });
+</script>
+</body>
+</html>

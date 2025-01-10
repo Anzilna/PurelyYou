@@ -42,7 +42,11 @@
         </form>
         <p class="text-gray-600 text-sm text-center mt-4" id="timermain">
           Resend OTP in:
-          <span " class="text-red-500 font-semibold">00:<span id="timer" class="text-red-500 font-semibold">30 </span></span>
+          <span class="text-red-500 font-semibold"
+            >00:<span id="timer" class="text-red-500 font-semibold"
+              >30
+            </span></span
+          >
         </p>
         <div id="resendotp" class="py-12 text-center hidden">
           <p class="whitespace-nowrap text-gray-600">
@@ -81,19 +85,18 @@
       const timer = document.getElementById("timer");
       const timermain = document.getElementById("timermain");
       const otperror = document.getElementById("error-otp-confirm");
-       let queryParams;
-       if(window.location.search){
-        queryParams=window.location.search
+      let queryParams;
+      if (window.location.search) {
+        queryParams = window.location.search;
         console.log(queryParams);
-        
-       }
+      }
       resendotptimer();
       function resendotptimer() {
         console.log("inside timer");
 
         let countDown = 30;
         const newCountdown = setInterval(() => {
-          timer.textContent = `${countDown.toString().padStart(2,'0')}`;
+          timer.textContent = `${countDown.toString().padStart(2, "0")}`;
           countDown--;
 
           if (countDown < 0) {
@@ -104,20 +107,19 @@
         }, 1000);
       }
       form.addEventListener("submit", async (e) => {
-        let UrlToPost="/user/emailotp";
-        if(queryParams){
-          UrlToPost=`/user/emailotp${queryParams}`;
-console.log("done",UrlToPost);
-
+        let UrlToPost = "/emailotp";
+        if (queryParams) {
+          UrlToPost = `/emailotp${queryParams}`;
+          console.log("done", UrlToPost);
         }
         e.preventDefault();
         otperror.textContent = "";
         const userentredotp = document.getElementById("login-otp").value;
         if (!/^\d+$/.test(userentredotp)) {
-      otperror.textContent = "Please enter a valid numeric OTP.";
-      otperror.style.color = "red";
-      return;
-    }
+          otperror.textContent = "Please enter a valid numeric OTP.";
+          otperror.style.color = "red";
+          return;
+        }
         try {
           const fetchresult = await fetch(UrlToPost, {
             method: "post",
@@ -131,15 +133,12 @@ console.log("done",UrlToPost);
           if (result.message) {
             otperror.textContent = result.message || "";
             otperror.style.color = "red";
-
           }
           if (result.login) {
-            location.assign("/user/login");
+            location.assign("/login");
           }
-          if(result.newpassword)
-          {
-            location.assign("/user/newpassword");
-
+          if (result.newpassword) {
+            location.assign("/newpassword");
           }
         } catch (error) {
           console.log(error);
@@ -149,11 +148,9 @@ console.log("done",UrlToPost);
       const sendagainid = document.getElementById("sendagain");
       sendagainid.addEventListener("click", async (e) => {
         e.preventDefault();
-        let UrlToPost="/user/newemailotp";
-        if(queryParams){
-          UrlToPost=`/user/newemailotp${queryParams}`;
-console.log("done",UrlToPost);
-
+        let UrlToPost = "/newemailotp";
+        if (queryParams) {
+          UrlToPost = `/newemailotp${queryParams}`;
         }
         console.log("clicked");
         try {

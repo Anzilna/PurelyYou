@@ -1,109 +1,165 @@
-<%- include("partials/header"); -%>
-<%- include("partials/navbar"); -%>
+<%- include("partials/header"); -%> <%- include("partials/navbar"); -%>
 
 <body class="mt-[85px] font-roboto">
-
-<div class="flex justify-start items-start p-10">
-    <div class=" md:min-w-[300px] min-w-[300px] p-4 flex flex-col justify-end items-end">
-        <div class="flex justify-start flex-col text-base leading-[45px] font-normal items-start">
-      
-          <!-- Sort by -->
-          <div class="mb-6">
-            <h4 class="text-md font-medium text-gray-700 mb-2">Sort by</h4>
-            <select class="w-full border border-gray-300 p-2">
-              <option value="best-selling">Best Selling</option>
-              <option value="low-to-high">Price: Low to High</option>
-              <option value="high-to-low">Price: High to Low</option>
-            </select>
-          </div>
-      
-          <!-- Category -->
-          <% if (category) { %>
-            <div class="mb-6">
-              <h4 class="text-md flex font-medium text-gray-700 mb-2">Category</h4>
-              <ul>
-                <% category.forEach((cat) => { %>
-                  <li>
-                    <label class="flex items-center">
-                      <input type="checkbox" id="<%= cat._id %>" class="mr-2 p-5">
-                      <%= cat.categoryname %>
-                    </label>
-                  </li>
-                <% }) %>
-              </ul>
-            </div>
-          <% } %>
-      
-          <!-- mlQuantity -->
-          <div class="mb-6">
-            <h4 class="text-md flex font-medium text-gray-700 mb-2">mlQuantity</h4>
-            <ul>
-              <li>
-                <label class="flex items-center">
-                  <input type="checkbox" id="skin" class="mr-2">
-                  10ml
-                </label>
-              </li>
-              <li>
-                <label class="flex items-center">
-                  <input type="checkbox" id="hair" class="mr-2">
-                  30ml
-                </label>
-              </li>
-              <li>
-                <label class="flex items-center">
-                  <input type="checkbox" id="body" class="mr-2">
-                  100ml
-                </label>
-              </li>
-            </ul>
-          </div>
-      
+  <div class="flex justify-start items-start p-10">
+    <div
+      class="md:min-w-[300px] min-w-[300px] p-4 flex flex-col justify-end items-end"
+    >
+      <div
+        class="flex justify-start flex-col text-base leading-[35px] font-normal items-start"
+      >
+        <!-- Sort by -->
+        <div class="mb-6">
+          <h4 class="text-md font-medium text-gray-700 mb-2">Sort by</h4>
+          <select class="w-full border border-gray-300 p-2" id="sortSelect">
+            <option value="" selected>Select</option>
+            <option value="newlaunches">New launches</option>
+            <option value="low-to-high">Price: Low to High</option>
+            <option value="high-to-low">Price: High to Low</option>
+            <option value="aToZ">Aa-Zz</option>
+            <option value="zToA">Zz-Aa</option>
+          </select>
         </div>
+
+        <!-- Category -->
+        <% if (category) { %>
+        <div class="mb-6">
+          <h4 class="text-md flex font-medium text-gray-700 mb-2">Category</h4>
+          <ul id="categoryList">
+            <% category.forEach((cat) => { %>
+            <li>
+              <label class="flex items-center" for="<%= cat._id %>">
+                <input
+                  type="checkbox"
+                  id="<%= cat._id %>"
+                  class="mr-2 p-5 category-checkbox"
+                  value="<%= cat._id %>"
+                />
+                <%= cat.categoryname %>
+              </label>
+            </li>
+            <% }) %>
+          </ul>
+        </div>
+        <% } %>
       </div>
-      
-  
+    </div>
+
     <div class="overflow-x-auto flex grow scrollbar-hide">
-        <div class="grid lg:grid-cols-4 grid-cols-1 gap-6 h-auto cursor-pointer">
-          <% if (products) { %>
-            <% products.forEach((product) => { %>
-              <div class="flex flex-col bg-white rounded-md relative group h-full p-4" onclick="getProduct('<%= product._id %>')">
-                <% if (product.discountpercentage) { %>
+      <div id="productsContainer" class="grid lg:grid-cols-4 grid-cols-1 gap-6 h-auto cursor-pointer">
+        <% if (products) { %> 
+        <% products.forEach((product) => { %>
+        <div
+          class="flex flex-col bg-white rounded-md relative group h-full p-4"
+        >
+          <% if (product.discountpercentage) { %>
+          <div
+            class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10"
+          >
+            <%= `-${product.discountpercentage}%` %>
+          </div>
+          <% } %>
+          <div class="overflow-hidden h-[300px] w-full flex justify-center">
+            <img
+              src="<%= product.images[0] %>"
+              alt="Product Name"
+              class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110"
+            />
+          </div>
+          <div
+            class="flex flex-col flex-grow justify-start items-start mt-4 text-left"
+          >
+            <h3 class="text-lg font-semibold relative">
+              <%= product.productname %>
+              <div
+                class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-500 group-hover:w-full"
+              ></div>
+            </h3>
+            <p class="text-gray-500 text-sm mt-2">
+              <%= Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '' %>
+            </p>
+            <div class="flex justify-start space-x-1 text-black text-sm mt-2">
+              ★★★★☆
+            </div>
+            <div class="mt-2 mb-2">
+              <span class="text-black font-bold text-lg"><%= `₹${product.saleprice}` %></span>
+              <% if (product.discountpercentage) { %>
+              <span class="line-through text-gray-500 text-sm ml-2"><%= `₹${product.regularprice}` %></span>
+              <% } %>
+            </div>
+          </div>
+          <button
+            class="mt-auto bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all"
+          >
+            Add to cart
+          </button>
+        </div>
+        <% }) %> 
+        <% } %>
+      </div>
+    </div>
+  </div>
+  <script>
+    const sortSelect = document.getElementById("sortSelect");
+    const categoryCheckboxes = document.querySelectorAll(".category-checkbox");
+    const productsContainer = document.getElementById("productsContainer");
+
+    function fetchFilteredProducts() {
+      const selectedSort = sortSelect.value.trim();
+      const selectedCategories = Array.from(categoryCheckboxes)
+        .filter((checkbox) => checkbox.checked)
+        .map((checkbox) => checkbox.value);
+
+      fetch("/products/filter", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sortBy: selectedSort, categories: selectedCategories }),
+      })
+        .then((response) => response.json())
+        .then((products) => {
+          // Clear the current products
+          productsContainer.innerHTML = "";
+
+          // Append the filtered products
+          products.forEach((product) => {
+            productsContainer.innerHTML += `
+              <div class="flex flex-col bg-white rounded-md relative group h-full p-4">
+                ${product.discountpercentage ? `
                   <div class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10">
-                    <%= `-${product.discountpercentage}%` %>
-                  </div>
-                <% } %>
+                    -${product.discountpercentage}%
+                  </div>` : ""}
                 <div class="overflow-hidden h-[300px] w-full flex justify-center">
-                  <img src="<%= product.images[0] %>" alt="Product Name" class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110">
+                  <img src="${product.images[0]}" alt="${product.productname}" class="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-110" />
                 </div>
                 <div class="flex flex-col flex-grow justify-start items-start mt-4 text-left">
                   <h3 class="text-lg font-semibold relative">
-                    <%= product.productname %>
+                    ${product.productname}
                     <div class="absolute bottom-0 left-0 w-0 h-0.5 bg-black transition-all duration-500 group-hover:w-full"></div>
                   </h3>
-                  <p class="text-gray-500 text-sm mt-2"><%= Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '' %></p>
+                  <p class="text-gray-500 text-sm mt-2">
+                    ${Array.isArray(product.ingredients) ? product.ingredients.join(", ") : ""}
+                  </p>
                   <div class="flex justify-start space-x-1 text-black text-sm mt-2">★★★★☆</div>
                   <div class="mt-2 mb-2">
-                    <span class="text-black font-bold text-lg"><%= `₹${product.saleprice}` %></span>
-                    <% if (product.discountpercentage) { %>
-                      <span class="line-through text-gray-500 text-sm ml-2"><%= `₹${product.regularprice}` %></span>
-                    <% } %>
+                    <span class="text-black font-bold text-lg">₹${product.saleprice}</span>
+                    ${product.discountpercentage ? `<span class="line-through text-gray-500 text-sm ml-2">₹${product.regularprice}</span>` : ""}
                   </div>
                 </div>
-                <button class="mt-auto bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all">Add to cart</button>
-              </div>
-            <% }) %>
-          <% } %>
-        </div>
-      </div>
-      
-    
-      
-  </div>
-  <script>
-       function getProduct(id){
-        location.assign(`/user/home/productdetails/${id}`)
+                <button class="mt-auto bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all">
+                  Add to cart
+                </button>
+              </div>`;
+          });
+        })
+        .catch((error) => console.error("Error fetching products:", error));
     }
-  </script>
 
-<%- include('partials/footer'); -%>
+    sortSelect.addEventListener("change", fetchFilteredProducts);
+    categoryCheckboxes.forEach((checkbox) =>
+      checkbox.addEventListener("change", fetchFilteredProducts)
+    );
+  </script>
+  <%- include('partials/footer'); -%>
+</body>

@@ -30,17 +30,21 @@ const userSchema=new mongoose.Schema({
         enum:["Active","Blocked"],
         default:'Active'
     },
-    dateofbirth:{
-        type:Date
-    }
+    dob: {
+      type: Date,
+      sparse: true 
+  },
+  phone: {
+      type: String,
+      match: [/^\d{10}$/, "Phone number must be 10 digits"], 
+      sparse: true 
+  }
 },{
     timestamps:true
 })
 
 
-//user schema pre method for hashing password
 userSchema.pre('save', async function (next) {
-    // Check if the password field is modified
     if (this.isModified('password')) {
         try {
             const salt = await bcrypt.genSalt();
@@ -50,7 +54,7 @@ userSchema.pre('save', async function (next) {
             return next(error); // Pass error to the next middleware
         }
     }
-    next(); // Proceed with the save operation
+    next(); 
 });
 
 // for hashing password
@@ -141,8 +145,280 @@ const cartSchema = new mongoose.Schema({
   });
   
 
+  const orderSchema = new mongoose.Schema({
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', 
+      required: true,
+    },
+    orderstatus: {
+      type: String,
+      enum: ["Processing", "Cancelled", "Delivered","Dispatched"], 
+      default: "Processing",
+    },
+    coupponId:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Coupon'
+    },
+    coupponUsed:{
+      type:Boolean,
+      default: false,
+    },
+    coupponCode:{
+type:String
+    },
+    coupponDiscount:{
+type:String
+    },
+    code:{
+      type:String,
+      required: true
+
+      },
+    totalAmount: {
+      type: Number,
+      required: true,
+    },
+    totalDiscount: {
+      type: Number,
+      required: true,
+    },
+    deliveryCharge: {
+      type: Number,
+      required: true,
+    },
+    username: {
+      type: String,
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      lowercase: true, 
+      match: [/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/, 'Please fill a valid email address'], 
+    },
+    selectedAddress: {
+      name: {
+        type: String,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
+      
+      city: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+      pincode: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+      },
+      email: {
+        type: String,
+        required: true,
+      },
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+      },
+      createdAt: {
+        type: Date,
+        required: true,
+      },
+    },
+    paymentMethod: {
+      type: String,
+      enum: ['Cash on Delivery', 'credit card', 'Wallet','debit card', 'Razorpay'], 
+      required: true,
+    },
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'products', 
+          required: true,
+        },
+        productname: {
+          type: String,
+          required: true, 
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1, 
+        },
+        saleprice: {
+          type: Number,
+          required: true,
+        },
+        regularprice: {
+          type: Number,
+          required: true,
+        },
+        discountprice: {
+          type: Number,
+          default: 0, 
+        },
+      },
+    ],
+  }, {
+    timestamps: true,
+  });
+  
+  const favouritesSchema=new mongoose.Schema({
+items:[
+    {
+      productId:{
+        type:mongoose.Schema.Types.ObjectId,
+        required:true
+      },
+      productname:{
+        type:String,
+        required:true
+      },
+      productimage:{
+        type:String,
+        require:true
+      },
+        productsaleprice:{
+          type:Number,
+          require:true
+        },
+        productregularprice: {
+          type: Number,
+          required: true,
+        }
+    }
+  ]
+,userId:{
+  type:mongoose.Schema.Types.ObjectId,
+  required:true
+}
+  },{timestamps:true})
+
+const AddressSchema = new mongoose.Schema({
+  addresses: [
+    {
+      name: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      address: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      addressline: {
+        type: String,
+        trim: true,
+      },
+      city: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      state: {
+        type: String,
+        required: true,
+        trim: true,
+      },
+      pincode: {
+        type: String,
+        required: true,
+      },
+      phone: {
+        type: String,
+        required: true,
+        match: /^[0-9]{10}$/, 
+      },
+      email: {
+        type: String,
+        required: true,
+        match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, 
+        lowercase: true,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now, 
+      },
+    },
+  ],
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User', 
+    required: true,
+  },
+}, { timestamps: true });
+
+//wallet 
+const walletSchema = new mongoose.Schema({
+  userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',  
+      required: true,
+  },
+  balance: {
+      type: Number,
+      required: true,
+      default: 0,  
+  },
+}, { timestamps: true });
+
+const walletTransactionSchema = new mongoose.Schema({
+  walletId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Wallet',  
+      required: true,
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',  
+    required: true,
+},
+  transactionId: {
+      type: String,
+      required: true,
+      unique: true,  
+  },
+  type: {
+      type: String,
+      enum: ['CREDIT', 'DEBIT'],  
+      required: true,
+  },
+  amount: {
+      type: Number,
+      required: true,
+      min: 0, 
+  },
+  description: {
+      type: String,
+      required: true,
+  },
+  date: {
+      type: Date,
+      default: Date.now,  
+  },
+}, { timestamps: true });
+
 module.exports={
+
     Otp:mongoose.model('otp',otpSchema),
     User:mongoose.model('user',userSchema),
-    Cart:mongoose.model('cart',cartSchema)
+    Cart:mongoose.model('cart',cartSchema),
+    Address:mongoose.model('address',AddressSchema),
+    Order:mongoose.model('order',orderSchema),
+    Favourite:mongoose.model('favourites',favouritesSchema),
+    Wallet:mongoose.model('wallet',walletSchema),
+    walletTransaction:mongoose.model('wallettransaction',walletTransactionSchema)
 }

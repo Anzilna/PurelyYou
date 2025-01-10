@@ -8,19 +8,16 @@ require('dotenv').config()
   if (token) {
     jwt.verify(token, process.env.JWT_SECRET, async(err, decodedToken) => {
         if (err) {
-            console.error("JWT verification error:", err.message); // Log the error for debugging
+            console.error("JWT verification error:", err.message); 
             res.locals.localsUser=null;
             next();
         } else {
             try {
-                console.log(decodedToken.id);
                 
                 const user=await User.findById(decodedToken.id)
                 req.userdata=user;
-                console.log("user uuuu",user);
                 
                 res.locals.localsUser=user;
-                console.log(user);
                 
                 next();
             } catch (error) {

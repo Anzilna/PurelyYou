@@ -13,9 +13,9 @@
     
       <h3 class="text-lg font-bold">Products</h3>
       <div class="flex gap-3">
-        <button class="px-4 py-2 bg-white rounded-xl shadow-sm active:border border-2">Out Of stock</button>
-        <button class="px-4 py-2 bg-white rounded-xl shadow-sm ">Available</button>
-        <button class="px-4 py-2 bg-white rounded-xl shadow-sm ">Low Quantity</button>
+        <button class="px-4 py-2 bg-white rounded-xl shadow-sm  filter-btn" data-filter="Out of stock">Out Of stock</button>
+        <button class="px-4 py-2 bg-white rounded-xl shadow-sm  filter-btn" data-filter="Available">Available</button>
+        <button class="px-4 py-2 bg-white rounded-xl shadow-sm  filter-btn" data-filter="Low Quantity">Low Quantity</button>
 
       </div>
       <a href="/admin/products/addproduct">
@@ -124,6 +124,8 @@
 </div>
 
 <script>
+const filterButtons = document.querySelectorAll('.filter-btn');
+const productTableBody = document.getElementById('productTableBody');
 
 const listProductModal = document.getElementById('listProductModal');
 const confirmListButton = document.getElementById('confirmListButton');
@@ -161,6 +163,49 @@ confirmListButton.addEventListener('click', async () => {
   } catch (error) {
     console.error('Error updating product listing status:', error);
   }
+});
+filterButtons.forEach(button => {
+  button.addEventListener('click', async () => {
+    const filter = button.getAttribute('data-filter');
+
+    try {
+      const response = await fetch(`/admin/products/filter?stockstatus=${filter}`);
+      const data = await response.json();
+
+      if (data.products && data.products.length > 0) {
+        productTableBody.innerHTML = data.products.map(product => `
+          <tr class="hover:bg-gray-100">
+            <td class="px-6 py-3">
+              <img src="${product.images[0]}" alt="Product Image" class="w-12 h-12 object-cover rounded-lg">
+            </td>
+            <td class="px-6 py-3 whitespace-nowrap">${product.productname}</td>
+            <td class="px-6 py-3 whitespace-nowrap ${product.isListed ? 'text-green-500' : 'text-red-500'}">
+              ${product.isListed ? 'Listed' : 'Unlisted'}
+            </td>
+            <td class="px-6 py-3 whitespace-nowrap">${product.stock}</td>
+            <td class="px-6 py-3 whitespace-nowrap">${product.categoryname}</td>
+            <td class="px-6 py-3 whitespace-nowrap ${product.stockstatus === 'Available' ? 'text-green-500' : product.stockstatus === 'Out Of Stock' ? 'text-red-600' : 'text-orange-400'}">
+              ${product.stockstatus}
+            </td>
+            <td class="px-6 py-3 whitespace-nowrap">${new Date(product.updatedAt).toLocaleString()}</td>
+            <td class="px-6 py-3 text-right whitespace-nowrap">
+              <button class="text-gray-600 hover:text-black mx-2" onclick="editProduct('${product._id}')">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button class="text-gray-600 hover:text-black mx-2" data-bs-toggle="modal" data-bs-target="#listProductModal" 
+                data-user-id="${product._id}" data-isListed="${product.isListed}">
+                <i class="bi bi-card-checklist"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      } else {
+        productTableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No products found.</td></tr>';
+      }
+    } catch (error) {
+      console.error('Error fetching filtered products:', error);
+    }
+  });
 });
 
 

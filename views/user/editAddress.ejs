@@ -1,0 +1,294 @@
+<%- include("partials/header"); -%>
+<body class="mt-[90px] bg-gray-50 font-roboto">
+  <%- include("partials/navbar"); -%> <%-
+  include("partials/headerForUserManagement"); -%>
+
+  <div class="grid-cols-12 grid p-14 gap-3">
+    <!--user management side bar  -->
+    <%- include("partials/sidebarForUserManagement"); -%>
+
+    <div class="col-span-8">
+      <div class="font-light text-lg pb-[40px] flex justify-start">
+        <p>You can edit your address here</p>
+      </div>
+      <div class="grid grid-cols-12 gap-7">
+        <div class="col-span-8 bg-white">
+          <div class="p-4 grid grid-cols-1 gap-3">
+            <div class="flex text-sm justify-start font-medium">
+              Edit Address
+            </div>
+            <div class="flex flex-col">
+              <% if(address){ %>
+              <div id="billingadress" class="w-full mt-2">
+                <form
+                  id="billingAddressForm"
+                  action=""
+                  data-adressid="<%= address._id %>"
+                >
+                  <div class="flex flex-col gap-2">
+                    <div class="text-xs">Address</div>
+                    <div>
+                      <label for="name" class="text-sm">Name</label>
+                      <input
+                        class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                        type="text"
+                        id="name"
+                        name="name"
+                        value="<%= address.name %>"
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+                    <div>
+                      <label for="address" class="text-sm">Address</label>
+                      <input
+                        class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                        type="text"
+                        id="address"
+                        name="address"
+                        value="<%= address.address %>"
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <div class="flex gap-3">
+                      <div class="flex-grow">
+                        <div>
+                          <label for="city" class="text-sm">Town/City</label>
+                          <input
+                            class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                            type="text"
+                            id="city"
+                            name="city"
+                            value="<%= address.city %>"
+                          />
+                          <span class="text-red-500 text-xs"></span>
+                        </div>
+                      </div>
+                      <div class="flex-grow">
+                        <div>
+                          <label for="pincode" class="text-sm">Pincode</label>
+                          <input
+                            class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                            type="text"
+                            id="pincode"
+                            name="pincode"
+                            value="<%= address.pincode %>"
+                          />
+                          <span class="text-red-500 text-xs"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="state" class="text-sm">State</label>
+                      <input
+                        class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                        type="text"
+                        id="state"
+                        name="state"
+                        value="<%= address.state %>"
+                      />
+                      <span class="text-red-500 text-xs"></span>
+                    </div>
+                    <div class="flex gap-3">
+                      <div class="flex-grow">
+                        <div>
+                          <label for="phone" class="text-sm">Phone</label>
+                          <input
+                            class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                            type="text"
+                            id="phone"
+                            name="phone"
+                            value="<%= address.phone %>"
+                          />
+                          <span class="text-red-500 text-xs"></span>
+                        </div>
+                      </div>
+                      <div class="flex-grow">
+                        <div>
+                          <label for="email" class="text-sm">Email</label>
+                          <input
+                            class="w-full h-full border focus:outline-none focus:border-transparent p-2"
+                            type="text"
+                            id="email"
+                            name="email"
+                            value="<%= address.email %>"
+                          />
+                          <span class="text-red-500 text-xs"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="justify-center flex flex-col mt-2">
+                    <div class="flex justify-center">
+                      <button
+                        type="submit"
+                        class="mt-2 py-[15px] px-[80px] bg-black text-white text-xs"
+                      >
+                        Save
+                      </button>
+                    </div>
+                    <div class="flex justify-center">
+                      <button
+                        type="button"
+                        class="mt-2 py-3 px-[70px] text-xs"
+                        onclick="cancel()"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+              <% } else { %>
+              <div>no address found</div>
+              <% } %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="notification" class="hidden"></div>
+  <script>
+    document
+      .getElementById("billingAddressForm")
+      .addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const form = event.target;
+        const addressId = form.dataset.adressid;
+        if (!form) {
+          console.error("Form not found.");
+          return;
+        }
+
+        if (!validateForm(form)) {
+          showNotification("Please correct the highlighted fields.");
+          return;
+        }
+
+        const formData = new FormData(form);
+
+        const formObject = {};
+        formData.forEach((value, key) => {
+          formObject[key] = value;
+        });
+
+        try {
+          const response = await fetch(
+            `/accountsettings/address/editaddress/${addressId}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formObject),
+            }
+          );
+          if (response.ok) {
+            location.assign("/accountsettings/address");
+            showNotification("Address saved successfully!");
+          }
+
+          const result = await response.json();
+          if (result.limit) {
+            console.log(result.limit);
+
+            showNotification(result.limit);
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          showNotification("Failed to save the address. Please try again.");
+        }
+      });
+
+    function showNotification(message) {
+      const notification = document.getElementById("notification");
+
+      notification.className = "";
+
+      notification.classList.add(
+        "p-4",
+        "mb-4",
+        "text-sm",
+        "rounded-lg",
+        "fixed",
+        "bottom-10",
+        "right-4",
+        "z-50",
+        "min-w-[150px]",
+        "text-white",
+        "bg-black",
+        "dark:bg-gray-800",
+        "dark:text-green-400",
+        "role",
+        "alert"
+      );
+
+      notification.innerHTML = ` ${message}`;
+
+      notification.classList.remove("hidden");
+
+      setTimeout(() => {
+        hideNotification();
+      }, 5000);
+    }
+
+    function hideNotification() {
+      const notification = document.getElementById("notification");
+      notification.className = "hidden";
+    }
+    function cancel() {
+      location.assign("/accountsettings/address");
+    }
+    function validateForm(form) {
+      let isValid = true;
+      const requiredFields = [
+        "name",
+        "address",
+        "city",
+        "pincode",
+        "state",
+        "phone",
+        "email",
+      ];
+
+      requiredFields.forEach((field) => {
+        const input = form.querySelector(`[name="${field}"]`);
+        const errorSpan = input.nextElementSibling;
+
+        if (input.value.trim() === "0".repeat(input.value.trim().length)) {
+          isValid = false;
+          input.classList.add("border-red-500");
+          if (errorSpan)
+            errorSpan.textContent = `${field} cannot be all zeros.`;
+        } else if (!input.value.trim()) {
+          isValid = false;
+          input.classList.add("border-red-500");
+          if (errorSpan) errorSpan.textContent = `${field} is required.`;
+        } else {
+          input.classList.remove("border-red-500");
+          if (errorSpan) errorSpan.textContent = "";
+        }
+      });
+
+      const email = form.querySelector("[name='email']");
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+        isValid = false;
+        email.classList.add("border-red-500");
+        email.nextElementSibling.textContent = "Invalid email format.";
+      }
+
+      const phone = form.querySelector("[name='phone']");
+      if (phone && !/^\d{10}$/.test(phone.value)) {
+        isValid = false;
+        phone.classList.add("border-red-500");
+        phone.nextElementSibling.textContent =
+          "Phone number must be 10 digits.";
+      }
+
+      return isValid;
+    }
+  </script>
+  <%- include('partials/footer'); -%>
+</body>
