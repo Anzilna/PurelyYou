@@ -1,58 +1,41 @@
 <%- include("partials/header"); -%>
 <body class="mt-[90px] bg-gray-50 font-roboto">
-  <%- include("partials/navbar"); -%> <%-
-  include("partials/headerForUserManagement"); -%>
+  <%- include("partials/navbar"); -%> 
+  <%- include("partials/headerForUserManagement"); -%>
 
-  <!-- Notification Element -->
   <div id="notification" class="hidden"></div>
 
-  <div class="grid-cols-12 grid p-14 gap-3">
+  <div class="grid-cols-12 grid px-[250px] py-14 gap-3">
     <%- include("partials/sidebarForUserManagement"); -%>
 
     <div class="col-span-8">
-      <div class="font-light items-start text-lg pb-[40px] flex justify-start">
+      <div class="font-light items-start text-lg pb-[40px] flex justify-center">
         <p>You can manage your wallet here</p>
       </div>
       <div class="grid grid-cols-12 gap-7">
-        <div class="col-span-9">
+        <div class="col-span-12">
           <div class="flex flex-col gap-3">
-            <div
-              class="p-4 bg-white flex justify-center cursor-pointer"
-              id="fororderboxes"
-            >
+            <div class="p-4 bg-white flex justify-center cursor-pointer " id="fororderboxes">
               <div class="flex flex-col gap-1 justify-center">
                 <div class="text-sm font-medium flex justify-center">
-                  <i
-                    class="bi bi-credit-card fs-1"
-                    style="font-size: 5rem !important"
-                  ></i>
+                  <i class="bi bi-credit-card fs-1" style="font-size: 5rem !important"></i>
                 </div>
-                <div
-                  class="text-xl font-bold flex justify-center"
-                  id="walletBalance"
-                ></div>
-                <div class="text-xs font-light flex justify-center">
-                  My Wallet Balance
-                </div>
+                <div class="text-xl font-bold flex justify-center" id="walletBalance"></div>
+                <div class="text-xs font-light flex justify-center">My Wallet Balance</div>
                 <div class="mt-4 flex justify-center">
-                  <button
-                    id="openAddMoneyModal"
-                    class="px-6 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800"
-                  >
+                  <button id="openAddMoneyModal" class="px-6 py-2 bg-black text-white font-medium rounded-lg hover:bg-gray-800">
                     Add Money
                   </button>
                 </div>
               </div>
             </div>
-            <div class="bg-white">
-              <div class="mt-6 bg-white w-full h-full p-6">
+            <div class="bg-white h-auto ">
+              <div class="mt-6 bg-white w-full h-auto relative  p-6">
                 <h2 class="text-md font-semibold mb-4">Transaction Details</h2>
                 <div class="overflow-x-auto">
-                  <table
-                    class="w-full text-left border-collapse"
-                    id="transactionsList"
-                  ></table>
+                  <table class="w-full text-left border-collapse mb-16" id="transactionsList"></table>
                 </div>
+                <div id="pagination" class="flex absolute right-0 bottom-0 justify-end space-x-2 mb-3"></div>
               </div>
             </div>
           </div>
@@ -61,249 +44,23 @@
     </div>
   </div>
 
-  <!-- Add Money Modal -->
-  <div
-    id="addMoneyModal"
-    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50"
-  >
+  <div id="addMoneyModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="bg-white rounded-lg p-6 w-96">
-      <h2 class="text-lg font-semibold text-center mb-4">
-        Add Money to Wallet
-      </h2>
+      <h2 class="text-lg font-semibold text-center mb-4">Add Money to Wallet</h2>
       <form id="addMoneyForm">
         <div class="mb-4">
-          <label for="amount" class="block text-sm font-medium text-gray-700"
-            >Enter Amount</label
-          >
-          <input
-            type="number"
-            id="amount"
-            class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-gray-300"
-            placeholder="Enter amount in Rs."
-            min="1"
-            required
-          />
-          <p id="amountError" class="text-sm text-red-500 hidden">
-            Amount must be greater than 0.
-          </p>
+          <label for="amount" class="block text-sm font-medium text-gray-700">Enter Amount</label>
+          <input type="number" id="amount" class="mt-1 w-full px-3 py-2 border rounded-md focus:outline-none focus:ring focus:ring-gray-300" placeholder="Enter amount in Rs." min="1" required />
+          <p id="amountError" class="text-sm text-red-500 hidden">Amount must be greater than 0.</p>
         </div>
         <div class="flex justify-end gap-3">
-          <button
-            type="button"
-            id="cancelAddMoney"
-            class="px-4 py-2 bg-gray-300 rounded text-sm"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            class="px-4 py-2 bg-black text-white rounded text-sm"
-          >
-            Add Money
-          </button>
+          <button type="button" id="cancelAddMoney" class="px-4 py-2 bg-gray-300 rounded text-sm">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-black text-white rounded text-sm">Add Money</button>
         </div>
       </form>
     </div>
   </div>
-  <script>
-    const addMoneyModal = document.getElementById("addMoneyModal");
-    const openAddMoneyModal = document.getElementById("openAddMoneyModal");
-    const cancelAddMoney = document.getElementById("cancelAddMoney");
-    const addMoneyForm = document.getElementById("addMoneyForm");
-    const amountInput = document.getElementById("amount");
-    const amountError = document.getElementById("amountError");
 
-    const walletBalance = document.getElementById("walletBalance");
-    const transactionsList = document.getElementById("transactionsList");
-
-    openAddMoneyModal.addEventListener("click", () => {
-      addMoneyModal.classList.remove("hidden");
-    });
-
-    cancelAddMoney.addEventListener("click", () => {
-      addMoneyModal.classList.add("hidden");
-    });
-
-    document.addEventListener("DOMContentLoaded", async () => {
-      await fetchWalletDetails();
-    });
-
-    async function fetchWalletDetails() {
-      try {
-        const response = await fetch("/accountsettings/walletdetails", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          walletBalance.textContent = `Rs. ${result.balance}`;
-          if (result.transactions.length > 0) {
-            transactionsList.innerHTML = `
-        <thead>
-            <tr class="bg-gray-100 text-xs font-medium text-gray-600 uppercase tracking-wider">
-                <th class="py-3 px-4 border">Date</th>
-                <th class="py-3 px-4 border">Transaction ID</th>
-                <th class="py-3 px-4 border">Description</th>
-                <th class="py-3 px-4 border">Amount</th>
-                <th class="py-3 px-4 border">Type</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${result.transactions
-              .map(
-                (transaction) => `
-                    <tr class="hover:bg-gray-50 text-xs">
-                        <td class="py-3 px-4 border">${new Date(
-                          transaction.date
-                        ).toLocaleDateString()}</td>
-                        <td class="py-3 px-4 border">${
-                          transaction.transactionId
-                        }</td>
-                        <td class="py-3 px-4 border">${
-                          transaction.description
-                        }</td>
-                        <td class="py-3 px-4 border font-medium ${
-                          transaction.type === "DEBIT"
-                            ? "text-red-600"
-                            : "text-green-600"
-                        }">
-                            ${
-                              transaction.type === "DEBIT"
-                                ? `- Rs. ${transaction.amount}`
-                                : `+ Rs. ${transaction.amount}`
-                            }
-                        </td>
-                        <td class="py-3 px-4 border">${transaction.type}</td>
-                    </tr>
-                `
-              )
-              .join("")}
-        </tbody>
-    `;
-          } else {
-            transactionsList.innerHTML = `
-        <div class="text-center text-gray-500 py-4">
-            <p>No Transactions Found</p>
-        </div>
-    `;
-          }
-        } else {
-          showNotification(`Error: ${result.message}`, "error");
-        }
-      } catch (error) {
-        console.error("Error fetching wallet details:", error);
-        showNotification("Something went wrong. Please try again.", "error");
-      }
-    }
-
-    addMoneyForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      amountError.classList.add("hidden");
-
-      const amount = parseFloat(amountInput.value);
-      const description = "Deposit";
-      const type = "CREDIT";
-
-      let isValid = true;
-
-      if (isNaN(amount) || amount <= 0) {
-        amountError.classList.remove("hidden");
-        isValid = false;
-      }
-
-      if (!isValid) {
-        return;
-      }
-
-      try {
-        const response = await fetch("/accountsettings/wallet/addmoney", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: amount,
-            description: description,
-            type: type,
-          }),
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-          showNotification(
-            `Transaction successful: Rs. ${amount} ${type} added.`,
-            "success"
-          );
-          amountInput.value = "";
-          await fetchWalletDetails();
-        } else {
-          showNotification(`Error: ${result.message}`, "error");
-        }
-      } catch (error) {
-        console.error("Error adding money:", error);
-        showNotification("Something went wrong. Please try again.", "error");
-      }
-
-      addMoneyModal.classList.add("hidden");
-    });
-
-    function showNotification(message, type) {
-      const notification = document.getElementById("notification");
-
-      notification.className = "";
-
-      notification.classList.add(
-        "p-4",
-        "mb-4",
-        "text-sm",
-        "rounded-lg",
-        "fixed",
-        "bottom-10",
-        "right-4",
-        "z-50",
-        "min-w-[150px]",
-        "role",
-        "alert"
-      );
-
-      if (type === "success") {
-        notification.classList.add(
-          "text-white",
-          "bg-black",
-          "dark:bg-gray-800",
-          "dark:text-green-400"
-        );
-      } else if (type === "error") {
-        notification.classList.add(
-          "text-white",
-          "bg-black",
-          "dark:bg-gray-800",
-          "dark:text-red-400"
-        );
-      }
-
-      notification.innerHTML = `<span class="font-medium">${
-        type === "success" ? "Success!" : "Error!"
-      }</span> ${message}`;
-
-      notification.classList.remove("hidden");
-
-      setTimeout(() => {
-        hideNotification();
-      }, 5000);
-    }
-
-    function hideNotification() {
-      const notification = document.getElementById("notification");
-      notification.className = "hidden";
-    }
-  </script>
-
+  <script src="/javascript/user/walletDetails.js"></script>
   <%- include('partials/footer'); -%>
 </body>

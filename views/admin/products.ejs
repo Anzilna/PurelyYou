@@ -1,104 +1,108 @@
 <%- include("partials/adminHeader"); -%>
-
-<!-- Main Container -->
 <%- include("partials/sidebar"); -%>
 <%- include("partials/Head"); -%>
 
-<!-- Main Content Area -->
-
 <div class="p-6">
   <div class="h-auto flex flex-col">
-
     <div class="flex justify-between items-center mb-4">
-    
       <h3 class="text-lg font-bold">Products</h3>
-      <div class="flex gap-3">
-        <button class="px-4 py-2 bg-white rounded-xl shadow-sm  filter-btn" data-filter="Out of stock">Out Of stock</button>
-        <button class="px-4 py-2 bg-white rounded-xl shadow-sm  filter-btn" data-filter="Available">Available</button>
-        <button class="px-4 py-2 bg-white rounded-xl shadow-sm  filter-btn" data-filter="Low Quantity">Low Quantity</button>
-
-      </div>
+      <!-- <div class="flex gap-3">
+        <button class="px-4 py-2 bg-white rounded-xl shadow-sm filter-btn" data-filter="Out of stock">Out Of Stock</button>
+        <button class="px-4 py-2 bg-white rounded-xl shadow-sm filter-btn" data-filter="Available">Available</button>
+        <button class="px-4 py-2 bg-white rounded-xl shadow-sm filter-btn" data-filter="Low Quantity">Low Quantity</button>
+      </div> -->
       <a href="/admin/products/addproduct">
         <button class="bg-black text-white py-2 px-3 rounded-md">Add Product</button>
       </a>
     </div>
+
     <% if (allproducts && allproducts.length > 0) { %>
-    <div class="overflow-hidden rounded-lg shadow-md max-h-[500px] overflow-y-auto">
-      <table class="table-auto w-full text-left border border-white">
-        <thead class="bg-white whitespace-nowrap">
-          <tr>
-            <th class="px-6 py-4">Image</th>
-            <th class="px-6 py-4">Product Name</th>
-            <th class="px-6 py-4">List Status</th>
-            <th class="px-6 py-4">Stock</th>
-            <th class="px-6 py-4">Category</th> 
-            <th class="px-6 py-4">StockStatus</th>
-            <th class="px-6 py-4">Date</th>
-            <th class="px-6 py-4 text-right">Action</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-300 border bg-white">
-          <% allproducts.forEach((product) => { %>
-          <tr class="hover:bg-gray-100 ">
-            <td class="px-6 py-3">
-              <img src="<%= product.images[0] %>" alt="Product Image" class="w-12 h-12 object-cover rounded-lg">
-            </td>
-            <td class="px-6 py-3 whitespace-nowrap"><%= product.productname %></td>
-            <td class="px-6 py-3 whitespace-nowrap <%= product.isListed === true ? 'text-green-500' : 'text-red-500' %>">
-              <%= product.isListed === true ? 'Listed' : 'Unlisted' %>
-            </td>
-            <td class="px-6 py-3 whitespace-nowrap"><%= product.stock %></td>
-            <td class="px-6 py-3 whitespace-nowrap"><%= product.categoryname %></td> <!-- Displaying Category -->
-            <% if(product.stockstatus.includes('Available')) { %> 
-            <td class="px-6 py-3 text-green-500 whitespace-nowrap"><%= product.stockstatus %></td>
-            <% }else if (product.stockstatus.includes('Out Of Stock')) { %> 
-              <td class="px-6 py-3 text-red-600 whitespace-nowrap"><%= product.stockstatus %></td>
-              <% } else { %>
-                <td class="px-6 py-3 text-orange-400 whitespace-nowrap"><%= product.stockstatus %></td>
-                <% }  %>
-                <td class="px-6 py-3 whitespace-nowrap"><%= new Date(product.updatedAt).toLocaleString() %> </td>
+      <div class="overflow-hidden rounded-lg shadow-md max-h-[500px] overflow-y-auto">
+        <table class="table-auto w-full text-left border border-white">
+          <thead class="bg-white whitespace-nowrap">
+            <tr>
+              <th class="px-6 py-4">Image</th>
+              <th class="px-6 py-4">Product Name</th>
+              <th class="px-6 py-4">List Status</th>
+              <th class="px-6 py-4">Stock</th>
+              <th class="px-6 py-4">Category</th>
+              <th class="px-6 py-4">StockStatus</th>
+              <th class="px-6 py-4">Date</th>
+              <th class="px-6 py-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody id="productTableBody" class="divide-y divide-gray-300 border bg-white">
+            <% allproducts.forEach((product) => { %>
+              <tr class="hover:bg-gray-100">
+                <td class="px-6 py-3">
+                  <img src="<%= product.images[0] %>" alt="Product Image" class="w-12 h-12 object-cover rounded-lg">
+                </td>
+                <td class="px-6 py-3 whitespace-nowrap"><%= product.productname %></td>
+                <td class="px-6 py-3 whitespace-nowrap <%= product.isListed ? 'text-green-500' : 'text-red-500' %>">
+                  <%= product.isListed ? 'Listed' : 'Unlisted' %>
+                </td>
+                <td class="px-6 py-3 whitespace-nowrap"><%= product.stock %></td>
+                <td class="px-6 py-3 whitespace-nowrap"><%= product.categoryname %></td>
+                <td class="px-6 py-3 whitespace-nowrap <%= product.stockstatus === 'Available' ? 'text-green-500' : product.stockstatus === 'Out Of Stock' ? 'text-red-600' : 'text-orange-400' %>">
+                  <%= product.stockstatus %>
+                </td>
+                <td class="px-6 py-3 whitespace-nowrap"><%= new Date(product.updatedAt).toLocaleString() %></td>
                 <td class="px-6 py-3 text-right whitespace-nowrap">
-              <button class="text-gray-600 hover:text-black mx-2" onclick="editProduct('<%=product._id %>')">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button class="text-gray-600 hover:text-black mx-2" data-bs-toggle="modal" data-bs-target="#listProductModal" 
-              data-user-id="<%= product._id %>" data-isListed="<%= product.isListed  %>">
-              <i class="bi bi-card-checklist"></i>              </button>
-            </td>
-          </tr>
-          <% }) %>
-         
-        </tbody>
-      </table>
-    </div>
-    <div class="flex justify-end items-center space-x-4 mt-6">
-      <!-- Previous Button -->
-      <button class="w-10 h-10 flex items-center justify-center rounded-full  hover:text-gray-400  text-black">
-        <span><i class="bi bi-chevron-left"></i></span>
-      </button>
-    
-      <!-- Page Numbers -->
-      <button class="w-10 h-10 flex items-center justify-center rounded-full   text-black hover:bg-gray-200">
-        1
-      </button>
-      <button class="w-10 h-10 flex items-center justify-center rounded-full bg-black text-white border-2 border-black">
-        2
-      </button>
-    
-    
-      <!-- Next Button -->
-      <button class="w-10 h-10 flex items-center justify-center rounded-full  hover:text-gray-400 border-black ">
-        <span><i class="bi bi-chevron-right"></i></span>
-      </button>
-    </div>
-    
+                  <button class="text-gray-600 hover:text-black mx-2" onclick="editProduct('<%=product._id %>')">
+                    <i class="bi bi-pencil"></i>
+                  </button>
+                  <button class="text-gray-600 hover:text-black mx-2" data-bs-toggle="modal" data-bs-target="#listProductModal" data-user-id="<%= product._id %>" data-isListed="<%= product.isListed %>">
+                    <i class="bi bi-card-checklist"></i>
+                  </button>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex justify-end items-center space-x-4 mt-6">
+        <% if (currentPage > 1) { %>
+          <a href="/admin/products?page=<%= currentPage - 1 %>&limit=10">
+            <button class="w-10 h-10 flex items-center justify-center rounded-full hover:text-gray-400 text-black">
+              <i class="bi bi-chevron-left"></i>
+            </button>
+          </a>
+        <% } else { %>
+          <button class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 cursor-not-allowed">
+            <i class="bi bi-chevron-left"></i>
+          </button>
+        <% } %>
+
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <a href="/admin/products?page=<%= i %>&limit=10">
+            <button class="w-10 h-10 flex items-center justify-center rounded-full <%= currentPage === i ? 'bg-black text-white' : 'text-black hover:bg-gray-200' %>">
+              <%= i %>
+            </button>
+          </a>
+        <% } %>
+
+        <% if (currentPage < totalPages) { %>
+          <a href="/admin/products?page=<%= currentPage + 1 %>&limit=10">
+            <button class="w-10 h-10 flex items-center justify-center rounded-full hover:text-gray-400 text-black">
+              <i class="bi bi-chevron-right"></i>
+            </button>
+          </a>
+        <% } else { %>
+          <button class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 cursor-not-allowed">
+            <i class="bi bi-chevron-right"></i>
+          </button>
+        <% } %>
+      </div>
+      
+    <% } else { %>
+      <div class="p-6">
+        <p class="text-center text-gray-500">No products found.</p>
+      </div>
+    <% } %>
   </div>
 </div>
-<% } else { %>
-<div class="p-6">
-  <p class="text-center text-gray-500">No products found.</p>
-</div>
-<% } %>
 
 <div class="modal fade" id="listProductModal" tabindex="-1" aria-labelledby="listProductModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered"> 

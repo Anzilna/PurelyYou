@@ -5,11 +5,20 @@
 
   <div class="px-[300px] mt-3 flex justify-center">
     <% if (order) { %>
-    <div id="fororderboxes" class="p-6 bg-white rounded-xl shadow-sm flex flex-col mb-3 gap-2" data-order='<%- JSON.stringify(order) %>'></div>
+    <div id="fororderboxes" class="p-6 bg-white rounded-xl shadow-sm flex flex-col mb-3 gap-2" data-order='<%= JSON.stringify(order) %>'></div>
     <% } %>
   </div>
 
   <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const orderData = document.getElementById('fororderboxes').dataset.order;
+      const order = JSON.parse(orderData);
+      console.log(order);
+      
+      renderOrderDetails(order);
+    });
+
+
 function renderOrderDetails(order) {
   const container = document.getElementById('fororderboxes');
   const isStatusDisabled = order.orderstatus === 'Delivered' || order.orderstatus === 'Cancelled';
@@ -94,11 +103,7 @@ function renderOrderDetails(order) {
 }
 
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const orderData = document.getElementById('fororderboxes').dataset.order;
-      const order = JSON.parse(orderData);
-      renderOrderDetails(order);
-    });
+    
 
     async function updateDeliveryStatus(orderId) {
   const status = document.getElementById('deliveryStatus').value;

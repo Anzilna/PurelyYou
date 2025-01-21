@@ -7,13 +7,163 @@
     <%- include("partials/Head"); -%>
 
 
-      <!-- Main Content Area -->
-      <div class="p-6">
-        <div class="">
-          <h3 class="text-lg font-bold">Your Dashboard Content Goes Here!</h3>
+    <div class="p-6 flex flex-col">
+      <div class="dashboard flex flex-col gap-16">
+        <div class="stats flex gap-[130px]">
+          <div id="totalCustomersBox" class="stat-box bg-white rounded-xl flex-[1] shadow-md flex items-center flex-col justify-center py-[50px] px-[100px]">
+            <div id="totalCustomers" class="text-5xl font-semibold">0</div>
+            <div>Total Customers</div>
+          </div>
+          <div id="totalRevenueBox" class="stat-box bg-white rounded-xl flex flex-[1] items-center flex-col shadow-md justify-center px-[100px]">
+            <div id="totalRevenue" class="text-5xl font-semibold">0</div>
+            <div>Total Revenue</div>
+          </div>
+          <div id="totalSalesBox" class="stat-box bg-white rounded-xl flex flex-[1] items-center flex-col shadow-md justify-center px-[100px]">
+            <div id="totalSales" class="text-5xl font-semibold">0</div>
+            <div>Product Sales</div>
+          </div>
+        </div>
+    
+        <div class="top-lists flex gap-5">
+          <div class="flex-[1] py-6 flex flex-col rounded-xl m-0 gap-3 items-center shadow-md bg-white">
+            <h3 class="text-3xl font-medium m-0">Top 5 Products</h3>
+            <ul id="topProducts" class="flex flex-col gap-2 font-normal items-center justify-center"></ul>
+          </div>
+          <div class="flex-[1] py-6 flex flex-col rounded-xl gap-3 items-center shadow-md bg-white">
+            <h3 class="text-3xl font-medium items-center m-0">Top Categories</h3>
+            <ul id="topCategories" class="flex flex-col gap-2 items-center justify-center font-normal"></ul>
+          </div>
+        </div>
+    
+        <div>
+          <div class="flex items-center gap-4">
+            <h3 class="text-2xl font-medium">Sales Chart</h3>
+            <select id="filterInterval" class="bg-gray-200 px-4 py-2 rounded-lg">
+              <option value="yearly">Yearly</option>
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+              <option value="daily">Daily</option>
+            </select>
+          </div>
+          <canvas id="salesChart"></canvas>
         </div>
       </div>
+    </div>
+
     </main>
   </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+ <script>
+  async function fetchDashboardData() {
+    try {
+      const response = await fetch('/admin/dashboardfetch');
+      const data = await response.json();
+
+      document.getElementById('totalCustomers').textContent = data.totalCustomers;
+      document.getElementById('totalRevenue').textContent = `₹${data.totalRevenue}`;
+      document.getElementById('totalSales').textContent = data.totalSales;
+
+      const productList = document.getElementById('topProducts');
+      productList.innerHTML = '';
+      data.topProducts.forEach((product) => {
+        const li = document.createElement('li');
+        li.textContent = `${product.productname} (Sales: ${product.sales})`;
+        productList.appendChild(li);
+      });
+
+      const categoryList = document.getElementById('topCategories');
+      categoryList.innerHTML = '';
+      data.topCategories.forEach((category) => {
+        const li = document.createElement('li');
+        li.textContent = `${category.categoryName} (Sales: ${category.totalSales})`;
+        categoryList.appendChild(li);
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  }
+
+  async function fetchChartData(interval) {
+  try {
+    const response = await fetch(`/admin/dashboardchart?interval=${interval}`);
+    const {salesData} = await response.json();
+
+    console.log("Fetched Chart Data:", salesData); 
+
+    if (Array.isArray(salesData) && salesData.length > 0) {
+      console.log("arra");
+      
+      const labelsData = salesData.map(item => item.label);  
+      const salesDataAmount = salesData.map(item => item.totalSales);  
+      console.log(labelsData,salesDataAmount);
+      
+      salesChart.data.labels = labelsData;
+      salesChart.data.datasets[0].data = salesDataAmount;
+
+      salesChart.update();
+    } else {
+      console.error("Sales data is not available or is empty:", data);
+    }
+  } catch (error) {
+    console.error("Error fetching chart data:", error);
+  }
+}
+
+const ctx = document.getElementById('salesChart').getContext('2d');
+const salesChart = new Chart(ctx, {
+  type: 'bar',
+  data: {
+    labels: [], 
+    datasets: [{
+      label: 'Sales',
+      data: [], 
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 2,
+      tension: 0.4,
+      barThickness: 30, 
+      maxBarThickness: 30,
+    }],
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: true,
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: false, 
+        suggestedMin: 100,  
+        ticks: {
+          stepSize: 500, 
+        },
+        title: {
+          display: true,
+          text: 'Sales Amount (₹)',
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: 'Time Interval',
+        },
+      },
+    },
+  },
+});
+
+
+  // Fetch data on filter change
+  document.getElementById('filterInterval').addEventListener('change', (e) => {
+    fetchChartData(e.target.value);
+  });
+
+  // Initial data fetch
+  fetchDashboardData();
+  fetchChartData('yearly');
+</script>
 </body>
 </html>

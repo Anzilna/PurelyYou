@@ -61,7 +61,7 @@
           class="carousel-control-prev-icon filter invert-0 brightness-0"
           aria-hidden="true"
         ></span>
-        <span class="visually-hidden">Previous</span>
+        <span class="visually-hidden"></span>
       </button>
       <button
         class="carousel-control-next"
@@ -73,111 +73,115 @@
           class="carousel-control-next-icon filter invert-0 brightness-0"
           aria-hidden="true"
         ></span>
-        <span class="visually-hidden">Next</span>
+        <span class="visually-hidden"></span>
       </button>
     </div>
 
-    <!-- New Launches Section with Tailwind Carousel -->
-    <div class="flex gap-2 w-full p-[100px]">
-      <section class="w-full bg-white">
-        <div class="container py-6">
-          <h2 class="text-2xl font-bold mb-6">New Launches</h2>
+    <div class="flex justify-center  p-10"  >
 
-          <!-- Custom Tailwind Carousel -->
-          <div class="relative">
-            <!-- Updated Product Container -->
-            <div
-              id="productContainer"
-              class="flex gap-6 overflow-hidden no-scrollbar"
-            >
-              <% if (products) { %> <% products.forEach((product) => { %>
+      <div class="flex gap-2 w-full  justify-center">
+      
+        <section class="w-full max-w-[1430px] bg-white p-10">
+          <div class="container py-6 w-full">
+            <h2 class="text-2xl font-bold mb-6">New Launches</h2>
+  
+            <div class="relative">
+              
               <div
-                class="min-w-[250px] max-w-[250px] min-h-[640px] relative bg-white rounded-md p-4 cursor-pointer flex flex-col justify-between group"
-                onclick="getProduct('<%= product._id %>')"
+                id="productContainer"
+                class="flex gap-6 overflow-hidden no-scrollbar"
               >
-                <% if (product.discountpercentage) { %>
+                <% if (products) { %> <% products.forEach((product) => { %>
                 <div
-                  class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10"
+                  class="min-w-[250px] max-w-[250px] min-h-[640px] relative bg-white rounded-md p-4 cursor-pointer flex flex-col justify-between group"
+                  onclick="getProduct('<%= product._id %>')"
                 >
-                  <%= `-${product.discountpercentage}%` %>
-                </div>
-                <% } %>
-                <div
-                  class="overflow-hidden min-h-[350px] w-full flex justify-center items-center"
-                >
-                  <img
-                    src="<%= product.images[0] %>"
-                    alt="Product Name"
-                    class="w-full h-full object-fit transform transition-transform duration-500 hover:scale-110"
-                  />
-                </div>
-                <div
-                  class="flex flex-col justify-start items-start mt-4 text-left"
-                >
-                  <h3
-                    class="text-lg font-semibold relative group-hover:text-black"
-                  >
-                    <%= product.productname %>
-                    <div
-                      class="absolute bottom-0 left-0 w-0 h-[2px] bg-black transition-all duration-500 ease-out group-hover:w-full"
-                    ></div>
-                  </h3>
-                  <p class="text-gray-500 text-sm mt-2">
-                    <%= Array.isArray(product.ingredients) ?
-                    product.ingredients.join(', ') : '' %>
-                  </p>
+                  <% if (product.discountpercentage) { %>
                   <div
-                    class="flex justify-start space-x-1 text-black text-sm mt-2"
+                    class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10"
                   >
-                    ★★★★☆
+                    <%= `-${product.discountpercentage}%` %>
                   </div>
-                  <div class="mt-2 mb-2">
-                    <span class="text-black font-bold text-lg"
-                      ><%= `₹${product.saleprice}` %></span
-                    >
-                    <% if (product.discountpercentage) { %>
-                    <span class="line-through text-gray-500 text-sm ml-2"
-                      ><%= `₹${product.regularprice}` %></span
-                    >
-                    <% } %>
+                  <% } %>
+                  <div
+                    class="overflow-hidden min-h-[350px] w-full flex justify-center items-center"
+                  >
+                    <img
+                      src="<%= product.images[0] %>"
+                      alt="Product Name"
+                      class="w-full h-full object-fit transform transition-transform duration-500 hover:scale-110"
+                    />
                   </div>
+                  <div
+                    class="flex flex-col justify-start items-start mt-4 text-left"
+                  >
+                    <h3
+                      class="text-lg font-semibold relative group-hover:text-black"
+                    >
+                      <%= product.productname %>
+                      <div
+                        class="absolute bottom-0 left-0 w-0 h-[2px] bg-black transition-all duration-500 ease-out group-hover:w-full"
+                      ></div>
+                    </h3>
+                    <p class="text-gray-500 text-sm mt-2">
+                      <%= Array.isArray(product.ingredients) ?
+                      product.ingredients.join(', ') : '' %>
+                    </p>
+                    <div
+                      class="flex justify-start space-x-1 text-black text-sm mt-2"
+                    >
+                      ★★★★☆
+                    </div>
+                    <div class="mt-2 mb-2">
+                      <span class="text-black font-bold text-lg"
+                        ><%= `₹${product.saleprice}` %></span
+                      >
+                      <% if (product.discountpercentage) { %>
+                      <span class="line-through text-gray-500 text-sm ml-2"
+                        ><%= `₹${product.regularprice}` %></span
+                      >
+                      <% } %>
+                    </div>
+                  </div>
+                  <button
+                    class="bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all mt-auto"
+                  >
+                    View item
+                  </button>
                 </div>
-                <!-- Sticky Add to Cart Button -->
-                <button
-                  class="bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all mt-auto"
-                >
-                  Add to cart
-                </button>
+                <% }) %> <% } %>
               </div>
-              <% }) %> <% } %>
+  
+              <div
+                class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block"
+                id="prevBtn"
+              >
+                <span class="text-xl"><i class="bi bi-chevron-left"></i></span>
+              </div>
+              <div
+                class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block"
+                id="nextBtn"
+              >
+                <span class="text-xl"><i class="bi bi-chevron-right"></i></span>
+              </div>
             </div>
-
-            <!-- Navigation Buttons -->
-            <div
-              class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block"
-              id="prevBtn"
-            >
-              <span class="text-xl"><i class="bi bi-chevron-left"></i></span>
-            </div>
-            <div
-              class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block"
-              id="nextBtn"
-            >
-              <span class="text-xl"><i class="bi bi-chevron-right"></i></span>
+  
+            <div class="flex justify-center mt-8">
+              <button
+                class="border border-black font-semibold px-6 py-2 hover:bg-black hover:text-white transition-all"
+                onclick="viewall()"
+              >
+                View all products
+              </button>
             </div>
           </div>
-
-          <div class="flex justify-center mt-8">
-            <button
-              class="border border-black font-semibold px-6 py-2 hover:bg-black hover:text-white transition-all"
-              onclick="viewall()"
-            >
-              View all products
-            </button>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
+      
     </div>
+
+   
+
   </div>
 
   <div class="p-6 m-3">
@@ -195,7 +199,7 @@
   </div>
 
   <div class="h-auto p-10">
-    <div class="mb-3 flex justify-center md:justify-start">
+    <div class="mb-6 flex justify-center md:justify-start ml-7">
       <h1 class="text-2xl font-bold px-3">Shop by Category</h1>
     </div>
 
@@ -255,13 +259,12 @@
     </div>
   </div>
   <script>
-    // Handling Carousel Navigation Logic
     const prevBtn = document.getElementById("prevBtn");
     const nextBtn = document.getElementById("nextBtn");
     const productContainer = document.getElementById("productContainer");
     const productCard = productContainer.querySelector("div");
-    const productCardWidth = productCard.offsetWidth + 24; // Add margin (24px)
-    const scrollAmount = productCardWidth * 5; // Width for 5 cards
+    const productCardWidth = productCard.offsetWidth + 24;
+    const scrollAmount = productCardWidth * 5;
 
     nextBtn.addEventListener("click", () => {
       productContainer.scrollBy({
@@ -278,13 +281,13 @@
     });
 
     function categoryview(id) {
-      location.assign(`/products/viewallproducts/${id}?viewid=allcategory`);
+      location.assign(`/products/viewallproducts/?filterbycategory=${id}`);
     }
     function getProduct(id) {
       location.assign(`/productdetails/${id}`);
     }
     function viewall() {
-      location.assign("/products/viewallproducts/11?viewid=newlaunches");
+      location.assign(`/products/viewallproducts`);
     }
   </script>
 

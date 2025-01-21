@@ -36,9 +36,8 @@ adminSchema.pre('save',async function(next){
         }
     }
         next()
-    
-
 })
+
 
 const categorySchema=new mongoose.Schema({
     categoryname:{
@@ -69,134 +68,110 @@ const categorySchema=new mongoose.Schema({
 },{
     timestamps:true
 })
-const ProductSchema=new mongoose.Schema({
 
-   productname:{
-    type:String,
-    required:true,
 
-   },
-   productcode:{
-    type:String,
-    required:true,
-   },
-   category:{
-    type:mongoose.Schema.ObjectId,
-    ref:'categories',
-    required:true
-   },
-   categoryname:{
-    type:String,
-    required:true
-   },
-   regularprice:{
-    type:Number,
-    required:true
 
-   }, description: {
-    type: String,
-    required: true,
-  },
-  stock: {
-    type: Number,
-    default: 0,
-  },
-  images:{
-   type: [String],
-  required:true,
-  default:[]
-  },
-  mlQuantity:{
- type:String,
- required:true
-  },
-  discountpercentage:{
-    type:Number,
-    required:false,
-    default:0,
-  },
-  saleprice:{
-     type:Number,
-     required:true
-  },
-  ingredients:{
-     type:[String],
-     default:[]
-  },
-  stockstatus:{
-    type:String,
-    enum:["Out Of Stock","Low Quantity","Available"],
-    required:true
-  },
-  isListed:{
-    type:Boolean,
-    default:true
-  },
-  discountedprice:{
-    type:Number,
-    default:0
-  }
-
-},{
-    timestamps:true
-})
-
-const offerSchema = new mongoose.Schema({
-  offername: {
-    type: String,
-    required: [true, 'Offer name is required.'],
-    trim: true,
-    minlength: [3, 'Offer name must be at least 3 characters long.'],
-    maxlength: [100, 'Offer name must not exceed 100 characters.'],
-  },
-  discountPercentage: {
-    type: Number,
-    required: [true, 'Discount percentage is required.'],
-    min: [1, 'Discount percentage must be at least 1.'],
-    max: [100, 'Discount percentage cannot exceed 100.'],
-  },
-  startDate: {
-    type: Date,
-    required: [true, 'Start date is required.'],
-  },
-  endDate: {
-    type: Date,
-    required: [true, 'End date is required.'],
-    validate: {
-      validator: function (value) {
-        return value > this.startDate;
+const ProductSchema = new mongoose.Schema(
+  {
+    productname: {
+      type: String,
+      required: true,
+    },
+    productcode: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'categories',
+      required: true,
+    },
+    categoryname: {
+      type: String,
+      required: true,
+    },
+    regularprice: {
+      type: Number,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    stock: {
+      type: Number,
+      default: 0,
+    },
+    images: {
+      type: [String],
+      required: true,
+      default: [],
+    },
+    sales:{
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    mlQuantity: {
+      type: String,
+      required: true,
+    },
+    discountpercentage: {
+      type: Number,
+      required: false,
+      default: 0,
+    },
+    saleprice: {
+      type: Number,
+      required: true,
+    },
+    ingredients: {
+      type: [String],
+      default: [],
+    },
+    stockstatus: {
+      type: String,
+      enum: ['Out Of Stock', 'Low Quantity', 'Available'],
+      required: true,
+    },
+    isListed: {
+      type: Boolean,
+      default: true,
+    },
+    discountedprice: {
+      type: Number,
+      default: 0,
+    },
+    isSpecialOffer: {
+      type: Boolean,
+      default: false,
+    },
+    specialOfferDiscount: {
+      type: Number,
+      default: 0, 
+      validate: {
+        validator: function (value) {
+          return value >= 0 && value <= 100; 
+        },
+        message: 'Special offer discount must be between 0 and 100',
       },
-      message: 'End date must be later than the start date.',
+    },
+    productDiscountPercentage: {
+      type: Number,
+      default: 0, 
     },
   },
-  eligibilityCriteria: {
-    type: String,
-    required: [true, 'Eligibility criteria are required.'],
-    trim: true,
-    minlength: [10, 'Eligibility criteria must be at least 10 characters long.'],
-  },
-  description: {
-    type: String,
-    required: [true, 'Description is required.'],
-    trim: true,
-    minlength: [10, 'Description must be at least 10 characters long.'],
-  },
-});
-
-offerSchema.pre('save', function(next) {
-  if (this.startDate) {
-    this.startDate = new Date(this.startDate);
+  {
+    timestamps: true,
   }
+);
 
-  if (this.endDate) {
-    this.endDate = new Date(this.endDate);
-  }
 
-  next();  
-});
 
+//product pre hook
 
 ProductSchema.pre('save', function (next) {
+
   if (this.stock > 10) {
     this.stockstatus = 'Available';
   } else if (this.stock <= 10 && this.stock > 0) {
@@ -204,9 +179,24 @@ ProductSchema.pre('save', function (next) {
   } else {
     this.stockstatus = 'Out Of Stock';
   }
-  
-  next(); 
+
+  if (this.isSpecialOffer ) {
+    if (this.specialOfferDiscount > this.productDiscountPercentage ) {
+      this.discountpercentage = this.specialOfferDiscount;
+    }else{
+      this.discountpercentage = this.productDiscountPercentage;
+    }
+  }else{
+    this.discountpercentage = this.productDiscountPercentage;
+  }
+
+  const discountedprice = (this.regularprice * this.discountpercentage) / 100;
+  this.discountedprice = discountedprice; 
+  this.saleprice = Math.round(this.regularprice - discountedprice);
+
+  next();
 });
+
 
 const couponSchema = new mongoose.Schema(
   {
@@ -273,9 +263,74 @@ const couponSchema = new mongoose.Schema(
   }
 );
 
+
+const offerSchema = new mongoose.Schema({
+  offerName: { 
+    type: String, 
+    unique: true, 
+    required: true, 
+    trim: true 
+    
+  },
+  discountPercentage: { 
+    type: Number, 
+    required: true, 
+    min: 1, 
+    max: 100 
+  },
+  startDate: { 
+    type: Date, 
+    required: true 
+  },
+  endDate: { 
+    type: Date, 
+    required: true 
+  },
+  eligibilityCriteria: { 
+    type: String, 
+    required: true, 
+    trim: true 
+  },
+  description: { 
+    type: String, 
+    required: true, 
+    trim: true 
+  },
+  category: {
+    id: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: 'categories', 
+      required: true 
+    },
+    name: { 
+      type: String, 
+      required: true 
+    },
+  },
+  status: { 
+    type: Boolean, 
+    default: true 
+  },
+}, { timestamps: true });
+
+
+
+offerSchema.pre('save', function(next) {
+  if (this.startDate) {
+    this.startDate = new Date(this.startDate);
+  }
+
+  if (this.endDate) {
+    this.endDate = new Date(this.endDate);
+  }
+
+  next();  
+});
+
 module.exports={
     AdminModel:mongoose.model('admin',adminSchema),
     CategoryModel:mongoose.model('categories',categorySchema),
     ProductModel:mongoose.model('products',ProductSchema),
-    CouponModel : mongoose.model('Coupon', couponSchema)
+    CouponModel : mongoose.model('Coupon', couponSchema),
+    OfferModel : mongoose.model('Offer', offerSchema)
 }

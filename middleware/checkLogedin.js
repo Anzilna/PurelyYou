@@ -9,7 +9,7 @@ const checklogin=async (req,res,next)=>{
          try {
             console.log("before after");
             const result =await jwt.verify(token,process.env.JWT_SECRET)
-            res.redirect('/user/home')
+            res.redirect('/')
         } catch (error) {
             next();
         }

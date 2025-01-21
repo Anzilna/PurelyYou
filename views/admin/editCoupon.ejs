@@ -77,7 +77,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-black mb-1">Maximum Amount</label>
+            <label class="block text-sm font-medium text-black mb-1">Maximum Cap Amount</label>
             <div class="error text-red-500 mb-1" id="error-maxAmount"></div>
             <input
               type="number"
@@ -114,7 +114,19 @@
             ><%= coupon.description %></textarea>
           </div>
         </div>
-
+        <div>
+          <label class="block text-sm font-medium text-black mb-1">Status</label>
+          <div class="error text-red-500 mb-1" id="error-status"></div>
+          <select
+            name="status"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            required
+          >
+            <option value="active" <%= coupon.status === 'active' ? 'selected' : '' %>>Active</option>
+            <option value="inactive" <%= coupon.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+          </select>
+        </div>
+        
         <div>
           <label class="block text-sm font-medium text-black mb-1">Usage Limit</label>
           <div class="error text-red-500 mb-1" id="error-usageLimit"></div>
@@ -168,82 +180,89 @@
         }
       });
     });
-
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
+  e.preventDefault();
 
-      document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
+  document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
 
-      const couponId = form.couponId.value.trim();
-      const couponCode = form.couponCode.value.trim();
-      const discountPercentage = form.discountPercentage.value.trim();
-      const startDate = form.startDate.value;
-      const endDate = form.endDate.value;
-      const minAmount = form.minAmount.value.trim();
-      const maxAmount = form.maxAmount.value.trim();
-      const eligibilityCriteria = form.eligibilityCriteria.value.trim();
-      const description = form.description.value.trim();
-      const usageLimit = form.usageLimit.value.trim();
-      const noUsageLimit = form.noUsageLimit.checked;
+  const couponId = form.couponId.value.trim();
+  const couponCode = form.couponCode.value.trim();
+  const discountPercentage = form.discountPercentage.value.trim();
+  const startDate = form.startDate.value;
+  const endDate = form.endDate.value;
+  const minAmount = form.minAmount.value.trim();
+  const maxAmount = form.maxAmount.value.trim();
+  const eligibilityCriteria = form.eligibilityCriteria.value.trim();
+  const description = form.description.value.trim();
+  const usageLimit = form.usageLimit.value.trim();
+  const noUsageLimit = form.noUsageLimit.checked;
+  const status = form.status.value; // Get status value
 
-      let isValid = true;
+  let isValid = true;
 
-      if (!couponCode) {
-        document.getElementById('error-couponCode').textContent = 'Coupon code is required.';
-        isValid = false;
-      }
+  if (!couponCode) {
+    document.getElementById('error-couponCode').textContent = 'Coupon code is required.';
+    isValid = false;
+  }
 
-      if (!discountPercentage || isNaN(discountPercentage) || discountPercentage <= 0 || discountPercentage > 100) {
-        document.getElementById('error-discount').textContent = 'Enter a valid discount percentage (1-100).';
-        isValid = false;
-      }
+  if (!discountPercentage || isNaN(discountPercentage) || discountPercentage <= 0 || discountPercentage > 100) {
+    document.getElementById('error-discount').textContent = 'Enter a valid discount percentage (1-100).';
+    isValid = false;
+  }
 
-      if (!startDate || !endDate || new Date(startDate) >= new Date(endDate)) {
-        document.getElementById('error-endDate').textContent = 'End date must be later than the start date.';
-        isValid = false;
-      }
+  if (!startDate || !endDate || new Date(startDate) >= new Date(endDate)) {
+    document.getElementById('error-endDate').textContent = 'End date must be later than the start date.';
+    isValid = false;
+  }
 
-      if (!noUsageLimit && (!usageLimit || isNaN(usageLimit) || usageLimit <= 0)) {
-        document.getElementById('error-usageLimit').textContent = 'Enter a valid usage limit.';
-        isValid = false;
-      }
+  if (!noUsageLimit && (!usageLimit || isNaN(usageLimit) || usageLimit <= 0)) {
+    document.getElementById('error-usageLimit').textContent = 'Enter a valid usage limit.';
+    isValid = false;
+  }
 
-      if (!isValid) {
-        return; 
-      }
+  if (!status || (status !== 'active' && status !== 'inactive')) {
+    document.getElementById('error-status').textContent = 'Please select a valid status.';
+    isValid = false;
+  }
 
-      const formData = new FormData(e.target);
-      const formObject = {};
-      formData.forEach((value, key) => {
-        formObject[key] = value;
-      });
-      formObject.noUsageLimit = noUsageLimit;
+  if (!isValid) {
+    return;
+  }
 
-      try {
-        const response = await fetch(`/admin/coupons/editcoupon/${couponId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formObject), 
-        });
+  const formData = new FormData(e.target);
+  const formObject = {};
+  formData.forEach((value, key) => {
+    formObject[key] = value;
+  });
+  formObject.noUsageLimit = noUsageLimit;
+  formObject.status = status; // Add status to payload
 
-        const result = await response.json();
-
-        if (response.ok) {
-          location.assign('/admin/coupons');
-        } else if (result.errors) {
-          Object.entries(result.errors).forEach(([key, error]) => {
-            const errorElement = document.getElementById(`error-${key}`);
-            if (errorElement) {
-              errorElement.textContent = error;
-            }
-          });
-        }
-      } catch (err) {
-        alert('Error while submitting the form. Please try again.');
-      }
+  try {
+    const response = await fetch(`/admin/coupons/editcoupon/${couponId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formObject),
     });
+
+    const result = await response.json();
+
+    if (response.ok) {
+      location.assign('/admin/coupons');
+    } else if (result.errors) {
+      Object.entries(result.errors).forEach(([key, error]) => {
+        const errorElement = document.getElementById(`error-${key}`);
+        if (errorElement) {
+          errorElement.textContent = error;
+        }
+      });
+    }
+  } catch (err) {
+    alert('Error while submitting the form. Please try again.');
+  }
+});
+
 
     function back() {
       location.assign('/admin/coupons');

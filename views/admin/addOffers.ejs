@@ -2,7 +2,8 @@
 <body class="bg-gray-100 font-sans text-gray-800">
   <%- include("partials/sidebar"); -%>
   <%- include("partials/Head"); -%>
-
+  <div id="notification" class=" text-sm mt-2 ">
+  </div>
   <div class="p-6 mt-3">
     <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-8">
       <h2 class="text-3xl font-semibold text-black mb-8 text-center">Add a New Offer</h2>
@@ -49,7 +50,24 @@
               class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
             />
           </div>
-
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Category</label>
+            <div class="error text-red-500 mb-1" id="error-category"></div>
+            <select
+              name="categoryId"
+              id="category-select"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            >
+              <option value="">Select a category</option>
+              <% categories.forEach(category => { %>
+                <option value="<%= category._id %>" data-name="<%= category.categoryname %>">
+                  <%= category.categoryname %>
+                </option>
+              <% }); %>
+            </select>
+          </div>
+          
+          
           <div class="col-span-1 md:col-span-2">
             <label class="block text-sm font-medium text-black mb-1">Eligibility Criteria</label>
             <div class="error text-red-500 mb-1" id="error-eligibilityCriteria"></div>
@@ -95,112 +113,162 @@
   <script>
     const form = document.getElementById('offer-form');
     
-    // Remove validation errors dynamically as the user types
     form.querySelectorAll('input, textarea').forEach((input) => {
       input.addEventListener('input', (e) => {
         const errorElement = document.getElementById(`error-${e.target.name}`);
         if (errorElement) {
-          errorElement.textContent = ''; // Clear the error message
+          errorElement.textContent = ''; 
         }
       });
     });
     
-    // Handle form submission
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-    
-      // Clear all previous error messages
-      document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
-    
-      // Retrieve form data
-      const offerName = form.offername.value.trim();  // Correct form field reference
-      const discountPercentage = form.discountPercentage.value.trim();  // Correct form field reference
-      const startDate = form.startDate.value;
-      const endDate = form.endDate.value;
-      const eligibilityCriteria = form.eligibilityCriteria.value.trim();
-      const description = form.description.value.trim();
-    
-      let isValid = true;
-    
-      // Validate offer name
-      if (!offerName) {
-        document.getElementById('error-offername').textContent = 'Offer name is required.';
-        isValid = false;
-      }
-    
-      // Validate discount percentage
-      if (!discountPercentage || isNaN(discountPercentage) || discountPercentage <= 0 || discountPercentage > 100) {
-        document.getElementById('error-discount').textContent = 'Enter a valid discount percentage (1-100).';
-        isValid = false;
-      }
-    
-      // Validate start date
-      if (!startDate) {
-        document.getElementById('error-startDate').textContent = 'Start date is required.';
-        isValid = false;
-      }
-    
-      // Validate end date
-      if (!endDate) {
-        document.getElementById('error-endDate').textContent = 'End date is required.';
-        isValid = false;
-      } else if (new Date(startDate) >= new Date(endDate)) {
-        document.getElementById('error-endDate').textContent = 'End date must be later than the start date.';
-        isValid = false;
-      }
-    
-      // Validate eligibility criteria
-      if (!eligibilityCriteria) {
-        document.getElementById('error-eligibilityCriteria').textContent = 'Eligibility criteria are required.';
-        isValid = false;
-      }
-    
-      // Validate description
-      if (!description) {
-        document.getElementById('error-description').textContent = 'Description is required.';
-        isValid = false;
-      }
-    
-      if (!isValid) {
-        return;  // Stop if validation fails
-      }
-    
-      // Convert FormData to a plain object
-      const formData = new FormData(e.target);
-      const formObject = {};
-      formData.forEach((value, key) => {
-        formObject[key] = value;
-      });
-    
-      try {
-        const response = await fetch('/admin/offers/addoffers', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formObject), // Send plain object as JSON
-        });
-    
-        const result = await response.json();
-    
-        if (result.saved) {
-          location.assign('/admin/offers');
-        } else if (result.errors) {
-          Object.entries(result.errors).forEach(([key, error]) => {
-            const errorElement = document.getElementById(`error-${key}`);
-            if (errorElement) {
-              errorElement.textContent = error;
-            }
-          });
-        }
-      } catch (err) {
-        alert('Error while submitting the form. Please try again.');
-      }
+  e.preventDefault();
+
+  // Clear all previous error messages
+  document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
+
+  // Retrieve form data
+  const offerName = form.offername.value.trim();
+  const discountPercentage = form.discountPercentage.value.trim();
+  const startDate = form.startDate.value;
+  const endDate = form.endDate.value;
+  const eligibilityCriteria = form.eligibilityCriteria.value.trim();
+  const description = form.description.value.trim();
+  
+  // Retrieve selected category details
+  const categorySelect = document.getElementById('category-select');
+  const categoryId = categorySelect.value;
+  const categoryName = categorySelect.options[categorySelect.selectedIndex]?.dataset.name || ''; // Get the category name
+
+  let isValid = true;
+
+  // Validate category
+  if (!categoryId) {
+    document.getElementById('error-category').textContent = 'Category is required.';
+    isValid = false;
+  }
+
+  // Validate offer name
+  if (!offerName) {
+    document.getElementById('error-offername').textContent = 'Offer name is required.';
+    isValid = false;
+  }
+
+  // Validate discount percentage
+  if (!discountPercentage || isNaN(discountPercentage) || discountPercentage <= 0 || discountPercentage > 100) {
+    document.getElementById('error-discount').textContent = 'Enter a valid discount percentage (1-100).';
+    isValid = false;
+  }
+
+  // Validate start date
+  if (!startDate) {
+    document.getElementById('error-startDate').textContent = 'Start date is required.';
+    isValid = false;
+  }
+
+  // Validate end date
+  if (!endDate) {
+    document.getElementById('error-endDate').textContent = 'End date is required.';
+    isValid = false;
+  } else if (new Date(startDate) >= new Date(endDate)) {
+    document.getElementById('error-endDate').textContent = 'End date must be later than the start date.';
+    isValid = false;
+  }
+
+  // Validate eligibility criteria
+  if (!eligibilityCriteria) {
+    document.getElementById('error-eligibilityCriteria').textContent = 'Eligibility criteria are required.';
+    isValid = false;
+  }
+
+  // Validate description
+  if (!description) {
+    document.getElementById('error-description').textContent = 'Description is required.';
+    isValid = false;
+  }
+
+  if (!isValid) {
+    return; // Stop if validation fails
+  }
+
+  // Create the form object
+  const formObject = {
+    offername: offerName,
+    discountPercentage,
+    startDate,
+    endDate,
+    eligibilityCriteria,
+    description,
+    categoryId,
+    categoryName, 
+  };
+
+  try {
+    const response = await fetch('/admin/offers/addoffers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formObject), 
     });
-    
+
+    const result = await response.json();
+    console.log("kkooo",result);
+    if (result.saved) {
+      location.assign('/admin/offers');
+    } else if (result.message) {  
+      showNotification(result.message)
+    }
+  } catch (err) {
+    alert('Error while submitting the form. Please try again.');
+  }
+});
+
     function back() {
       location.assign('/admin/offers');
     }
+
+    
+
+  function showNotification(message) {
+  const notification = document.getElementById("notification");
+
+  notification.className = "";
+
+  notification.classList.add(
+    "p-4",
+    "mb-4",
+    "text-sm",
+    "rounded-lg",
+    "fixed",
+    "bottom-10",
+    "right-4",
+    "z-50",
+    "min-w-[150px]",
+    "text-white",
+    "bg-black",
+    "dark:bg-gray-800",
+    "dark:text-green-400",
+    "role",
+    "alert"
+  );
+
+  notification.innerHTML = ` ${message}`;
+
+  notification.classList.remove("hidden");
+
+  setTimeout(() => {
+    hideNotification();
+  }, 5000);
+}
+
+function hideNotification() {
+  const notification = document.getElementById("notification");
+  notification.className = "hidden";
+}
+
+
     </script>
     
 </body>

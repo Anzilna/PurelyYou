@@ -3,7 +3,7 @@
   <div class="relative flex items-center justify-between p-4 text-xs">
     <div class="flex items-center space-x-1 text-gray-700">
       <a href="/shoppingcart" class="flex justify-center">
-        <i class="bi bi-arrow-left-short fs-4"></i>
+        <i class="bi bi-arrow-left-short text-lg"></i>
         <button class="focus:outline-none">Back to Shopping Cart</button>
       </a>
     </div>
@@ -63,12 +63,12 @@
             </div>
           </div>
         </div>
-        <div class="p-3 bg-white cursor-pointer">
+        <div class="p-3 bg-white cursor-pointer" id="address-box">
           <div
             class="flex justify-between"
             onclick="toggleDropdown('billingadress')"
           >
-            <div>Select address</div>
+            <div>Address</div>
             <div
               id="addresses-data"
               class=""
@@ -89,7 +89,7 @@
                 <div class="flex items-center mb-3">
                   <input type="radio" id="address-<%= index %>"
                   name="billingAddress" value="<%= addr._id %>" <%= index === 0
-                  ? 'checked' : '' %> class="mr-2" />
+                  ? 'checked' : '' %> class="mr-2 accent-black" />
                   <label
                     for="address-<%= index %>"
                     class="text-sm text-gray-700"
@@ -143,7 +143,7 @@
                     type="radio"
                     name="paymentMethod"
                     value="Wallet"
-                    class="mr-2"
+                    class="mr-2 accent-black"
                     onclick="showPaymentDetails('walletdetails', ['coddetails', 'razorpaydetails'])"
                   />
                   Wallet
@@ -164,7 +164,7 @@
                     type="radio"
                     name="paymentMethod"
                     value="Cash on Delivery"
-                    class="mr-2"
+                    class="mr-2 accent-black"
                     onclick="showPaymentDetails('coddetails', ['walletdetails', 'razorpaydetails'])"
                   />
                   Cash on Delivery (COD)
@@ -175,8 +175,12 @@
                 After clicking 'Complete Purchase', your order will be
                 confirmed, and the payment will be collected in cash at the time
                 of delivery. Please ensure you have the exact amount ready to
-                complete the transaction. Once the delivery is successful, you
-                will receive an email confirmation of your order completion.
+                complete the transaction.
+                <span class="font-semibold"
+                  >COD is applicable only for orders under ₹1000.
+                </span>
+                Once the delivery is successful, you will receive an email
+                confirmation of your order completion
               </div>
             </div>
 
@@ -187,7 +191,7 @@
                     type="radio"
                     name="paymentMethod"
                     value="Razorpay"
-                    class="mr-2"
+                    class="mr-2 accent-black"
                     onclick="showPaymentDetails('razorpaydetails', ['walletdetails', 'coddetails'])"
                   />
                   Razor Pay
@@ -254,7 +258,7 @@
               <div class="py-3 flex flex-col gap-2 border-black border-b-[1px]">
                 <div class="flex justify-between text-xs">
                   <p>Order value</p>
-                  <p>Rs. <%= cart.totalamount %></p>
+                  <p>Rs. <%= cart.totalregularamount %></p>
                 </div>
                 <div class="flex justify-between text-xs">
                   <p>Discount</p>
@@ -278,14 +282,14 @@
               >
                 <p>Total</p>
                 <p>
-                  Rs. <%= cart.totalamount + deliveryCharge -
+                  Rs. <%= cart.totalregularamount + deliveryCharge -
                   cart.totaldiscountamount %>
                 </p>
               </div>
               <div
                 id="cart-data"
                 class="hidden"
-                data-total-amount="<%= cart.totalamount %>"
+                data-total-amount="<%= cart.totalregularamount %>"
                 data-total-discount="<%= cart.totaldiscountamount %>"
                 data-delivery-charge="<%= deliveryCharge %>"
                 data-username="<%= localsUser.username %>"
@@ -324,6 +328,7 @@
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script>
     fetchCheckoutData();
+    const addressBox = document.getElementById("address-box");
     const lastTotalAmountElement = document.getElementById("last-total-amount");
     const addressesElement = document.getElementById("addresses-data");
     const addressList = JSON.parse(
@@ -382,6 +387,8 @@
       cartData.getAttribute("data-delivery-charge")
     );
     let finalOrderAmount = totalAmount - totalDiscount + deliveryCharge;
+
+    console.log("totallllllll", finalOrderAmount);
 
     const username = cartData.getAttribute("data-username");
     const email = cartData.getAttribute("data-email");
@@ -489,6 +496,11 @@
 
           return;
         }
+        if (paymentMethod.includes("Cash on Delivery") && totalAmount > 1000) {
+          return showNotification(
+            "Cash on delivery is unavailable for orders above 1000. please select other paymentMethod."
+          );
+        }
 
         console.log("Final Amount:", finalOrderAmount);
 
@@ -521,6 +533,7 @@
               body: JSON.stringify({
                 amount: finalOrderAmount,
                 currency: "INR",
+                orderData,
               }),
             });
 
@@ -528,15 +541,15 @@
               throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            const { order, key_id } = await response.json();
+            const { pendingOrder, razorpayOrder, key_id } = await response.json();
 
             const options = {
               key: key_id,
-              amount: order.amount,
-              currency: order.currency,
+              amount: razorpayOrder.amount,
+              currency: razorpayOrder.currency,
               name: "PurelyYou",
               description: "Test Transaction",
-              order_id: order.id,
+              order_id: razorpayOrder.id,
               handler: async function (response) {
                 console.log("Payment successful!", response);
 
@@ -556,49 +569,25 @@
                         razorpay_order_id: response.razorpay_order_id,
                         razorpay_payment_id: response.razorpay_payment_id,
                         razorpay_signature: response.razorpay_signature,
+                        pendingOrderId: pendingOrder._id,
                       }),
                     }
                   );
+                  const { order, success } = await verifyResponse.json();
 
-                  const verifyResult = await verifyResponse.json();
-
-                  if (verifyResponse.ok && verifyResult.success) {
+                  if (verifyResponse.ok && success) {
                     showNotification(
                       "Payment verified successfully! Thank you for your purchase."
                     );
-
-                    const orderResponse = await fetch(
-                      "/shoppingcart/checkout/order",
-                      {
-                        method: "POST",
-                        body: JSON.stringify(orderData),
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                      }
+                    location.assign(
+                      `/shoppingcart/checkout/orderplaced/${order._id}`
                     );
-
-                    const orderDataResult = await orderResponse.json();
-
-                    if (orderResponse.ok) {
-                      console.log(
-                        "Order completed successfully:",
-                        orderDataResult
-                      );
-                      showNotification(orderDataResult.message);
-                      location.assign(
-                        `/shoppingcart/checkout/orderplaced/${orderDataResult.order._id}`
-                      );
-                    } else {
-                      console.error("Error completing order:", orderDataResult);
-                      showNotification(orderDataResult.error);
-                    }
                   } else {
                     showNotification(
                       "Payment verification failed. Please contact support."
                     );
 
-                    console.error("Payment verification failed:", verifyResult);
+                    console.error("Payment verification failed:");
                   }
                 } catch (error) {
                   console.error("Error verifying payment:", error);
@@ -826,6 +815,10 @@
           element.classList.add("hidden");
         }
       });
+    }
+
+    function addressbox(address) {
+      addressBox.innerHTML = ``;
     }
   </script>
 </body>

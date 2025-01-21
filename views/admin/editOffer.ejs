@@ -1,0 +1,270 @@
+<%- include("partials/adminHeader"); -%>
+<body class="bg-gray-100 font-sans text-gray-800">
+  <%- include("partials/sidebar"); -%>
+  <%- include("partials/Head"); -%>
+  <div id="notification" class=" text-sm mt-2 "></div>
+  <div class="p-6 mt-3">
+    <div class="max-w-5xl mx-auto bg-white rounded-lg shadow-md p-8">
+      <h2 class="text-3xl font-semibold text-black mb-8 text-center">Edit Offer</h2>
+      <form class="space-y-6" id="offer-form">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Offer Name</label>
+            <div class="error text-red-500 mb-1" id="error-offername"></div>
+            <input
+              type="text"
+              name="offername"
+              placeholder="Type offer name"
+              value="<%= offer.offerName %>"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Discount Percentage</label>
+            <div class="error text-red-500 mb-1" id="error-discount"></div>
+            <input
+              type="number"
+              name="discountPercentage"
+              placeholder="Enter discount percentage"
+              value="<%= offer.discountPercentage %>"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Start Date</label>
+            <div class="error text-red-500 mb-1" id="error-startDate"></div>
+            <input
+              type="date"
+              name="startDate"
+              value="<%= startDateFormatted %>"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">End Date</label>
+            <div class="error text-red-500 mb-1" id="error-endDate"></div>
+            <input
+              type="date"
+              name="endDate"
+              value="<%= endDateFormatted %>"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-black mb-1">Category</label>
+            <div class="error text-red-500 mb-1" id="error-category"></div>
+            <select
+            name="categoryId"
+            id="category-select"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+          >
+            <option value="">Select a category</option>
+            <% categories.forEach(category => { %>
+              <option
+                value="<%= category._id %>"
+                data-name="<%= category.categoryname %>"
+                <%= category.categoryname === offer.category.name? 'selected' : '' %>
+              >
+                <%= category.categoryname %>
+              </option>
+            <% }); %>
+          </select>
+          
+          </div>
+
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-medium text-black mb-1">Eligibility Criteria</label>
+            <div class="error text-red-500 mb-1" id="error-eligibilityCriteria"></div>
+            <textarea
+              name="eligibilityCriteria"
+              placeholder="Describe eligibility criteria for the offer"
+              rows="3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            ><%= offer.eligibilityCriteria %></textarea>
+          </div>
+
+          <div class="col-span-1 md:col-span-2">
+            <label class="block text-sm font-medium text-black mb-1">Description</label>
+            <div class="error text-red-500 mb-1" id="error-description"></div>
+            <textarea
+              name="description"
+              placeholder="Type description here"
+              rows="3"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-black shadow-sm"
+            ><%= offer.description %></textarea>
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-between items-center mt-6">
+          <button
+            type="button"
+            class="px-6 py-2 text-black border border-black rounded-lg hover:bg-gray-100 focus:ring-2 focus:ring-gray-400"
+            onclick="back()"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 text-white bg-black rounded-lg shadow-md hover:bg-gray-800 focus:ring-2 focus:ring-black"
+          >
+            Update Offer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('offer-form');
+    
+
+    form.querySelectorAll('input,textarea').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        const errorElement = document.getElementById(`error-${e.target.name}`);
+        if (errorElement) {
+          errorElement.textContent = ''; 
+        }
+      });
+    });
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      document.querySelectorAll('.error').forEach((el) => (el.textContent = ''));
+
+      const offerName = form.offername.value.trim();
+      const discountPercentage = form.discountPercentage.value.trim();
+      const startDate = form.startDate.value;
+      const endDate = form.endDate.value;
+      const eligibilityCriteria = form.eligibilityCriteria.value.trim();
+      const description = form.description.value.trim();
+      
+      const categorySelect = document.getElementById('category-select');
+      const categoryId = categorySelect.value;
+      const categoryName = categorySelect.options[categorySelect.selectedIndex]?.dataset.name || ''; // Get the category name
+
+      let isValid = true;
+
+      if (!categoryId) {
+        document.getElementById('error-category').textContent = 'Category is required.';
+        isValid = false;
+      }
+
+      if (!offerName) {
+        document.getElementById('error-offername').textContent = 'Offer name is required.';
+        isValid = false;
+      }
+
+      if (!discountPercentage || isNaN(discountPercentage) || discountPercentage <= 0 || discountPercentage > 100) {
+        document.getElementById('error-discount').textContent = 'Enter a valid discount percentage (1-100).';
+        isValid = false;
+      }
+
+      if (!startDate) {
+        document.getElementById('error-startDate').textContent = 'Start date is required.';
+        isValid = false;
+      }
+
+      if (!endDate) {
+        document.getElementById('error-endDate').textContent = 'End date is required.';
+        isValid = false;
+      } else if (new Date(startDate) >= new Date(endDate)) {
+        document.getElementById('error-endDate').textContent = 'End date must be later than the start date.';
+        isValid = false;
+      }
+
+      if (!eligibilityCriteria) {
+        document.getElementById('error-eligibilityCriteria').textContent = 'Eligibility criteria are required.';
+        isValid = false;
+      }
+
+      if (!description) {
+        document.getElementById('error-description').textContent = 'Description is required.';
+        isValid = false;
+      }
+
+      if (!isValid) {
+        return; 
+      }
+
+      
+      const formObject = {
+        offername: offerName,
+        discountPercentage,
+        startDate,
+        endDate,
+        eligibilityCriteria,
+        description,
+        categoryId,
+        categoryName,
+        offerId: "<%= offer._id %>",
+        status:"<%= offer.status %>"
+      };
+
+      try {
+        const response = await fetch(`/admin/offers/editoffer`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formObject), 
+        });
+
+        const result = await response.json();
+        if (result.updated) {
+          location.assign('/admin/offers');
+        } else if (result.message) {  
+          showNotification(result.message);
+        }
+      } catch (err) {
+        alert('Error while submitting the form. Please try again.');
+      }
+    });
+
+    function back() {
+      location.assign('/admin/offers');
+    }
+
+    function showNotification(message) {
+      const notification = document.getElementById("notification");
+
+      notification.className = "";
+
+      notification.classList.add(
+        "p-4",
+        "mb-4",
+        "text-sm",
+        "rounded-lg",
+        "fixed",
+        "bottom-10",
+        "right-4",
+        "z-50",
+        "min-w-[150px]",
+        "text-white",
+        "bg-black",
+        "dark:bg-gray-800",
+        "dark:text-green-400",
+        "role",
+        "alert"
+      );
+
+      notification.innerHTML = ` ${message}`;
+
+      notification.classList.remove("hidden");
+
+      setTimeout(() => {
+        hideNotification();
+      }, 5000);
+    }
+
+    function hideNotification() {
+      const notification = document.getElementById("notification");
+      notification.className = "hidden";
+    }
+
+  </script>
+</body>
+</html>

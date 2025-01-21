@@ -157,9 +157,13 @@
           const result = await fetch(UrlToPost, {
             method: "post",
           });
-          const jsonresult = await result.json();
+
+          if(result.ok){
+            const jsonresult = await result.json();
           if (jsonresult.otp) otperror.textContent = jsonresult.otp || "";
           otperror.style.color = "green";
+          }
+         
         } catch (error) {
           console.log("error in otp new fetch");
         }

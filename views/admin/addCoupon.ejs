@@ -71,7 +71,7 @@
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-black mb-1">Maximum Amount</label>
+            <label class="block text-sm font-medium text-black mb-1">Maximum Cap Amount</label>
             <div class="error text-red-500 mb-1" id="error-maxAmount"></div>
             <input
               type="number"
@@ -232,6 +232,8 @@
               errorElement.textContent = error;
             }
           });
+        }else if(result.error){
+          alert(result.error)
         }
       } catch (err) {
         alert('Error while submitting the form. Please try again.');

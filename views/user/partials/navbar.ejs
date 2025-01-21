@@ -19,7 +19,7 @@
       </div>
       <div class="flex justify-center items-center">
         <a
-          href="/products/viewallproducts/11?viewid=shopall"
+          href="/products/viewallproducts"
           class="text-black group"
         >
           <p class="relative inline-block">
@@ -33,7 +33,7 @@
       <% if(category){ %> <% category.forEach(cat => { %>
       <div class="flex justify-center items-center">
         <a
-          href="<%=`/products/viewallproducts/${cat._id}?viewid=allcategory` %>"
+          href="<%=`/products/viewallproducts/?filterbycategory=${cat.id}` %>"
           class="text-black group"
         >
           <p class="relative inline-block">
@@ -59,47 +59,79 @@
   </div>
 
   <div
-    id="right-div"
-    class="flex gap-4 mr-4 text-xl justify-center font-normal text-black items-center"
+  id="right-div"
+  class="flex gap-4 mr-4 text-xl justify-center font-normal text-black items-center"
+>
+  <!-- Favourites -->
+  <a
+    href="/favourites"
+    class="text-black text-xl pr-1 flex justify-center items-center group relative"
   >
-    <a
-      href="/favourites"
-      class="text-black text-xl pr-1 flex justify-center items-center"
+    <i class="bi bi-heart"></i>
+    <span
+      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
-      <i class="bi bi-heart"></i>
-    </a>
+      Favourites
+    </span>
+  </a>
 
-    <a
-      href="/shoppingcart"
-      class="text-black text-xl p-0 flex justify-center items-center"
+  <!-- Shopping Cart -->
+  <a
+    href="/shoppingcart"
+    class="text-black text-xl p-0 flex justify-center items-center group relative"
+  >
+    <i class="bi bi-bag"></i>
+    <span
+      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
-      <i class="bi bi-bag"></i>
-    </a>
-    <% if(localsUser){ %>
-    <a
-      href="/accountsettings"
-      class="text-black text-xl p-0 flex justify-center items-center"
-    >
-      <i class="bi bi-person" style="font-size: 27px"></i>
-    </a>
+      Shopping Cart
+    </span>
+  </a>
 
-    <a
-      href="/logout"
-      class="text-black text-xl pr-[4px] pt-[1px] flex justify-center items-center"
+  <% if (localsUser) { %>
+  <!-- Account Settings -->
+  <a
+    href="/accountsettings"
+    class="text-black text-xl p-0 flex justify-center items-center group relative"
+  >
+    <i class="bi bi-person" style="font-size: 27px"></i>
+    <span
+      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
-      <i class="bi bi-box-arrow-left" style="font-size: 25px"></i>
+      Account Settings
+    </span>
+  </a>
+
+  <!-- Logout -->
+  <a
+    href="/logout"
+    class="text-black text-xl pr-[4px] pt-[1px] flex justify-center items-center group relative"
+  >
+    <i class="bi bi-box-arrow-left" style="font-size: 25px"></i>
+    <span
+      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+    >
+      Logout
+    </span>
+  </a>
+  <% } else { %>
+  <!-- Login -->
+  <div class="flex justify-center items-center group relative">
+    <a href="/login" class="text-black group">
+      <p class="relative inline-block">
+        login
+        <span
+          class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+        ></span>
+      </p>
     </a>
-    <% }else{ %>
-    <div class="flex justify-center items-center">
-      <a href="/login" class="text-black group">
-        <p class="relative inline-block">
-          login
-          <span
-            class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
-          ></span>
-        </p>
-      </a>
-    </div>
-    <% } %>
+    <span
+      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+    >
+      Login
+    </span>
   </div>
+  <% } %>
+</div>
+
 </div>

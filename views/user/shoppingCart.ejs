@@ -21,13 +21,13 @@
                 <th class="py-3 px-6 text-right">Total</th>
               </tr>
             </thead>
-            <tbody id="cartTableBody">
+            <tbody id="cartTableBody" >
              
             </tbody>
           </table>
         </div>
       </div>
-      <div class="col-span-4 justify-center flex " id="totalBox">
+      <div class="col-span-4 justify-center flex max-h-[400px]" id="totalBox">
         
       </div>
     </div>
@@ -59,7 +59,7 @@ async function cartItems() {
               <img src="${item.productId.images[0]}" alt="Product Image" class="w-[60px] h-[60px] mr-4 object-contain" />
               <div>
                 <p class="text-sm font-medium text-gray-800">${item.productId.productname}</p>
-                <p class="text-xs text-gray-600">Rs. ${item.productId.saleprice}</p>
+                <p class="text-xs line-through text-gray-600">Rs. ${item.productId.regularprice}</p>
               </div>
             </td>
             <td class="py-4 px-6 text-center">
@@ -78,7 +78,7 @@ async function cartItems() {
           </tr>
         `).join('');
 
-      const totalAmount = result.cart.totalamount;
+      const totalAmount = result.cart.totalregularamount;
       const totalRegularAmount = result.cart.totalregularamount;
       const totalDiscountAmount = result.cart.totaldiscountamount;
 
@@ -96,9 +96,9 @@ async function cartItems() {
       }
 
       totalBox.innerHTML = `
-        <div class="h-auto p-3 max-w-[300px] grid border-slate-200  grid-rows bg-white border rounded-lg">
+        <div class="h-auto p-3 max-w-[300px] x grid border-slate-300  grid-rows bg-white border rounded-lg">
           <div class="grid px-1 mb-1">
-            <div class="flex justify-center border-b-[1px]">
+            <div class="flex justify-center border-slate-300 border-b-[1px]">
               <div class="pb-2 font-medium">Cart Summary</div>
             </div>
           </div>

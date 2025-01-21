@@ -6,6 +6,9 @@ const mongoose=require('mongoose')
 const passport=require('./src/config/passport')
 const cookieParser=require('cookie-parser')
 const adminRoutes=require('./src/routes/adminroutes')
+const {CategoryModel} = require('./model/adminmodel'); 
+const checkUser=require('./middleware/checkUser')
+
 require('dotenv').config()
 
 
@@ -48,3 +51,13 @@ mongoose.connect(url).then(()=>{
 
 app.use('/',userRoutes)
 app.use('/admin',adminRoutes)
+
+app.use(checkUser,async (req, res) => {
+    try {
+      const category = await CategoryModel.find();
+      res.status(404).render('user/404error', { category }); 
+    } catch (error) {
+      console.error('Error fetching categories for 404 page:', error);
+      res.status(500).send('Internal Server Error'); 
+    }
+  });

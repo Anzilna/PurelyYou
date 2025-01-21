@@ -1,0 +1,187 @@
+<%- include("partials/adminHeader"); -%> <%- include("partials/sidebar"); -%>
+<%- include("partials/Head"); -%>
+
+<div class="p-4">
+  <div class="flex justify-between items-center mb-6 gap-3">
+    <select id="filterDropdown" class="border px-4 py-2 rounded-md">
+      <option value="today">Today</option>
+      <option value="last7days">Last 7 Days</option>
+      <option value="custom">Custom Date</option>
+    </select>
+
+    <div id="customDateInputs" class="hidden space-x-2">
+      <input type="date" id="startDate" class="border px-4 py-2 rounded-md" />
+      <input type="date" id="endDate" class="border px-4 py-2 rounded-md" />
+    </div>
+
+    <button id="filterButton" class="bg-black text-white px-4 py-2 rounded-md">
+      Filter
+    </button>
+  </div>
+
+  <!-- Summary Section -->
+  <div class="h-auto flex justify-between">
+    <div
+      class="bg-white px-[100px] py-[45px] rounded-2xl shadow-md flex flex-col justify-center items-center gap-4"
+    >
+      <h1 id="revenueCount" class="text-5xl font-medium">0.00</h1>
+      <h3 class="text-xl">Revenue</h3>
+    </div>
+
+    <div
+      class="bg-white px-[100px] py-[45px] rounded-2xl shadow-md flex flex-col justify-center items-center gap-4"
+    >
+      <h1 id="totalDiscount" class="text-5xl font-medium">0.00</h1>
+      <h3 class="text-xl">Total Discount</h3>
+    </div>
+
+    <div
+      class="bg-white px-[100px] py-[45px] rounded-2xl shadow-md flex flex-col justify-center items-center gap-4"
+    >
+      <h1 id="totalRegularPrice" class="text-5xl font-medium">0.00</h1>
+      <h3 class="text-xl">Total Regular Price</h3>
+    </div>
+  </div>
+  <div class="mt-4 flex justify-end">
+    <button
+      id="downloadPDF"
+      class="bg-gray-800 text-xs text-white px-4 py-2 rounded-md"
+    >
+      Download PDF
+    </button>
+    <button
+      id="downloadExcel"
+      class="bg-gray-800 text-xs text-white px-4 py-2 rounded-md ml-4"
+    >
+      Download Excel
+    </button>
+  </div>
+  <!-- Orders Table -->
+  <div
+    class="overflow-hidden rounded-lg shadow-md max-h-[500px] overflow-y-auto mt-6"
+  >
+    <table class="table-auto w-full text-left border border-white">
+      <thead class="bg-white">
+        <tr>
+          <th class="px-6 py-4">Order ID</th>
+          <th class="px-6 py-4">Customer</th>
+          <th class="px-6 py-4">Amount</th>
+          <th class="px-6 py-4">Date</th>
+          <th class="px-6 py-4">Status</th>
+        </tr>
+      </thead>
+      <tbody
+        id="orderTableBody"
+        class="divide-y divide-gray-300 border bg-white"
+      ></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Fetch data based on the current filter
+  async function fetchData(filter = "today", startDate = "", endDate = "") {
+    let queryParams = `?filter=${filter}`;
+    if (filter === "custom") {
+      queryParams += `&startDate=${startDate}&endDate=${endDate}`;
+    }
+
+    try {
+      const response = await fetch(`/admin/salesfetch${queryParams}`);
+      const data = await response.json();
+
+      updateSummaryFields(data);
+
+      const orderTableBody = document.getElementById("orderTableBody");
+      orderTableBody.innerHTML = data.orders
+        .map(
+          (order) => ` 
+              <tr>
+                <td class="px-6 py-4">${order.code}</td>
+                <td class="px-6 py-4">${order.username}</td>
+                <td class="px-6 py-4">${order.totalAmount.toFixed(2)}</td>
+                <td class="px-6 py-4">${new Date(
+                  order.createdAt
+                ).toLocaleString()}</td>
+                <td class="px-6 py-4">${order.orderstatus}</td>
+              </tr>
+            `
+        )
+        .join("");
+    } catch (error) {
+      console.error("Error fetching summary:", error);
+    }
+  }
+
+  function updateSummaryFields(data) {
+    document.getElementById("revenueCount").textContent =
+      `₹${data.revenue.toFixed(2)}`;
+    document.getElementById("totalDiscount").textContent =
+    `₹${data.totalDiscount.toFixed(2)}`;
+    document.getElementById("totalRegularPrice").textContent =
+      `₹${data.totalRegularPrice.toFixed(2)}`;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    fetchData("today");
+  });
+
+  document.getElementById("filterDropdown").addEventListener("change", (e) => {
+    const value = e.target.value;
+    const customInputs = document.getElementById("customDateInputs");
+    customInputs.classList.toggle("hidden", value !== "custom");
+  });
+
+  document.getElementById("filterButton").addEventListener("click", () => {
+    const filter = document.getElementById("filterDropdown").value;
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+
+    fetchData(filter, startDate, endDate);
+  });
+
+  document
+    .getElementById("downloadPDF")
+    .addEventListener("click", async (e) => {
+      const filter = document.getElementById("filterDropdown").value;
+      const startDate = document.getElementById("startDate").value;
+      const endDate = document.getElementById("endDate").value;
+
+      let queryParams = `?filter=${filter}`;
+      if (filter === "custom") {
+        queryParams += `&startDate=${startDate}&endDate=${endDate}`;
+      }
+
+      try {
+        const response = await fetch(`/admin/generatepdfreport${queryParams}`, {
+          method: "GET",
+        });
+        console.log(response.status); // Log the status
+
+        if (!response.ok) {
+          throw new Error("Failed to generate PDF");
+        }
+
+        const blob = await response.blob();
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "purelyYou_sales_report.pdf";
+        link.click();
+      } catch (error) {
+        console.error("Error downloading PDF:", error);
+      }
+    });
+
+  document.getElementById("downloadExcel").addEventListener("click", () => {
+    const filter = document.getElementById("filterDropdown").value;
+    const startDate = document.getElementById("startDate").value;
+    const endDate = document.getElementById("endDate").value;
+
+    let queryParams = `?filter=${filter}`;
+    if (filter === "custom") {
+      queryParams += `&startDate=${startDate}&endDate=${endDate}`;
+    }
+
+    window.location.href = `/admin/generateexcelreport${queryParams}`;
+  });
+</script>

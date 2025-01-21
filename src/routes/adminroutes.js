@@ -11,6 +11,10 @@ router.post('/login',adminController.adminLoginPost)
 router.get('/logout',adminController.adminLogoutGet)
 router.post('/signup',adminController.adminSignupPost)
 router.get('/dashboard',adminAuth,adminController.adminHomeGet)
+router.get('/dashboardfetch',adminAuth,fetchAdminConrtroller.adminDashboardFetch)
+router.get('/dashboardchart',adminAuth,fetchAdminConrtroller.dashBoardChart)
+
+
 router.get('/products',adminAuth,adminController.adminProducts)
 router.get('/products/stockfilter',adminAuth,adminController.filter)
 router.put('/products/listproduct/:id',adminAuth,adminController.adminListProducts)
@@ -27,8 +31,15 @@ router.put('/coupons/editcoupon/:id',adminAuth,fetchAdminConrtroller.adminEditCo
 router.get('/coupons/coupondetails/:id',adminAuth,adminController.couponDetailsGet)
 router.get('/coupons/fetch',adminAuth,fetchAdminConrtroller.adminCouponFetch)
 router.get('/offers',adminAuth,adminController.adminOffers)
+router.get('/offers/editoffer/:id',adminAuth,adminController.adminEditOfferGet)
+router.put('/offers/editoffer',adminAuth,adminController.adminEditOfferPut )
+
+
 router.get('/offers/addoffers',adminAuth,adminController.adminAddOffersGet)
 router.post('/offers/addoffers',adminAuth,adminController.adminAddOffersPost)
+router.put('/offers/editoffer/:id',adminAuth,fetchAdminConrtroller.updateOfferStatus )
+
+
 router.get('/orders',adminAuth,adminController.adminOrders)
 router.get('/orders/fetch',adminAuth,fetchAdminConrtroller.adminOrdersFetchGet)
 router.put('/orders/editoder/',adminAuth,adminController.adminOrdersPut)
@@ -45,6 +56,24 @@ router.get('/categories/editcategories/:id',adminAuth,adminController.adminCateg
 router.put('/categories/editcategories',multerStorage.single('categoryIcon'),adminAuth,adminController.adminCategoriesEditPut)
 router.post('/categories/addcategories',multerStorage.single('categoryIcon'),adminAuth,adminController.adminCategoriesAddPost)
 router.delete('/categories/deletecategories/:id',adminAuth,adminController.adminCategoriesDelete)
+router.get('/returns',adminAuth,adminController.adminReturns)
+router.get('/returnsfetch',adminAuth,fetchAdminConrtroller.adminReturnsFetch)
+router.get('/returns/details/:id',adminAuth,adminController.adminReturnDetailsGet)
+router.put('/returns/updatestatus', adminAuth, fetchAdminConrtroller.updateReturnStatus);
+router.get('/sales',adminAuth,adminController.adminSales)
+router.get('/salesfetch',adminAuth,fetchAdminConrtroller.adminSalesFetch)
+router.get('/generateexcelreport',adminAuth,fetchAdminConrtroller.generateExcelReport)
+router.get('/generatepdfreport',adminAuth,fetchAdminConrtroller.generatePDFReport)
+
+
+
+
+
+
+
+
+
+
 
 
 
