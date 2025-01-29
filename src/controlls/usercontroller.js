@@ -771,7 +771,8 @@ module.exports.googleAuthCallback = (req, res, next) => {
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const token = user.token;
+    const token = await jwtTokenCreation(user._id)
+    console.log("tokennnn",token);
 
     res.cookie("jwt", token, {
       httpOnly: true,     

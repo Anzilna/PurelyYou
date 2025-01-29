@@ -31,8 +31,7 @@ try {
             googleId:profile.id
         });
         const user= await newuser.save();
-        const token = await jwtTokenCreation(user._id)
-        user.token=token;
+        
          return done(null,user)
 
     }
