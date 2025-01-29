@@ -3,11 +3,11 @@
   <%- include("partials/navbar"); -%>
   <%- include("partials/headerForUserManagement"); -%>
 
-  <div class="grid-cols-12 grid px-[250px] py-14 gap-3">
+  <div class="grid-cols-12 grid lg:px-[250px] py-14 gap-3 min-h-screen">
     <%- include("partials/sidebarForUserManagement"); -%>
 
-    <div class="col-span-8">
-      <div class="font-light items-start text-lg pb-[40px] flex justify-center">
+    <div class="col-span-10 md:col-span-8">
+      <div class="font-light items-start text-sm md:text-lg pb-[40px] flex justify-center">
         <p>You can manage your orders here</p>
       </div>
 
@@ -40,85 +40,13 @@
             id="orderslist"
             data-orders='<%- JSON.stringify(orders || []) %>'
           >
-            <!-- Orders will be dynamically rendered here -->
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Script Section -->
-  <script>
-    // Render orders dynamically
-    function renderOrders(orders) {
-      const ordersList = document.getElementById("orderslist");
-
-      if (!orders || orders.length === 0) {
-        ordersList.innerHTML = `
-          <div class="text-center text-gray-600">
-            No orders found
-          </div>`;
-        return;
-      }
-
-      const ordersHTML = orders.map(order => `
-        <div
-          class="p-4 bg-white flex justify-between cursor-pointer"
-          onclick="orderGet('${order._id}','${order.orderstatus}')"
-        >
-          <div class="flex flex-col gap-2">
-            <div class="text-sm font-medium">${order.orderstatus}</div>
-            <div class="text-xs">${order.items.length} items</div>
-          </div>
-          <div class="flex flex-col gap-2 text-xs">
-            <div>${new Date(order.createdAt).toLocaleDateString()}</div>
-            <div>Rs.${order.totalAmount}</div>
-          </div>
-          <div class="flex justify-center items-center">
-            <i class="bi bi-chevron-right"></i>
-          </div>
-        </div>
-      `).join("");
-
-      ordersList.innerHTML = ordersHTML;
-    }
-
-    // Fetch orders from the dataset
-    function getOrdersFromDataset() {
-      const ordersList = document.getElementById("orderslist");
-      return JSON.parse(ordersList.getAttribute("data-orders") || "[]");
-    }
-
-    // Filter orders based on status
-    
-
-    // Navigate to order details
-    function orderGet(id,type) {
-      location.assign(`/accountsettings/orderdetails/${id}?type=${type}`);
-    }
-
-    document.getElementById("showPendingOrders").addEventListener("click", async () => {
-  try {
-    const response = await fetch('/accountsettings/pendingorders'); 
-    if (!response.ok) {
-      throw new Error("Failed to fetch pending orders");
-    }
-    const data = await response.json();
-    renderOrders(data.orders || []);
-  } catch (error) {
-    console.error("Error fetching pending orders:", error);
-    renderOrders([]);
-  }
-});
-
-    document.getElementById("showAllOrders").addEventListener("click", () => {
-      const allOrders = getOrdersFromDataset();
-      renderOrders(allOrders);
-    });
-
-    const allOrders = getOrdersFromDataset();
-    renderOrders(allOrders);
-  </script>
+  <script src="/javascript/user/ordersView.js"></script>
 
   <%- include('partials/footer'); -%>
-</body>
+

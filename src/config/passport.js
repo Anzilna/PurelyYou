@@ -10,7 +10,6 @@ passport.use(new googleStrategy({
     clientSecret:process.env.GOOGLE_CLIENT_SECRET,
     callbackURL:'http://localhost:8080/user/auth/google/callback'
 },async(accessToken,refreshToken,profile,done)=>{
-  console.log("in something");
   
 try {
     let user  =await User.findOne({googleId:profile.id})
@@ -20,7 +19,6 @@ try {
         return done(null,user)
     }
     else{
-      console.log(profile);
          const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
 
          if (!email) {
@@ -33,9 +31,7 @@ try {
             googleId:profile.id
         });
         const user= await newuser.save();
-        console.log("user id from google login for jwt token generating",user._id);
         const token = await jwtTokenCreation(user._id)
-        console.log("after redirect");
         user.token=token;
          return done(null,user)
 

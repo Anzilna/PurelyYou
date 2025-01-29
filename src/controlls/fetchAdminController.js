@@ -21,8 +21,6 @@ const XLSX = require("xlsx");
 const fs = require("fs");
 
 module.exports.adminOrdersFetchGet = async (req, res) => {
-  console.log("Fetching orders with pagination...");
-
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 6;
   const skip = (page - 1) * limit;
@@ -87,11 +85,9 @@ module.exports.adminAddCouponFetch = async (req, res) => {
       couponCode: formattedCouponCode,
     });
     if (existingCoupon) {
-      return res
-        .status(400)
-        .json({
-          error: "Coupon code must be unique. This coupon already exists.",
-        });
+      return res.status(400).json({
+        error: "Coupon code must be unique. This coupon already exists.",
+      });
     }
 
     const parsedDiscountPercentage = Number(discountPercentage);
@@ -132,8 +128,6 @@ module.exports.adminAddCouponFetch = async (req, res) => {
 };
 
 module.exports.adminEditCoupon = async (req, res) => {
-  console.log(req.body);
-
   try {
     const couponId = req.params.id;
     const {
@@ -163,11 +157,9 @@ module.exports.adminEditCoupon = async (req, res) => {
 
     const validStatuses = ["active", "inactive"];
     if (!status || !validStatuses.includes(status)) {
-      return res
-        .status(400)
-        .json({
-          error: "Invalid status value. Allowed values: active, inactive",
-        });
+      return res.status(400).json({
+        error: "Invalid status value. Allowed values: active, inactive",
+      });
     }
 
     const parsedUsageLimit = usageLimit ? Number(usageLimit) : null;
@@ -268,9 +260,8 @@ module.exports.adminReturnsFetch = async (req, res) => {
 };
 
 module.exports.updateReturnStatus = async (req, res) => {
-
   try {
-    const { status, orderId, userId, returnId, amount, quantity } = req.body; 
+    const { status, orderId, userId, returnId, amount, quantity } = req.body;
 
     const validStatuses = ["Pending", "Approved", "Rejected"];
     if (!validStatuses.includes(status)) {
@@ -284,16 +275,14 @@ module.exports.updateReturnStatus = async (req, res) => {
     }
 
     if (returnRequest.status !== "Pending") {
-      return res
-        .status(400)
-        .json({
-          message: "Cannot update status. The request is already processed.",
-        });
+      return res.status(400).json({
+        message: "Cannot update status. The request is already processed.",
+      });
     }
 
     if (status === "Approved") {
       let wallet = await Wallet.findOne({ userId });
-    
+
       if (!wallet) {
         wallet = new Wallet({
           userId,
@@ -301,25 +290,28 @@ module.exports.updateReturnStatus = async (req, res) => {
         });
         await wallet.save();
       }
-    
+
       const order = await Order.findById(orderId);
       if (!order) {
         return res.status(404).json({ message: "Order not found." });
       }
-    
+
       let couponShare = 0;
-    
+
       if (order.coupponUsed) {
-        const totalItems = order.items.reduce((sum, item) => sum + item.quantity, 0);
+        const totalItems = order.items.reduce(
+          (sum, item) => sum + item.quantity,
+          0
+        );
         if (totalItems > 0) {
-          couponShare = (order.coupponDiscount / totalItems) * quantity; 
+          couponShare = (order.coupponDiscount / totalItems) * quantity;
         }
       }
-    
+
       const adjustedAmount = amount - couponShare;
       wallet.balance += Number(adjustedAmount);
       await wallet.save();
-    
+
       const newWalletTransaction = new walletTransaction({
         walletId: wallet._id,
         userId: userId,
@@ -329,29 +321,29 @@ module.exports.updateReturnStatus = async (req, res) => {
         description: "Return approved. Credit added.",
       });
       await newWalletTransaction.save();
-    
+
       const product = await ProductModel.findById(returnRequest.productId._id);
-    
+
       if (!product) {
         return res.status(404).json({ message: "Product not found." });
       }
-    
+
       product.stock += Number(quantity);
       product.sales -= Number(quantity);
       await product.save();
-    
+
       returnRequest.status = "Approved";
       await returnRequest.save();
-    
+
       // Update the order total and item details
       const item = order.items.find(
         (item) =>
           item.productId.toString() === returnRequest.productId._id.toString()
       );
-    
+
       if (item) {
         order.totalDiscount -= item.discountprice + couponShare;
-        order.totalAmount -= adjustedAmount; 
+        order.totalAmount -= adjustedAmount;
         item.returnStatus = "Approved";
         item.saleprice = 0;
         item.quantity = 0;
@@ -359,14 +351,13 @@ module.exports.updateReturnStatus = async (req, res) => {
         item.discountprice = 0;
         await order.save();
       }
-    
+
       return res.status(200).json({
         message:
           "Return status updated successfully. Wallet credited and product stock updated.",
         returnRequest,
       });
-    
-    }else {
+    } else {
       returnRequest.status = status;
       await returnRequest.save();
 
@@ -427,12 +418,20 @@ module.exports.adminSalesFetch = async (req, res) => {
       {
         $group: {
           _id: null,
-          totalRevenue: { $sum: { $subtract: ["$totalAmount", "$deliveryCharge"] } },
+          totalRevenue: {
+            $sum: { $subtract: ["$totalAmount", "$deliveryCharge"] },
+          },
           totalDiscount: {
             $sum: {
               $add: [
                 "$totalDiscount",
-                { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] }
+                {
+                  $cond: [
+                    { $eq: ["$coupponUsed", true] },
+                    "$coupponDiscount",
+                    0,
+                  ],
+                },
               ],
             },
           },
@@ -471,7 +470,6 @@ module.exports.adminSalesFetch = async (req, res) => {
   }
 };
 
-
 module.exports.generateExcelReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
@@ -508,7 +506,13 @@ module.exports.generateExcelReport = async (req, res) => {
             $sum: {
               $add: [
                 "$totalDiscount",
-                { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] },
+                {
+                  $cond: [
+                    { $eq: ["$coupponUsed", true] },
+                    "$coupponDiscount",
+                    0,
+                  ],
+                },
               ],
             },
           },
@@ -575,10 +579,7 @@ module.exports.generateExcelReport = async (req, res) => {
   }
 };
 
-
-
 module.exports.generatePDFReport = async (req, res) => {
-
   try {
     const { filter, startDate, endDate } = req.query;
     let dateFilter = { orderstatus: "Delivered" };
@@ -613,7 +614,13 @@ module.exports.generatePDFReport = async (req, res) => {
             $sum: {
               $add: [
                 "$totalDiscount",
-                { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] },
+                {
+                  $cond: [
+                    { $eq: ["$coupponUsed", true] },
+                    "$coupponDiscount",
+                    0,
+                  ],
+                },
               ],
             },
           },
@@ -680,7 +687,7 @@ module.exports.generatePDFReport = async (req, res) => {
         order.code,
         order.username,
         order.totalAmount.toFixed(2),
-        (order.totalDiscount + (order.coupponDiscount || 0)).toFixed(2), 
+        (order.totalDiscount + (order.coupponDiscount || 0)).toFixed(2),
         new Date(order.createdAt).toLocaleString(),
         order.orderstatus,
         order.coupponCode || "N/A",
@@ -706,7 +713,6 @@ module.exports.generatePDFReport = async (req, res) => {
   }
 };
 
-
 module.exports.updateOfferStatus = async (req, res) => {
   try {
     const offerId = req.params.id;
@@ -727,12 +733,12 @@ module.exports.updateOfferStatus = async (req, res) => {
     const products = await ProductModel.find({ category: categoryId });
 
     if (products.length === 0) {
-      return res.status(404).json({ message: "No products found for the selected category." });
+      return res
+        .status(404)
+        .json({ message: "No products found for the selected category." });
     }
 
     if (status === "Inactive") {
-      console.log("is here",products);
-      
       for (let product of products) {
         product.isSpecialOffer = false;
         product.specialOfferDiscount = 0;
@@ -741,7 +747,7 @@ module.exports.updateOfferStatus = async (req, res) => {
     } else if (status === "Active") {
       for (let product of products) {
         product.isSpecialOffer = true;
-        product.specialOfferDiscount = offer.discountPercentage; 
+        product.specialOfferDiscount = offer.discountPercentage;
         await product.save();
       }
     }
@@ -760,15 +766,10 @@ module.exports.updateOfferStatus = async (req, res) => {
   }
 };
 
-
-
-
 module.exports.adminDashboardFetch = async (req, res) => {
-  console.log("Fetching dashboard data...");
-
   try {
     const totalRevenue = await Order.aggregate([
-      { $match: { orderstatus: "Delivered" } }, 
+      { $match: { orderstatus: "Delivered" } },
       { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } },
     ]);
 
@@ -794,7 +795,7 @@ module.exports.adminDashboardFetch = async (req, res) => {
       { $limit: 5 },
       {
         $lookup: {
-          from: "categories", 
+          from: "categories",
           localField: "_id",
           foreignField: "_id",
           as: "categoryDetails",
@@ -809,12 +810,6 @@ module.exports.adminDashboardFetch = async (req, res) => {
       },
     ]);
 
-    console.log(
-      "Total Customers:", totalCustomers,
-      "Top Categories:", topCategories,
-      "Top Products:", topProducts
-    );
-
     res.status(200).json({
       totalRevenue: totalRevenue.length ? totalRevenue[0].totalRevenue : 0,
       totalCustomers,
@@ -828,10 +823,8 @@ module.exports.adminDashboardFetch = async (req, res) => {
   }
 };
 
-
 module.exports.dashBoardChart = async (req, res) => {
   const { interval, filter, startDate, endDate } = req.query;
-  console.log("Interval:", interval, "Filter:", filter);
 
   let groupBy;
   let formatLabel;
@@ -841,20 +834,20 @@ module.exports.dashBoardChart = async (req, res) => {
   switch (interval) {
     case "yearly":
       groupBy = { $year: "$createdAt" };
-      formatLabel = (id) => `${id}`; 
+      formatLabel = (id) => `${id}`;
       break;
     case "monthly":
       groupBy = { $month: "$createdAt" };
       formatLabel = (id) =>
-        new Date(0, id - 1).toLocaleString("default", { month: "long" }); 
+        new Date(0, id - 1).toLocaleString("default", { month: "long" });
       break;
     case "weekly":
       groupBy = { $week: "$createdAt" };
-      formatLabel = (id) => `Week ${id}`; 
+      formatLabel = (id) => `Week ${id}`;
       break;
     case "daily":
       groupBy = { $dayOfMonth: "$createdAt" };
-      formatLabel = (id) => `Day ${id}`; 
+      formatLabel = (id) => `Day ${id}`;
       break;
     default:
       return res.status(400).json({ error: "Invalid interval" });
@@ -879,7 +872,7 @@ module.exports.dashBoardChart = async (req, res) => {
 
   try {
     const salesData = await Order.aggregate([
-      { $match: dateFilter }, 
+      { $match: dateFilter },
       {
         $group: {
           _id: groupBy,
@@ -893,8 +886,6 @@ module.exports.dashBoardChart = async (req, res) => {
       label: formatLabel(item._id),
       totalSales: item.totalSales,
     }));
-
-    console.log("Formatted Sales Data:", formattedSalesData);
 
     res.status(200).json({ salesData: formattedSalesData });
   } catch (error) {

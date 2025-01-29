@@ -9,7 +9,6 @@ const signupDiv = document.getElementById('signupdiv');
 if (urlSearchDecodeGet) {
   emailError.textContent = urlSearchDecodeGet || "";
 }
-console.log(queryString);
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();

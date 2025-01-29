@@ -1,5 +1,5 @@
 <%- include("partials/header"); -%>
-<body class="bg-gray-100">
+<body class="bg-gray-50">
   <div class="relative flex items-center justify-between p-4 text-xs">
     <div class="flex items-center space-x-1 text-gray-700">
       <a href="/shoppingcart" class="flex justify-center">
@@ -17,6 +17,8 @@
   <div class="flex justify-center text-3xl py-4 font-semibold">
     <h1>Checkout</h1>
   </div>
+  <div x-data="{ open: false }">
+
   <% if(cart){ %>
 
   <div class="p-[60px] grid grid-cols-12 gap-4">
@@ -62,60 +64,14 @@
               </div>
             </div>
           </div>
-        </div>
-        <div class="p-3 bg-white cursor-pointer" id="address-box">
           <div
-            class="flex justify-between"
-            onclick="toggleDropdown('billingadress')"
-          >
-            <div>Address</div>
-            <div
               id="addresses-data"
               class=""
               data-addresses="<%= JSON.stringify(address) %>"
             ></div>
-            <a href="#" class="underline">Select</a>
-          </div>
-          <div id="selected-address-preview"></div>
-          <div id="billingadress" class="hidden mt-3">
-            <label class="block text-sm font-medium text-black mb-3"
-              >Select Address</label
-            >
-            <div>
-              <% if (address && address.addresses.length > 0) { %> <% let
-              useraddress = address.addresses %> <%
-              useraddress.forEach(function(addr, index) { %>
-              <div class="flex justify-between">
-                <div class="flex items-center mb-3">
-                  <input type="radio" id="address-<%= index %>"
-                  name="billingAddress" value="<%= addr._id %>" <%= index === 0
-                  ? 'checked' : '' %> class="mr-2 accent-black" />
-                  <label
-                    for="address-<%= index %>"
-                    class="text-sm text-gray-700"
-                  >
-                    <div><%= addr.name %></div>
-                    <div><%= addr.address %></div>
-                    <div>
-                      <%= addr.city %>, <%= addr.state %>, <%= addr.pincode %>
-                    </div>
-                    <div><%= addr.phone %></div>
-                    <div><%= addr.email %></div>
-                  </label>
-                </div>
-                <div class="">
-                  <i
-                    class="bi bi-pencil"
-                    onclick="editAddress('<%= addr._id %>')"
-                  ></i>
-                </div>
-              </div>
-
-              <% }); %> <% } else { %>
-              <p>No addresses available.</p>
-              <% } %>
-            </div>
-          </div>
+        </div>
+        <div class="p-3 bg-white cursor-pointer" id="address-box">
+         
         </div>
 
         <div class="p-3 bg-white flex flex-col">
@@ -242,6 +198,7 @@
                     Submit
                   </button>
                 </div>
+                <div class="underline mt-2 cursor-pointer"  @click="open = true">Show all available coupons</div>
                 <div
                   id="coupon-container"
                   class="flex hidden justify-between items-center mt-3 bg-black p-2 rounded-md shadow-md"
@@ -325,500 +282,53 @@
   </div>
   <% } %>
   <div id="notification" class="text-sm mt-2"></div>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script>
-    fetchCheckoutData();
-    const addressBox = document.getElementById("address-box");
-    const lastTotalAmountElement = document.getElementById("last-total-amount");
-    const addressesElement = document.getElementById("addresses-data");
-    const addressList = JSON.parse(
-      addressesElement.getAttribute("data-addresses")
-    );
-    console.log("Address List:", addressList);
 
-    const addressRadios = document.querySelectorAll(
-      'input[name="billingAddress"]'
-    );
-    const defaultCheckedRadio = document.querySelector(
-      'input[name="billingAddress"]:checked'
-    );
-    if (defaultCheckedRadio) {
-      updateAddressPreview(defaultCheckedRadio.value);
-    }
-
-    addressRadios.forEach((radio) => {
-      radio.addEventListener("change", function () {
-        console.log("Radio selected:", this.value);
-        const selectedAddressId = this.value;
-        updateAddressPreview(selectedAddressId);
-      });
-    });
-
-    function updateAddressPreview(addressId) {
-      const selectedAddressPreview = document.getElementById(
-        "selected-address-preview"
-      );
-      const selectedAddress = addressList.addresses.find(
-        (addr) => addr._id === addressId
-      );
-
-      if (selectedAddress) {
-        selectedAddressPreview.innerHTML = `
-        <div class="flex flex-col">
-          <p class="text-sm mt-3 mb-1 font-medium">Selected Address:</p>
-          <p class="text-xs text-gray-700">${selectedAddress.name}</p>
-          <p class="text-xs text-gray-700">${selectedAddress.address}</p>
-          <p class="text-xs text-gray-700">${selectedAddress.city}, ${selectedAddress.state}, ${selectedAddress.pincode}</p>
-          <p class="text-xs text-gray-700">${selectedAddress.phone}</p>
-          <p class="text-xs text-gray-700">${selectedAddress.email}</p>
+   
+  
+    <div x-show="open" x-cloak class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white p-5 rounded-lg shadow-lg w-96">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold">Available Coupons</h2>
+          <button @click="open = false" class="text-gray-500 hover:text-gray-700">
+            ✕
+          </button>
         </div>
-      `;
-      } else {
-        selectedAddressPreview.innerHTML = `<p class="text-sm text-gray-500">No address selected.</p>`;
-      }
-    }
-
-    const cartData = document.getElementById("cart-data");
-    var totalAmount = parseFloat(cartData.getAttribute("data-total-amount"));
-    let totalDiscount = parseFloat(
-      cartData.getAttribute("data-total-discount")
-    );
-    let deliveryCharge = parseFloat(
-      cartData.getAttribute("data-delivery-charge")
-    );
-    let finalOrderAmount = totalAmount - totalDiscount + deliveryCharge;
-
-    console.log("totallllllll", finalOrderAmount);
-
-    const username = cartData.getAttribute("data-username");
-    const email = cartData.getAttribute("data-email");
-    const couponDiscountDiv = document.getElementById(
-      "coupondiscountamountdiv"
-    );
-    let OrderCoupponCode = "";
-    let OrderCoupponDiscountedValue = "";
-    let OrderCoupponID = "";
-
-    console.log("Total Amount:", totalAmount);
-    console.log("Total Discount:", totalDiscount);
-    console.log("Delivery Charge:", deliveryCharge);
-    console.log("Username:", username);
-    console.log("Email:", email);
-
-    async function fetchCheckoutData() {
-      const itemsDetails = document.getElementById("itemsdetails");
-      try {
-        const response = await fetch("/shoppingcart/checkoutfetch", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Checkout Data:", data);
-        itemsDetails.innerHTML = data.cart.items
-          .map((item) => {
-            return `
-      <div id="itemsdisplay" class="flex flex-col gap">
-        <div class="flex flex-row gap-3 m-2">
-          <div class="flex-[1]">
-            <img
-              src="${item.productId.images[0]}"
-              class="h-full w-full"
-              alt="${item.productId.productname}"
-            />
-          </div>
-          <div class="flex-[6]">
-            <div class="flex flex-col h-full w-full">
-              <div
-                class="flex-[2] flex justify-start flex-col gap-[1px] items-start"
-              >
-                <div class="text-lg font-medium">
-                  ${item.productId.productname}
-                </div>
-                <div class="text-xs font-medium">
-                  Rs.${item.productId.saleprice}
-                </div>
-              </div>
-              <div
-                class="flex-[5] flex justify-end flex-col align-bottom"
-              >
-                <div class="flex">
-                  <div
-                    class="flex-[2] flex text-xs font-normal justify-start flex-col"
-                  >
-                    <div>Quantity</div>
-                    <div>Regular Price</div>
-                    <div>Total</div>
-                  </div>
-                  <div
-                    class="flex-[5] text-xs font-normal flex justify-start flex-col"
-                  >
-                    <div>${item.quantity}</div>
-                    <div>Rs.${item.regularprice}</div>
-                    <div>Rs.${item.saleprice}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+  
+        <% if (coupons && coupons.length > 0) { %>
+        <ul>
+          <% coupons.forEach(coupon => { %>
+          <li class="flex justify-between items-center p-2 border-b">
+            <span><%= coupon.couponCode %> - <%= coupon.discountPercentage %>% Off</span>
+            <button
+              class="copy-btn underline border-black px-2 py-1 rounded-md transition"
+              data-code="<%= coupon.couponCode %>"
+            >
+              Copy
+            </button>
+          </li>
+          <% }); %>
+        </ul>
+        <% } else { %>
+        <p class="text-gray-600">No coupons available.</p>
+        <% } %>
       </div>
-    `;
-          })
-          .join("");
-      } catch (error) {
-        console.error("Error fetching checkout data:", error);
-      }
+    </div>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  
+  <style>
+    [x-cloak] {
+      display: none !important;
     }
-
-    document
-      .getElementById("complete-btn")
-      .addEventListener("click", async function () {
-        const selectedAddress = document.querySelector(
-          'input[name="billingAddress"]:checked'
-        )?.value;
-
-        const paymentMethod = document.querySelector(
-          'input[name="paymentMethod"]:checked'
-        )?.value;
-
-        console.log("Selected Address:", selectedAddress);
-        console.log("Selected Payment Method:", paymentMethod);
-
-        if (!selectedAddress || !paymentMethod) {
-          showNotification("Please select both address and payment method.");
-
-          return;
-        }
-        if (paymentMethod.includes("Cash on Delivery") && totalAmount > 1000) {
-          return showNotification(
-            "Cash on delivery is unavailable for orders above 1000. please select other paymentMethod."
-          );
-        }
-
-        console.log("Final Amount:", finalOrderAmount);
-
-        const orderData = {
-          totalAmount: finalOrderAmount,
-          totalDiscount,
-          deliveryCharge,
-          paymentMethod: paymentMethod,
-          userInfo: {
-            username: username,
-            email: email,
-          },
-          addressId: selectedAddress,
-        };
-
-        if (OrderCoupponCode && OrderCoupponDiscountedValue && OrderCoupponID) {
-          orderData.coupponCode = OrderCoupponCode;
-          orderData.coupponDiscount = OrderCoupponDiscountedValue;
-          orderData.coupponId = OrderCoupponID;
-        }
-        if (paymentMethod.includes("Razorpay")) {
-          console.log("Inside Razorpay");
-
-          try {
-            const response = await fetch("/razorpay/createorder", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                amount: finalOrderAmount,
-                currency: "INR",
-                orderData,
-              }),
-            });
-
-            if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-
-            const { pendingOrder, razorpayOrder, key_id } = await response.json();
-
-            const options = {
-              key: key_id,
-              amount: razorpayOrder.amount,
-              currency: razorpayOrder.currency,
-              name: "PurelyYou",
-              description: "Test Transaction",
-              order_id: razorpayOrder.id,
-              handler: async function (response) {
-                console.log("Payment successful!", response);
-
-                showNotification(
-                  "Payment successful! Verifying your payment..."
-                );
-
-                try {
-                  const verifyResponse = await fetch(
-                    "/razorpay/verifypayment",
-                    {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_signature: response.razorpay_signature,
-                        pendingOrderId: pendingOrder._id,
-                      }),
-                    }
-                  );
-                  const { order, success } = await verifyResponse.json();
-
-                  if (verifyResponse.ok && success) {
-                    showNotification(
-                      "Payment verified successfully! Thank you for your purchase."
-                    );
-                    location.assign(
-                      `/shoppingcart/checkout/orderplaced/${order._id}`
-                    );
-                  } else {
-                    showNotification(
-                      "Payment verification failed. Please contact support."
-                    );
-
-                    console.error("Payment verification failed:");
-                  }
-                } catch (error) {
-                  console.error("Error verifying payment:", error);
-                  showNotification(
-                    "An error occurred during payment verification. Please try again"
-                  );
-                }
-              },
-              prefill: {
-                name: username,
-                email: email,
-                contact: "9999999999",
-              },
-              theme: {
-                color: "#3399cc",
-              },
-              notes: {
-                address: "Razorpay HQ",
-              },
-              modal: {
-                ondismiss: function () {
-                  console.log("Payment process closed by the user.");
-                },
-              },
-            };
-
-            options.method = ["card", "netbanking", "wallet", "upi"];
-
-            const rzp = new Razorpay(options);
-            rzp.open();
-
-            rzp.on("payment.failed", function (response) {
-              console.error("Payment failed:", response.error);
-              showNotification("Payment failed. Please try again.");
-            });
-          } catch (error) {
-            console.error(
-              "Error occurred while making Razorpay API call:",
-              error
-            );
-          }
-        } else {
-          console.log("Order Data:", orderData);
-
-          try {
-            const response = await fetch("/shoppingcart/checkout/order", {
-              method: "POST",
-              body: JSON.stringify(orderData),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-              console.log("Order completed successfully:", data);
-              showNotification(data.message);
-              location.assign(
-                `/shoppingcart/checkout/orderplaced/${data.order._id}`
-              );
-            } else {
-              console.error("Error completing order:", data);
-              showNotification(data.error);
-            }
-          } catch (error) {
-            console.error("An error occurred:", error);
-            showNotification("An error occurred while processing your order.");
-          }
-        }
-      });
-
-    // Apply coupon functionality
-    const applyCouponBtn = document.getElementById("apply-coupon-btn");
-    const couponDropdown = document.getElementById("coupon-dropdown");
-
-    applyCouponBtn.addEventListener("click", function () {
-      couponDropdown.classList.toggle("hidden");
-    });
-
-    const submitCouponBtn = document.getElementById("submit-coupon");
-    const couponCodeInput = document.getElementById("coupon-code");
-    const couponError = document.getElementById("coupon-error");
-
-    submitCouponBtn.addEventListener("click", async function () {
-      const couponCode = couponCodeInput.value.trim();
-      const finalAmount = totalAmount - totalDiscount + deliveryCharge;
-      const couponContainer = document.getElementById("coupon-container");
-      const couponCodeElement = document.getElementById("coupon-code");
-
-      if (couponCode) {
-        try {
-          couponError.classList.add("hidden");
-
-          const response = await fetch("/shoppingcart/checkout/couponapply", {
-            method: "POST",
-            body: JSON.stringify({ couponCode, finalAmount }),
-            headers: { "Content-Type": "application/json" },
-          });
-
-          const data = await response.json();
-
-          if (response.ok) {
-            showNotification(data.message);
-            couponContainer.classList.remove("hidden");
-            couponContainer.innerHTML = `
- <span class="text-sm font-medium text-white">Coupon Applied: <strong id="coupon-code" class="text-white">${data.couponCode}</strong></span>
-  <button id="close-coupon-btn" class="text-white hover:text-gray-300 font-bold text-lg focus:outline-none">
-    &times;
-  </button>`;
-            couponDiscountDiv.classList.remove("hidden");
-            couponDiscountDiv.innerHTML = `
-    <p>Couppon Discount</p>
-                  <p class="text-red-600">
-                    Rs. -${data.reductionAmount}
-                  </p>
-  `;
-            const closeCouponBtn = document.getElementById("close-coupon-btn");
-            lastTotalAmountElement.innerHTML = `
- <p>Total</p>
-                <p >
-                  Rs. ${data.discountedAmount}
-                </p>
-`;
-            finalOrderAmount = data.discountedAmount;
-            OrderCoupponDiscountedValue = data.reductionAmount;
-            OrderCoupponCode = data.couponCode;
-            OrderCoupponID = data.couponId;
-
-            closeCouponBtn.addEventListener("click", function () {
-              couponContainer.classList.add("hidden");
-              couponCodeInput.value = "";
-              couponDiscountDiv.classList.add("hidden");
-              OrderCoupponDiscountedValue = "";
-              OrderCoupponCode = "";
-              OrderCoupponID = "";
-
-              lastTotalAmountElement.innerHTML = `
- <p>Total</p>
-                <p >
-                  Rs. ${data.originalAmount}
-                </p>
-`;
-              finalOrderAmount = data.originalAmount;
-            });
-          } else {
-            showError(data.message);
-            showNotification(data.message);
-          }
-        } catch (error) {
-          console.error("Error applying coupon:", error);
-          showError("An error occurred while applying the coupon.");
-        }
-      } else {
-        showError("Please enter a coupon code.");
-      }
-    });
-
-    function showError(message) {
-      couponError.textContent = message;
-      couponError.classList.remove("hidden");
+    /* modal is hidden initially */
+    .hidden {
+      display: none;
     }
+  </style>
 
-    // Toggle and other utility functions
-    function toggleDropdown(id) {
-      const element = document.getElementById(id);
-      if (element) {
-        console.log("Toggling dropdown visibility for:", id);
-        element.classList.toggle("hidden");
-      } else {
-        console.log("Element not found for toggle:", id);
-      }
-    }
-    function showNotification(message) {
-      const notification = document.getElementById("notification");
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script src="/javascript/user/checkOut.js"></script>
 
-      notification.className = "";
-
-      notification.classList.add(
-        "p-4",
-        "mb-4",
-        "text-sm",
-        "rounded-lg",
-        "fixed",
-        "bottom-10",
-        "right-4",
-        "z-50",
-        "min-w-[150px]",
-        "text-white",
-        "bg-black",
-        "dark:bg-gray-800",
-        "dark:text-green-400",
-        "role",
-        "alert"
-      );
-
-      notification.innerHTML = ` ${message}`;
-
-      notification.classList.remove("hidden");
-
-      setTimeout(() => {
-        hideNotification();
-      }, 5000);
-    }
-
-    function hideNotification() {
-      const notification = document.getElementById("notification");
-      notification.className = "hidden";
-    }
-
-    function showPaymentDetails(showId, hideIds) {
-      const showElement = document.getElementById(showId);
-      const hideElements = hideIds.map((id) => document.getElementById(id));
-
-      if (showElement) {
-        console.log("Showing payment details for:", showId);
-        showElement.classList.remove("hidden");
-      } else {
-        console.log("Element not found for show payment details:", showId);
-      }
-
-      hideElements.forEach((element) => {
-        if (element) {
-          console.log("Hiding element:", element.id);
-          element.classList.add("hidden");
-        }
-      });
-    }
-
-    function addressbox(address) {
-      addressBox.innerHTML = ``;
-    }
-  </script>
 </body>
+</html>

@@ -7,8 +7,7 @@ const checklogin=async (req,res,next)=>{
     const token=req.cookies.jwt
     if(token){
          try {
-            console.log("before after");
-            const result =await jwt.verify(token,process.env.JWT_SECRET)
+            const result = jwt.verify(token,process.env.JWT_SECRET)
             res.redirect('/')
         } catch (error) {
             next();

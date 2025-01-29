@@ -51,9 +51,8 @@ userSchema.pre("save", async function (next) {
     try {
       const salt = await bcrypt.genSalt();
       this.password = await bcrypt.hash(this.password, salt);
-      console.log("Password hashed successfully.");
     } catch (error) {
-      return next(error); // Pass error to the next middleware
+      return next(error); 
     }
   }
   next();
@@ -299,6 +298,35 @@ const orderSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+  }
+);
+
+const NewsletterSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "User", 
+      required: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true, 
+      lowercase: true,
+      trim: true,
+      validate: {
+        validator: (email) =>
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email), 
+        message: "Invalid email format",
+      },
+    },
+    subscribedAt: {
+      type: Date,
+      default: Date.now, 
+    },
+  },
+  {
+    timestamps: true, 
   }
 );
 
@@ -659,6 +687,55 @@ const returnSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+
+const cancelledOrderSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Order",
+      required: true,
+    },
+    reason: {
+      type: String,
+      required: true,
+    },
+    items: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Product",
+          required: true,
+        },
+        productname: {
+          type: String,
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+        },
+        saleprice: {
+          type: Number,
+          required: true,
+        },
+      },
+    ],
+    cancellationDate: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 module.exports = {
   Otp: mongoose.model("otp", otpSchema),
   User: mongoose.model("user", userSchema),
@@ -672,5 +749,7 @@ module.exports = {
     walletTransactionSchema
   ),
   Return: mongoose.model("return", returnSchema),
-  PendingOrders:mongoose.model("pendingorders", pendingOrderSchema)
+  PendingOrders:mongoose.model("pendingorders", pendingOrderSchema),
+  NewsletterSchema:mongoose.model('newsletter',NewsletterSchema),
+  CancelledOrder: mongoose.model("CancelledOrder", cancelledOrderSchema)
 };

@@ -89,8 +89,6 @@ module.exports.adminCategoriesAddPost = async (req, res) => {
   const { categoryName, description } = req.body;
   const image = req.file ? req.file.filename : null;
 
-  console.log(image);
-
   try {
     const category = new CategoryModel({
       categoryname: categoryName,
@@ -135,7 +133,6 @@ module.exports.adminCategoriesEditPut = async (req, res) => {
 };
 module.exports.adminCategoriesEdit = async (req, res) => {
   const id = req.params.id;
-  console.log(id);
   try {
     const category = await CategoryModel.findById(id);
     res.render("admin/editCategory", {
@@ -151,7 +148,6 @@ module.exports.adminCategoriesEdit = async (req, res) => {
 };
 module.exports.adminCategoriesDelete = async (req, res) => {
   const id = req.params.id;
-  console.log(id);
 
   try {
     const user = await CategoryModel.findByIdAndDelete(id);
@@ -164,11 +160,9 @@ module.exports.adminCategoriesDelete = async (req, res) => {
 //products sessiion
 module.exports.adminProductsEdit = async (req, res) => {
   const id = req.params.id;
-  console.log(id);
   try {
     const product = await ProductModel.findById(id);
     const category = await CategoryModel.find();
-    console.log("goisss", product.discountpercentage);
 
     res.render("admin/editProduct", {
       product,
@@ -185,7 +179,6 @@ module.exports.adminProductsEdit = async (req, res) => {
 
 module.exports.filter = async (req, res) => {
   const filterBasedOn = req.query.stockstatus;
-  console.log(id);
   try {
     const products = await ProductModel.find({ stockstatus: filterBasedOn });
 
@@ -224,7 +217,6 @@ module.exports.adminProductsRemoveImage = async (req, res) => {
     }
     fs.unlink(path.join(__dirname, "../uploads", image), (err) => {
       if (err) console.error("Error deleting file:", err);
-      console.log("File deleted successfully");
     });
     res.json({
       success: true,
@@ -239,7 +231,6 @@ module.exports.adminProductsRemoveImage = async (req, res) => {
 
 module.exports.adminProductsEditPost = async (req, res) => {
   const files = req.files;
-  console.log("Edited product:", req.body, "and new added files:", files);
 
   let images = [];
   const {
@@ -266,8 +257,6 @@ module.exports.adminProductsEditPost = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
 
-   
-
     product.productname = productname;
     product.regularprice = regularprice;
     product.ingredients = ingredients;
@@ -277,7 +266,7 @@ module.exports.adminProductsEditPost = async (req, res) => {
     product.category = category;
     product.description = description;
     product.categoryname = categoryname;
-    product.productDiscountPercentage = discountpercentage
+    product.productDiscountPercentage = discountpercentage;
     if (images.length > 0) {
       product.images = [...product.images, ...images];
     }
@@ -342,7 +331,6 @@ module.exports.adminProducts = async (req, res) => {
 module.exports.adminProductsAdd = async (req, res) => {
   try {
     const category = await CategoryModel.find();
-    console.log(category);
 
     res.render("admin/addProducts", {
       category,
@@ -355,9 +343,9 @@ module.exports.adminProductsAdd = async (req, res) => {
     console.log(error);
   }
 };
+
 module.exports.adminProductsAddPost = async (req, res) => {
   const files = req.files;
-  console.log("new product", req.body);
 
   let images = [];
   const {
@@ -387,7 +375,7 @@ module.exports.adminProductsAddPost = async (req, res) => {
     category,
     description,
     categoryname,
-    productDiscountPercentage:discountpercentage,
+    productDiscountPercentage: discountpercentage,
   });
   try {
     await newProduct.save();
@@ -399,11 +387,8 @@ module.exports.adminProductsAddPost = async (req, res) => {
 
 module.exports.adminUserDelete = async (req, res) => {
   const id = req.params.id;
-  console.log(id);
 
   try {
-    console.log("before userrrrrr");
-
     const user = await User.findByIdAndDelete(id);
     res.json({ deleted: "user deleted" });
   } catch (error) {
@@ -427,7 +412,7 @@ module.exports.adminCustomers = async (req, res) => {
 
 module.exports.adminOffers = async (req, res) => {
   try {
-    const offers = await OfferModel.find().sort({updatedAt:-1});
+    const offers = await OfferModel.find().sort({ updatedAt: -1 });
 
     const manipulatedOffers = offers.map((offer) => {
       const startDateFormatted = new Date(offer.startDate).toLocaleDateString();
@@ -442,7 +427,6 @@ module.exports.adminOffers = async (req, res) => {
         status,
       };
     });
-    console.log(offers);
 
     res.render("admin/offers", {
       route: "offers",
@@ -469,7 +453,9 @@ module.exports.adminAddOffersPost = async (req, res) => {
       categoryName,
     } = req.body;
 
-    const offer = await OfferModel.findOne({ offerName: { $regex: new RegExp(`^${offername}$`, 'i') } });
+    const offer = await OfferModel.findOne({
+      offerName: { $regex: new RegExp(`^${offername}$`, "i") },
+    });
     if (offer) {
       return res.status(409).json({
         message: "Offer already exists",
@@ -494,10 +480,8 @@ module.exports.adminAddOffersPost = async (req, res) => {
     for (let product of products) {
       product.isSpecialOffer = true;
       product.specialOfferDiscount = discountPercentage;
-      await product.save(); 
+      await product.save();
     }
-
-    console.log(products);
 
     const newOffer = new OfferModel({
       offerName: offername,
@@ -521,11 +505,9 @@ module.exports.adminAddOffersPost = async (req, res) => {
   }
 };
 
-
-
 module.exports.adminEditOfferGet = async (req, res) => {
-  const offerId = req.params.id;  
-  
+  const offerId = req.params.id;
+
   try {
     const offer = await OfferModel.findById(offerId);
 
@@ -533,8 +515,12 @@ module.exports.adminEditOfferGet = async (req, res) => {
       return res.status(404).send("Offer not found");
     }
 
-    const formattedStartDate = new Date(offer.startDate).toISOString().split('T')[0];
-    const formattedEndDate = new Date(offer.endDate).toISOString().split('T')[0];
+    const formattedStartDate = new Date(offer.startDate)
+      .toISOString()
+      .split("T")[0];
+    const formattedEndDate = new Date(offer.endDate)
+      .toISOString()
+      .split("T")[0];
 
     const categories = await CategoryModel.find();
 
@@ -553,7 +539,6 @@ module.exports.adminEditOfferGet = async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 };
-
 
 module.exports.adminAddOffersGet = async (req, res) => {
   try {
@@ -586,9 +571,7 @@ module.exports.adminOrders = async (req, res) => {
     console.log(error);
   }
 };
-module.exports.adminOrdersPut = async (req, res) => {
-  console.log(req.body);
-};
+module.exports.adminOrdersPut = async (req, res) => {};
 
 module.exports.adminCustomersAdd = (req, res) => {
   res.render("admin/addCustomers", {
@@ -617,15 +600,13 @@ module.exports.adminCustomersAddPost = async (req, res) => {
 module.exports.adminCustomersEdit = async (req, res) => {
   const id = req.params.id;
   const user = await User.findById(id);
-  res
-    .status(200)
-    .render("admin/editCustomers", {
-      user,
-      subroute: "customers",
-      mainroute: "editcustomers",
-      title: "EditCustomers",
-      side: "Customers",
-    });
+  res.status(200).render("admin/editCustomers", {
+    user,
+    subroute: "customers",
+    mainroute: "editcustomers",
+    title: "EditCustomers",
+    side: "Customers",
+  });
 };
 module.exports.adminCustomersEditPut = async (req, res) => {
   const { email, status, username, id, password = null } = req.body;
@@ -657,7 +638,6 @@ module.exports.adminOrdersDetailsGet = async (req, res) => {
   try {
     const orderId = req.params.id;
     const order = await Order.findById(orderId).populate("items.productId");
-    console.log(order);
 
     res.render("admin/orderDetails", {
       order,
@@ -673,10 +653,6 @@ module.exports.adminOrdersDetailsGet = async (req, res) => {
 
 module.exports.adminCoupons = async (req, res) => {
   try {
-    // const orderId = req.params.id
-    // const order = await Order.findById(orderId).populate('items.productId')
-    // console.log(orderId);
-
     res.render("admin/Coupons", {
       route: "coupons",
       title: "Coupons",
@@ -732,7 +708,6 @@ module.exports.adminReturns = async (req, res) => {
 module.exports.adminReturnDetailsGet = async (req, res) => {
   try {
     const returnId = req.params.id;
-    console.log("id reveeeee", returnId);
 
     const returnDetails = await Return.findById(returnId).populate("productId");
 
@@ -756,9 +731,6 @@ module.exports.adminSales = async (req, res) => {
   });
 };
 
-
-
-
 module.exports.adminEditOfferPut = async (req, res) => {
   try {
     const {
@@ -771,17 +743,18 @@ module.exports.adminEditOfferPut = async (req, res) => {
       categoryId,
       categoryName,
       offerId,
-      status, 
+      status,
     } = req.body;
 
-    // Find the existing offer
     const existingOffer = await OfferModel.findById(offerId);
     if (!existingOffer) {
       return res.status(404).json({ message: "Offer not found." });
     }
 
-    // If the category and status haven't changed, just update the offer details
-    if (existingOffer.category.id === categoryId && existingOffer.status === status) {
+    if (
+      existingOffer.category.id === categoryId &&
+      existingOffer.status === status
+    ) {
       existingOffer.offerName = offername;
       existingOffer.discountPercentage = discountPercentage;
       existingOffer.startDate = startDate;
@@ -794,15 +767,15 @@ module.exports.adminEditOfferPut = async (req, res) => {
       return res.status(200).json({ message: "Offer updated successfully." });
     }
 
-    // Reset products of the old category if the offer becomes inactive or the category changes
-    const oldCategoryProducts = await ProductModel.find({ category: existingOffer.category.id });
+    const oldCategoryProducts = await ProductModel.find({
+      category: existingOffer.category.id,
+    });
     for (let product of oldCategoryProducts) {
       product.isSpecialOffer = false;
       product.specialOfferDiscount = 0;
       await product.save();
     }
 
-    // If the new status is not active, just update the offer without applying to products
     if (status !== "Active") {
       existingOffer.offerName = offername;
       existingOffer.discountPercentage = discountPercentage;
@@ -818,19 +791,20 @@ module.exports.adminEditOfferPut = async (req, res) => {
 
       return res.status(200).json({
         updated: true,
-        message: "Offer updated successfully, but not applied as it's not active.",
+        message:
+          "Offer updated successfully, but not applied as it's not active.",
       });
     }
 
-    // Handle active offers with a category change
-    const newCategoryProducts = await ProductModel.find({ category: categoryId });
+    const newCategoryProducts = await ProductModel.find({
+      category: categoryId,
+    });
     if (newCategoryProducts.length === 0) {
       return res.status(404).json({
         message: "No products found for the selected category.",
       });
     }
 
-    // Update the offer and apply it to the new category
     existingOffer.offerName = offername;
     existingOffer.discountPercentage = discountPercentage;
     existingOffer.startDate = startDate;
@@ -855,6 +829,8 @@ module.exports.adminEditOfferPut = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating offer:", error);
-    res.status(500).json({ message: "An error occurred while updating the offer." });
+    res
+      .status(500)
+      .json({ message: "An error occurred while updating the offer." });
   }
 };

@@ -61,58 +61,75 @@ async function productFind(limitCount) {
 }
 
 //user login
-module.exports.userloginget = (req, res) => {
-  res.render("user/userlogin");
+module.exports.userloginget = async (req, res) => {
+  try {
+    const categories = await categoiesFind();
+
+    res.render('user/userlogin', { category: categories });
+  } catch (error) {
+    console.error("Error in userloginget:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
 
 module.exports.userloginpost = async (req, res) => {
   const { email, password } = req.body;
-  console.log(email, password);
 
   try {
     const user = await User.findOne({ email });
-    console.log(user);
 
-    // Handle case where user is not found
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          message: "User not found. Please check your email or sign up.",
-        });
+      return res.status(404).json({
+        message: "User not found. Please check your email or sign up.",
+      });
     }
 
     if (user.password === null) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "This email is registered through Google login. Please use Google to sign in.",
-        });
+      return res.status(403).json({
+        message:
+          "This email is registered through Google login. Please use Google to sign in.",
+      });
     }
 
     if (user.status === "Active") {
       const compareResult = await bcrypt.compare(password, user.password);
-      console.log("comparing part ", compareResult);
 
       if (!compareResult) {
         return res.status(404).json({ messagePassword: "Invalid password" });
       }
 
-      // Generate token and set cookie
       const token = await jwtTokenCreation(user._id);
       res.cookie("jwt", token, {
         httpOnly: true,
       });
+
+      let wallet = await Wallet.findOne({ userId: user._id });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId: user._id,
+          balance: 0,
+        });
+        await wallet.save();
+      }
+
+      let address = await Address.findOne({ userId: user._id });
+      if (!address) {
+        address = new Address({
+          userId: user._id,
+          addresses: [],
+        });
+        await address.save();
+      }
+
       return res.status(200).json({ redirect: "/" });
     } else {
-      // User is inactive or some other issue
       return res
         .status(403)
-        .json({ message: "Account is block. Please contact support." });
+        .json({ message: "Account is blocked. Please contact support." });
     }
   } catch (error) {
-    console.log("Error in bcrypt in login post", error);
+    console.log("Error in login post:", error);
     return res
       .status(500)
       .json({ message: "Internal server error. Please try again later." });
@@ -121,24 +138,34 @@ module.exports.userloginpost = async (req, res) => {
 
 //forgot password
 
-module.exports.forgotPassword = (req, res) => {
-  res.render("user/forgotPassword");
+module.exports.forgotPassword = async (req, res) => {
+  try {
+    const categories = await categoiesFind();  
+    res.render("user/forgotPassword", { category: categories });  
+  } catch (error) {
+    console.error("Error in forgotPassword:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
-module.exports.newPassword = (req, res) => {
-  res.render("user/newPassword");
+
+module.exports.newPassword = async (req, res) => {
+  try {
+    const categories = await categoiesFind();  
+    res.render("user/newPassword", { category: categories });  
+  } catch (error) {
+    console.error("Error in newPassword:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
 module.exports.newPasswordPost = async (req, res) => {
   const { password } = req.body;
   const email = session.forgotEmail;
-
-  console.log("password", password, "email", email);
 
   try {
     const user = await User.findOne({ email });
     if (!user) res.status(400).json({ message: "email id not found" });
     user.password = password;
     await user.save();
-    console.log("done");
 
     return res.status(200).json({ redirect: "Password updated successfully" });
   } catch (error) {
@@ -152,7 +179,6 @@ module.exports.forgotPasswordPost = async (req, res) => {
     const user = await User.findOne({ email });
     if (!user) return res.status(404).json({ message: "Enter a valid email" });
     session.forgotEmail = email;
-    console.log(session.forgotEmail, "stored in session");
 
     const otp = genarateOtp();
     const sendemailresult = await sendEmailAndStore(
@@ -160,7 +186,6 @@ module.exports.forgotPasswordPost = async (req, res) => {
       otp,
       "forgotpassword"
     );
-    console.log(sendemailresult);
     res.status(200).json({ otpsend: "otp shared to email" });
   } catch (error) {
     res.status(500).json({ error: "servererror" });
@@ -176,10 +201,8 @@ module.exports.userLogoutGet = (req, res) => {
 //favorites
 module.exports.addFavourites = async (req, res) => {
   try {
-    console.log("ok 111");
-
     const productId = req.body.id;
-    const user = req.user;
+    const user = req.userforlogin;
     if (!user) {
       return res.json({
         success: false,
@@ -187,9 +210,6 @@ module.exports.addFavourites = async (req, res) => {
           "Login is required to add item to the favourites. Please log in and try again.",
       });
     }
-    console.log("ok 11122");
-
-    console.log(`Received product ID: ${productId}`);
 
     if (!productId) {
       return res
@@ -204,10 +224,7 @@ module.exports.addFavourites = async (req, res) => {
         .json({ success: false, message: "Product not found" });
     }
 
-    console.log("Product found:", product);
-
-    let favorites = await Favourite.findOne({ userId: req.user });
-    console.log("Favorites collection:", favorites);
+    let favorites = await Favourite.findOne({ userId: user });
 
     const item = {
       productId: product._id,
@@ -219,7 +236,7 @@ module.exports.addFavourites = async (req, res) => {
 
     if (!favorites) {
       const newFavourites = new Favourite({
-        userId: req.user,
+        userId: user,
         items: [item],
       });
 
@@ -232,11 +249,8 @@ module.exports.addFavourites = async (req, res) => {
     const isAlreadyFavorite = favorites.items.some((fav) =>
       fav.productId.equals(product._id)
     );
-    console.log("Is product already in favorites?", isAlreadyFavorite);
 
     if (isAlreadyFavorite) {
-      console.log("loooooogrde");
-
       return res.json({
         success: false,
         message: "Product is already in favorites",
@@ -259,7 +273,6 @@ module.exports.favouritesGet = async (req, res) => {
   const user = req.user;
   try {
     const category = await categoiesFind();
-    console.log(user);
 
     return res.render("user/favourites", { category });
   } catch (error) {
@@ -270,7 +283,6 @@ module.exports.shoppingCart = async (req, res) => {
   const user = req.user;
   try {
     const category = await categoiesFind();
-    console.log(user);
 
     return res.render("user/shoppingCart", { category });
   } catch (error) {
@@ -291,7 +303,6 @@ module.exports.shoppingCartFetch = async (req, res) => {
     const cart = await Cart.findOne({ userId: user }).populate(
       "items.productId"
     );
-    console.log(cart);
 
     if (!cart) {
       return res
@@ -310,7 +321,7 @@ module.exports.shoppingCartFetch = async (req, res) => {
 
 module.exports.addToCart = async (req, res) => {
   const { quantity, productId } = req.body;
-  const authUser = req.user;
+  const authUser = req.userforlogin;
 
   if (!authUser) {
     return res.status(404).json({
@@ -345,23 +356,8 @@ module.exports.addToCart = async (req, res) => {
       });
     }
 
-    // const activeOffer = await OfferSchema.findOne({
-    //   'category.id': product.category,
-    //   status: true,
-    //   startDate: { $lte: new Date() },
-    //   endDate: { $gte: new Date() },
-    // });
-
-    // console.log(activeOffer,"offer active");
-
     let discountedPrice = product.discountedprice;
     let adjustedSalePrice = product.saleprice;
-
-    // if (activeOffer) {
-    //   const discountAmount = (product.saleprice * activeOffer.discountPercentage) / 100;
-    //   discountedPrice = Math.max(product.saleprice - discountAmount, 0);
-    //   adjustedSalePrice = product.saleprice;
-    // }
 
     let cart = await Cart.findOne({ userId: user._id });
 
@@ -438,8 +434,6 @@ module.exports.CartRemove = async (req, res) => {
   const userId = req.user;
 
   try {
-    console.log(`Removing product with ID: ${productId} for user: ${userId}`);
-
     const cart = await Cart.findOne({ userId });
     if (!cart) {
       return res.status(404).json({ error: "Cart not found" });
@@ -451,7 +445,6 @@ module.exports.CartRemove = async (req, res) => {
 
     await cart.save();
 
-    console.log(`Product removed successfully: ${productId}`);
     return res.json({ success: true, cart });
   } catch (error) {
     console.error("Error removing product:", error);
@@ -488,11 +481,9 @@ module.exports.quantityEdit = async (req, res) => {
         return res.status(400).json({ message: "Not enough stock available" });
       }
       if (cartItem.quantity >= MAX_INCREMENT_LIMIT) {
-        return res
-          .status(400)
-          .json({
-            message: `You can only add ${MAX_INCREMENT_LIMIT} quantity for each product`,
-          });
+        return res.status(400).json({
+          message: `You can only add ${MAX_INCREMENT_LIMIT} quantity for each product`,
+        });
       }
       cartItem.quantity += 1;
     } else if (quantityEditValue === "decrement") {
@@ -517,24 +508,28 @@ module.exports.quantityEdit = async (req, res) => {
 };
 
 //user signup
-module.exports.usersignupget = (req, res) => {
-  res.render("user/usersignup");
+module.exports.usersignupget = async (req, res) => {
+  try {
+    const categories = await categoiesFind();
+
+    res.render('user/usersignup', { category: categories });
+  } catch (error) {
+    console.error("Error in usersignupget:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
 
 module.exports.usersignuppost = async (req, res) => {
   const { email, password, name, ref } = req.body;
   const otp = genarateOtp();
 
-  console.log("ref exist", ref);
-
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res
-      .status(400)
-      .json({
-        message:
-          "Email is already registered. Please use a different email or login.",
-      });
+    return res.status(400).json({
+      message:
+        "Email is already registered. Please use a different email or login.",
+    });
   }
 
   try {
@@ -549,9 +544,7 @@ module.exports.usersignuppost = async (req, res) => {
     session.username = name;
     session.referrer = ref || null;
 
-    console.log("Stored in session otp and details");
     const sendemailresult = await sendEmailAndStore(email, otp, "registration");
-    console.log(sendemailresult);
     res.status(200).json({ otpsend: "otp shared to email" });
   } catch (error) {
     const err = errorHandling(error);
@@ -560,16 +553,23 @@ module.exports.usersignuppost = async (req, res) => {
   }
 };
 
-module.exports.useremailotpget = (req, res) => {
-  res.render("user/useremailotp");
+module.exports.useremailotpget = async (req, res) => {
+  try {
+    const categories = await categoiesFind();
+
+    res.render("user/useremailotp", { category: categories });
+  } catch (error) {
+    console.error("Error in useremailotpget:", error);
+    res.status(500).send("Internal Server Error");
+  }
 };
+
 
 module.exports.useremailotppost = async (req, res) => {
   const { userentredotp } = req.body;
 
   try {
     const otpresult = await Otp.findOne({ otp: userentredotp });
-    console.log("Found OTP in MongoDB:", otpresult);
 
     if (!otpresult) {
       return res.status(404).json({ message: "Invalid OTP" });
@@ -584,31 +584,23 @@ module.exports.useremailotppost = async (req, res) => {
 
     if (req.query.value && req.query.value.includes("forgotpassword")) {
       await Otp.deleteOne({ otp: userentredotp });
-      return res
-        .status(200)
-        .json({
-          newpassword:
-            "OTP verified successfully. You can now reset your password.",
-        });
+      return res.status(200).json({
+        newpassword:
+          "OTP verified successfully. You can now reset your password.",
+      });
     }
 
     let wallet = null;
     if (session.referrer) {
       const decodedRef = decodeReferralToken(session.referrer);
-      console.log("Decoded Referrer ID:", decodedRef);
 
       wallet = await Wallet.findOne({ userId: decodedRef });
       if (!wallet) {
         wallet = new Wallet({ userId: decodedRef, balance: 100 });
         await wallet.save();
-        console.log("New wallet created for referrer:", decodedRef);
       } else {
         wallet.balance += 100;
         await wallet.save();
-        console.log(
-          "Added 100 to the existing wallet for referrer:",
-          decodedRef
-        );
       }
 
       const newWalletTransaction = new walletTransaction({
@@ -620,10 +612,6 @@ module.exports.useremailotppost = async (req, res) => {
         description: "Referral reward",
       });
       await newWalletTransaction.save();
-      console.log(
-        "Referral wallet transaction recorded:",
-        newWalletTransaction
-      );
     }
 
     const existingUser = await User.findOne({ email: session.email });
@@ -663,13 +651,12 @@ module.exports.resendEmailOtpPost = async (req, res) => {
 
     const otp = genarateOtp();
     let email = session.email;
-    console.log("email for resend", email, "otp", otp);
 
     let emailSubject = "Registration Resend OTP";
 
     if (req.query.value && req.query.value.includes("forgotpassword")) {
       email = session?.forgotEmail;
-      console.log("session", session.forgotEmail);
+
       emailSubject = "Forgot Password Resend OTP";
     }
 
@@ -677,11 +664,7 @@ module.exports.resendEmailOtpPost = async (req, res) => {
       return res.status(400).json({ message: "Email not found in session." });
     }
 
-    console.log("Email to send OTP:", email);
-
     const sendemailresult = await sendEmailAndStore(email, otp, emailSubject);
-
-    console.log("Send Email Result:", sendemailresult);
 
     if (req.query.value && req.query.value.includes("forgotpassword")) {
       return res
@@ -763,12 +746,10 @@ module.exports.googleLoginRoute = (req, res, next) => {
     prompt: "select_account",
   })(req, res, next);
 };
+
 //for handling the callback which google provide
 module.exports.googleAuthCallback = (req, res, next) => {
-  console.log("log 1");
-
   passport.authenticate("google", { session: false }, (err, user, info) => {
-    console.log("log 2");
     if (err && err.message) {
       if (err.message.includes("E11000")) {
         console.error("Error during authentication:");
@@ -788,10 +769,9 @@ module.exports.googleAuthCallback = (req, res, next) => {
 
     const token = user.token;
     res.cookie("jwt", token, { httpOnly: true });
-    console.log("after seting cookie ");
 
     res.redirect("/");
-  })(req, res, next); // Important: Call this with `req, res, next`
+  })(req, res, next);
 };
 
 module.exports.myAccountSettings = async (req, res) => {
@@ -815,11 +795,42 @@ module.exports.myAccountSettings = async (req, res) => {
   }
 };
 
+module.exports.myAccountSettings = async (req, res) => {
+  try {
+    const category = await CategoryModel.find();
+    const user = req.user;
+    const orders = await Order.findOne({ userId: user });
+    const address = await Address.findOne({ userId: user });
+    const route = {
+      home: "home",
+      mainroute: "accountsettings",
+      title: "Account Settings",
+      side: "Account Settings",
+    };
+
+    res.render("user/accountSettings", { category, route, orders, address });
+  } catch (error) {
+    console.error("Error fetching categories for account settings:", error);
+
+    res.status(500).send("An error occurred while fetching account settings.");
+  }
+};
+
+module.exports.aboutUsGet = async (req, res) => {
+  try {
+    const category = await CategoryModel.find();
+    res.render("user/aboutUs", { category });
+  } catch (error) {
+    console.error("Error fetching categories for account settings:", error);
+
+    res.status(500).send("An error occurred while fetching category details.");
+  }
+};
+
 module.exports.myDetailsedit = async (req, res) => {
   try {
     const user = await User.findOne({ _id: req.user });
     const category = await categoiesFind();
-    console.log(req.query.id);
 
     if (!user) {
       return res.status(404).render("error", {
@@ -914,7 +925,7 @@ module.exports.AddAddressGet = async (req, res) => {
 
 module.exports.ordersView = async (req, res) => {
   try {
-    const category = await categoiesFind(); 
+    const category = await categoiesFind();
     const orders = await Order.find({ userId: req.user }).sort({
       createdAt: -1,
     }); // Added `await`
@@ -933,21 +944,14 @@ module.exports.ordersView = async (req, res) => {
   }
 };
 
-
-
-
 module.exports.ordersViewDetails = async (req, res) => {
   const orderId = req.params.id;
   const type = req.query.type;
-
-  console.log(`Full URL: ${req.protocol}://${req.get("host")}${req.originalUrl}`);
 
   try {
     const category = await categoiesFind();
 
     if (type && type.includes("Payment Pending")) {
-      console.log(type, "Finding order from pending orders...");
-
       const pendingOrder = await PendingOrders.findOne({
         _id: orderId,
       }).populate("items.productId");
@@ -955,7 +959,6 @@ module.exports.ordersViewDetails = async (req, res) => {
       if (!pendingOrder) {
         return res.status(404).send("Pending order not found");
       }
-
 
       const route = {
         home: "home",
@@ -966,15 +969,11 @@ module.exports.ordersViewDetails = async (req, res) => {
         side: "Orders",
       };
 
-      const razorpaykey = process.env.RAZORPAY_KEY_ID
-      console.log("key is here",razorpaykey);
-      
+      const razorpaykey = process.env.RAZORPAY_KEY_ID;
+
       const pendingOrderObj = pendingOrder.toObject();
       pendingOrderObj.keyid = razorpaykey;
 
-
-
-      console.log(pendingOrderObj, "Pending Order Details Retrieved");
       return res.render("user/orderDetaiilsManagement", {
         category,
         route,
@@ -982,13 +981,13 @@ module.exports.ordersViewDetails = async (req, res) => {
       });
     }
 
-    const order = await Order.findOne({ _id: orderId }).populate("items.productId");
+    const order = await Order.findOne({ _id: orderId }).populate(
+      "items.productId"
+    );
 
     if (!order) {
       return res.status(404).send("Order not found");
     }
-
-    console.log(order, "Order Details Retrieved");
 
     const route = {
       home: "home",
@@ -1010,18 +1009,15 @@ module.exports.ordersViewDetails = async (req, res) => {
   }
 };
 
-
-
 module.exports.AddAddressGetPost = async (req, res) => {
   const address = req.body;
-  console.log(req.body);
 
   const userId = req.user;
 
   if (!userId || !address) {
     return res
       .status(400)
-      .json({ error: "User ID and address details are required." });
+      .json({ message: "User ID and address details are required." });
   }
 
   try {
@@ -1033,7 +1029,7 @@ module.exports.AddAddressGetPost = async (req, res) => {
       if (userAddress.addresses.length >= 5) {
         return res
           .status(400)
-          .json({ limit: "You can only have a maximum of 5 addresses." });
+          .json({ message: "You can only have a maximum of 5 addresses." });
       }
       userAddress.addresses.push(address);
     }
@@ -1048,23 +1044,16 @@ module.exports.AddAddressGetPost = async (req, res) => {
   }
 };
 
-
 module.exports.AddressEditPost = async (req, res) => {
   const addressId = req.params.id;
   const userId = req.user;
   const updatedAddress = req.body;
 
-  console.log("Request body:", req.body);
-  console.log("User ID:", userId);
-  console.log("Address ID:", addressId);
-
   try {
     if (!userId || !addressId || !updatedAddress) {
-      return res
-        .status(400)
-        .json({
-          error: "User ID, address ID, and address details are required.",
-        });
+      return res.status(400).json({
+        error: "User ID, address ID, and address details are required.",
+      });
     }
 
     const userAddress = await Address.findOne({ userId });
@@ -1198,11 +1187,12 @@ module.exports.checkOut = async (req, res) => {
     const userId = req.user;
 
     const address = await Address.findOne({ userId });
-    const cart = await Cart.findOne({ userId }).populate("items.productId");
-    console.log(cart);
-    console.log(address);
 
-    res.render("user/checkOut", { address, cart });
+    const cart = await Cart.findOne({ userId }).populate("items.productId");
+
+    const coupons = await CouponModel.find({ status: "active" });
+
+    res.render("user/checkOut", { address, cart, coupons });
   } catch (error) {
     console.error("Error fetching checkout data:", error);
     res.status(500).send("An error occurred while fetching the checkout data.");
@@ -1268,14 +1258,12 @@ module.exports.orderSave = async (req, res) => {
     let walletUsedAmount = 0;
 
     if (paymentMethod === "Wallet") {
-      console.log("Processing wallet payment...");
       const wallet = await Wallet.findOne({ userId: req.user });
 
       if (!wallet) {
         return res.status(404).json({ error: "Wallet not found" });
       }
 
-      
       if (wallet.balance <= 0) {
         return res.status(400).json({ error: "Insufficient wallet balance" });
       }
@@ -1340,7 +1328,6 @@ module.exports.orderSave = async (req, res) => {
       ),
     });
 
-    
     if (coupponCode && coupponDiscount && coupponId) {
       newOrder.coupponCode = coupponCode;
       newOrder.coupponDiscount = coupponDiscount;
@@ -1363,22 +1350,16 @@ module.exports.orderSave = async (req, res) => {
 
       if (!product) {
         await newOrder.delete();
-        return res
-          .status(404)
-          .json({
-            error: `Product not found: ${
-              item.productname || "Unknown Product"
-            }`,
-          });
+        return res.status(404).json({
+          error: `Product not found: ${item.productname || "Unknown Product"}`,
+        });
       }
 
       if (product.stock < item.quantity) {
         await newOrder.delete();
-        return res
-          .status(400)
-          .json({
-            error: `Insufficient stock for product: ${product.productname}`,
-          });
+        return res.status(400).json({
+          error: `Insufficient stock for product: ${product.productname}`,
+        });
       }
 
       product.stock -= item.quantity;
@@ -1408,7 +1389,6 @@ module.exports.orderSave = async (req, res) => {
   }
 };
 
-
 module.exports.orderPlacedSuccess = async (req, res) => {
   res.render("user/orderSuccess");
 };
@@ -1419,8 +1399,6 @@ module.exports.inviteaFriend = async (req, res) => {
     const user = await User.findOne({ _id: req.user });
     const category = await categoiesFind();
     const token = generateReferralToken(req.user);
-
-    console.log(token);
 
     if (!user) {
       return res.status(404).render("error", {

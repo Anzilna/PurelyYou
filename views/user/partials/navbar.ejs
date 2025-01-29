@@ -46,7 +46,7 @@
       </div>
       <% }); %> <% } %>
       <div class="flex justify-center items-center">
-        <a href="" class="text-black group">
+        <a href="/aboutus" class="text-black group">
           <p class="relative inline-block">
             About Us
             <span
@@ -62,6 +62,9 @@
   id="right-div"
   class="flex gap-4 mr-4 text-xl justify-center font-normal text-black items-center"
 >
+
+<% if (localsUser) { %>
+
   <!-- Favourites -->
   <a
     href="/favourites"
@@ -69,7 +72,7 @@
   >
     <i class="bi bi-heart"></i>
     <span
-      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      class="absolute top-full z-50 left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
       Favourites
     </span>
@@ -82,13 +85,12 @@
   >
     <i class="bi bi-bag"></i>
     <span
-      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      class="absolute top-full z-50 left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
       Shopping Cart
     </span>
   </a>
 
-  <% if (localsUser) { %>
   <!-- Account Settings -->
   <a
     href="/accountsettings"
@@ -96,7 +98,7 @@
   >
     <i class="bi bi-person" style="font-size: 27px"></i>
     <span
-      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      class="absolute top-full z-50 left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
       Account Settings
     </span>
@@ -109,7 +111,7 @@
   >
     <i class="bi bi-box-arrow-left" style="font-size: 25px"></i>
     <span
-      class="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+      class="absolute top-full z-50 left-1/2 transform -translate-x-1/2 mt-2 bg-gray-700 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300"
     >
       Logout
     </span>
@@ -121,7 +123,7 @@
       <p class="relative inline-block">
         login
         <span
-          class="absolute left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
+          class="absolute z-50 left-0 bottom-0 w-full h-[2px] bg-gray-700 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"
         ></span>
       </p>
     </a>

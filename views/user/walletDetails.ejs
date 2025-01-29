@@ -5,11 +5,11 @@
 
   <div id="notification" class="hidden"></div>
 
-  <div class="grid-cols-12 grid px-[250px] py-14 gap-3">
+  <div class="grid-cols-12 grid lg:px-[250px] py-14 gap-3">
     <%- include("partials/sidebarForUserManagement"); -%>
 
-    <div class="col-span-8">
-      <div class="font-light items-start text-lg pb-[40px] flex justify-center">
+    <div class="col-span-10 md:col-span-8">
+      <div class="font-light items-start text-sm md:text-lg pb-[40px] flex justify-center">
         <p>You can manage your wallet here</p>
       </div>
       <div class="grid grid-cols-12 gap-7">
@@ -60,7 +60,6 @@
       </form>
     </div>
   </div>
-
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <script src="/javascript/user/walletDetails.js"></script>
   <%- include('partials/footer'); -%>
-</body>

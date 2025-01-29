@@ -1,7 +1,7 @@
 const { date } = require("zod");
-const PDFDocument = require('pdfkit'); 
-const generateInvoicePdf = require('../functions/invoicePdf')
-const walletFunction = require('../functions/walletTransaction')
+const PDFDocument = require("pdfkit");
+const generateInvoicePdf = require("../functions/invoicePdf");
+const walletFunction = require("../functions/walletTransaction");
 const {
   CategoryModel,
   ProductModel,
@@ -11,13 +11,15 @@ const {
   User,
   Otp,
   Order,
+  CancelledOrder,
+  NewsletterSchema,
   Favourite,
   walletTransaction,
   Wallet,
   Cart,
   Address,
   Return,
-  PendingOrders
+  PendingOrders,
 } = require("../../model/usermodel");
 const {
   walletTransactionValidation,
@@ -35,9 +37,46 @@ async function categoiesFind() {
   }
 }
 
-module.exports.favouritesFetchGet = async (req, res) => {
-  console.log("working 2");
+module.exports.newsLetter = async (req, res) => {
+  const { email } = req.body;
+  const userId = req.userforlogin;
 
+  try {
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ message: "Login is required for subscribing." });
+    }
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Please provide email ID for updates." });
+    }
+
+    const existingSubscription = await NewsletterSchema.findOne({ email });
+    if (existingSubscription) {
+      return res.status(409).json({ message: "Email is already subscribed." });
+    }
+
+    const newSubscription = new NewsletterSchema({
+      userId,
+      email,
+    });
+
+    await newSubscription.save();
+
+    return res.status(201).json({
+      message: "Subscription successful!",
+      subscription: newSubscription,
+    });
+  } catch (error) {
+    console.error("Error saving subscription:", error);
+    return res.status(500).json({ error: "Internal Server Error." });
+  }
+};
+
+module.exports.favouritesFetchGet = async (req, res) => {
   try {
     const userId = req.user;
 
@@ -50,7 +89,6 @@ module.exports.favouritesFetchGet = async (req, res) => {
         .status(404)
         .json({ message: "No favourites found for this user." });
     }
-    console.log("working", userFavourites);
 
     return res.status(200).json({ favourites: userFavourites });
   } catch (error) {
@@ -89,30 +127,23 @@ module.exports.favouritesRemoveFetch = async (req, res) => {
 
     await userFavourites.save();
 
-    return res
-      .status(200)
-      .json({
-        message: "Product removed from favorites.",
-        favourites: userFavourites,
-      });
+    return res.status(200).json({
+      message: "Product removed from favorites.",
+      favourites: userFavourites,
+    });
   } catch (error) {
     console.error("Error removing product from favorites:", error.message);
-    return res
-      .status(500)
-      .json({
-        error:
-          "Failed to remove product from favorites. Please try again later.",
-      });
+    return res.status(500).json({
+      error: "Failed to remove product from favorites. Please try again later.",
+    });
   }
 };
 
 module.exports.viewallproductsFilter = async (req, res) => {
-  const { sortBy, categories, search, page = 1, limit  } = req.body; 
+  const { sortBy, categories, search, page = 1, limit } = req.body;
 
   try {
-    const category = await categoiesFind(); // Fetch all categories
-
-    // Initialize the query
+    const category = await categoiesFind();
     let query = { isListed: true };
 
     if (categories && categories.length > 0) {
@@ -123,31 +154,37 @@ module.exports.viewallproductsFilter = async (req, res) => {
       query.productname = { $regex: search.trim(), $options: "i" };
     }
 
-    console.log("Query Object:", query,limit);
-
-    // Calculate skip value for pagination
     const skip = (page - 1) * limit;
 
-    // Base query to fetch products
     let productsQuery = ProductModel.find(query)
-      .populate({ path: "category", match: { isActive: true } }) // Only include active categories
-      .skip(skip) // Skip documents for pagination
-      .limit(limit) // Limit the number of results per page
+      .populate({ path: "category", match: { isActive: true } })
+      .skip(skip)
+      .limit(limit)
       .lean();
 
-    // Apply sorting
-    if (sortBy === "low-to-high") {
-      productsQuery = productsQuery.sort({ saleprice: 1 });
-    } else if (sortBy === "high-to-low") {
-      productsQuery = productsQuery.sort({ saleprice: -1 });
+    switch (sortBy) {
+      case "low-to-high":
+        productsQuery = productsQuery.sort({ saleprice: 1 });
+        break;
+      case "high-to-low":
+        productsQuery = productsQuery.sort({ saleprice: -1 });
+        break;
+      case "aToZ":
+        productsQuery = productsQuery.sort({ productname: 1 });
+        break;
+      case "zToA":
+        productsQuery = productsQuery.sort({ productname: -1 });
+        break;
+      case "newlaunches":
+        productsQuery = productsQuery.sort({ createdAt: -1 });
+        break;
+      default:
+        break;
     }
 
-    // Execute query
     const products = await productsQuery;
-    const totalProducts = await ProductModel.countDocuments(query); // Count total products matching the query
+    const totalProducts = await ProductModel.countDocuments(query);
     const Pages = Math.ceil(totalProducts / limit);
-
-    console.log(`Total Products: ${totalProducts} Total Pages: ${Pages} Fetched Products Count: ${products.length}`);
 
     res.json({ categories: category, products, totalProducts, Pages });
   } catch (error) {
@@ -156,11 +193,8 @@ module.exports.viewallproductsFilter = async (req, res) => {
   }
 };
 
-
 module.exports.walletAddMoneyFetchGet = async (req, res) => {
   try {
-    console.log("Incoming Request Body:", req.body);
-
     const user = req.user;
     const { amount, description, type } = req.body;
 
@@ -175,10 +209,8 @@ module.exports.walletAddMoneyFetchGet = async (req, res) => {
         userId: user,
         balance: amount,
       });
-      console.log("Created new wallet for user:", user);
     } else {
       wallet.balance += amount;
-      console.log("Added money to existing wallet for user:", user);
     }
 
     await wallet.save();
@@ -209,7 +241,7 @@ module.exports.walletAddMoneyFetchGet = async (req, res) => {
 
 module.exports.walletFetchGet = async (req, res) => {
   try {
-    const category = await CategoryModel.find({isActive:true});
+    const category = await CategoryModel.find({ isActive: true });
 
     const route = {
       home: "home",
@@ -231,12 +263,9 @@ module.exports.walletFetchGet = async (req, res) => {
 
 module.exports.walletDetailsFetchGet = async (req, res) => {
   try {
-    console.log("Fetching wallet details...");
-
     let wallet = await Wallet.findOne({ userId: req.user });
 
     if (!wallet) {
-      console.log("Wallet not found, creating a new one...");
       wallet = new Wallet({
         userId: req.user,
         balance: 0,
@@ -258,20 +287,17 @@ module.exports.walletDetailsFetchGet = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // Get the total count of transactions to calculate total pages
     const totalTransactions = await walletTransaction.countDocuments({
       walletId: wallet._id,
     });
 
-    // Calculate total number of pages
     const totalPages = Math.ceil(totalTransactions / limit);
-    console.log(totalPages, page);
 
     return res.status(200).json({
       balance: wallet.balance,
       transactions: transactions,
-      totalPages: totalPages, 
-      currentPage: page,     
+      totalPages: totalPages,
+      currentPage: page,
     });
   } catch (error) {
     console.error("Error fetching wallet details:", error);
@@ -283,8 +309,6 @@ module.exports.walletDetailsFetchGet = async (req, res) => {
 module.exports.CoupponApply = async (req, res) => {
   const { couponCode, finalAmount } = req.body;
   const userId = req.user;
-
-  console.log(req.body);
 
   try {
     const coupon = await CouponModel.findOne({
@@ -323,20 +347,12 @@ module.exports.CoupponApply = async (req, res) => {
     }
 
     let discountAmount = (finalAmount * coupon.discountPercentage) / 100;
-    console.log("Calculated Discount Amount:", discountAmount);
 
     if (discountAmount > coupon.maxAmount) {
-      console.log(
-        "Discount amount exceeds max amount. Adjusting to max amount."
-      );
       discountAmount = coupon.maxAmount;
     }
 
-    console.log("2 nd discountvalue", discountAmount);
-
     let discountedAmount = finalAmount - discountAmount;
-
-    console.log("Discounted Amount:", discountedAmount);
 
     if (finalAmount < coupon.minAmount) {
       return res.status(400).json({
@@ -370,10 +386,8 @@ module.exports.CoupponApply = async (req, res) => {
 module.exports.orderPlacedSuccessDetails = async (req, res) => {
   try {
     const orderId = req.params.id;
-    console.log("orderPlacedSuccessDetails working");
 
     const order = await Order.findById(orderId);
-    console.log(order);
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -387,172 +401,251 @@ module.exports.orderPlacedSuccessDetails = async (req, res) => {
 };
 
 module.exports.razorpayCreateOrder = async (req, res) => {
-  console.log("Creating Razorpay order...");
-    const { amount, currency, orderData } = req.body;
-    const type = req.query.type;   
+  const { amount, currency, orderData } = req.body;
+  const type = req.query.type;
+
+  try {
 
 
-    try {
-
-
-      if (type && type.includes("pending")) {
-
-        const pendingId = `PND${Date.now()}`;
-
-
-        const razorpayOrder = await razorpay.orders.create({
-          amount: amount * 100, 
-          currency: currency || "INR",
-          receipt: `receipt_${pendingId}`,
-        });
-
-        console.log(type, "type","doene",razorpayOrder);
-
-        return res.status(200).json({
-          message: "Razorpay order created successfully",
-          razorpayOrder,
-          key_id: process.env.RAZORPAY_KEY_ID, 
-        });
+    if (type && (type.includes("pending") || type.includes("wallet"))) {
+      let receiptId;
+    
+      if (type.includes("pending")) {
+        receiptId = `PND${Date.now()}`;
       }
+    
+      if (type.includes("wallet")) {
+        
+        const wallet = await Wallet.findOne({ userId: req.user });
+    
+        if (!wallet) {
+          return res.status(404).json({ message: "Wallet not found" });
+        }
 
-
-      const {
-        totalAmount,
-        totalDiscount,
-        deliveryCharge,
-        paymentMethod,
-        userInfo,
-        addressId,
-        coupponCode,
-        coupponDiscount,
-        coupponId,
-      } = orderData;
-
-      if (!totalAmount || !paymentMethod || !userInfo || !addressId) {
-        return res.status(400).json({ error: "All fields are required" });
+        receiptId = `WAL${Date.now()}`;
       }
-
-      const userAddress = await Address.findOne({ userId: req.user });
-      if (!userAddress || !userAddress.addresses) {
-        return res.status(404).json({ error: "Address not found" });
+    
+      const user = await User.findById(req.user); // Assuming the user ID is stored in req.user
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
       }
-
-      const selectedAddress = userAddress.addresses.find(
-        (address) => address._id.toString() === addressId
-      );
-      if (!selectedAddress) {
-        return res.status(404).json({ error: "Selected address not found" });
-      }
-
-      const userCart = await Cart.findOne({ userId: req.user });
-      if (!userCart || !userCart.items.length) {
-        return res.status(404).json({ error: "Cart is empty" });
-      }
-      const pendingId = `PND${Date.now()}`;
-
 
       const razorpayOrder = await razorpay.orders.create({
-        amount: totalAmount * 100, 
+        amount: amount * 100,
         currency: currency || "INR",
-        receipt: `receipt_${pendingId}`,
+        receipt: `receipt_${receiptId}`,
       });
-
-      console.log("Razorpay Order Created:", razorpayOrder);
-
-
-      const newOrder = new PendingOrders({
-        userId: req.user,
-        totalAmount,
-        totalDiscount,
-        deliveryCharge,
-        username: userInfo.username,
-        email: userInfo.email,
-        code: pendingId,
-        selectedAddress: {
-          name: selectedAddress.name,
-          address: selectedAddress.address,
-          city: selectedAddress.city,
-          state: selectedAddress.state,
-          pincode: selectedAddress.pincode,
-          phone: selectedAddress.phone,
-          email: selectedAddress.email,
-          _id: selectedAddress._id,
-          createdAt: selectedAddress.createdAt,
-        },
-        paymentMethod,
-        items: userCart.items.map((item) => ({
-          productId: item.productId,
-          productname: item.productname,
-          quantity: item.quantity,
-          saleprice: item.saleprice,
-          regularprice: item.regularprice,
-          discountprice: item.discountprice || 0,
-        })),
-        totalRegularprice: userCart.items.reduce(
-          (acc, item) => acc + item.regularprice * item.quantity,
-          0
-        ),
-        razorPayOrderId:razorpayOrder.id
-      });
-
-      if (coupponCode && coupponDiscount && coupponId) {
-        newOrder.coupponCode = coupponCode;
-        newOrder.coupponDiscount = coupponDiscount;
-        newOrder.coupponId = coupponId;
-        newOrder.coupponUsed = true;
-        const coupon = await CouponModel.findById(coupponId);
-
-        if (!coupon) {
-          return res.status(404).json({ error: "Coupon not found" });
-        }
-        if (!coupon.noUsageLimit && coupon.usageLimit > 0) {
-          coupon.usageLimit -= 1;
-        }
-        coupon.usedBy.push(req.user);
-        await coupon.save();
-      }
-
-      for (const item of userCart.items) {
-        const product = await ProductModel.findById(item.productId);
-
-        if (!product) {
-          await newOrder.delete();
-          return res.status(404).json({
-            error: `Product not found: ${item.productname || "Unknown Product"}`,
-          });
-        }
-
-        if (product.stock < item.quantity) {
-          await newOrder.delete();
-          return res.status(400).json({
-            error: `Insufficient stock for product: ${product.productname}`,
-          });
-        }
-
-        product.stock -= item.quantity;
-        await product.save();
-      }
-
-      await newOrder.save();
-
-      // Create Razorpay order
-      
 
       return res.status(200).json({
         message: "Razorpay order created successfully",
         razorpayOrder,
-        pendingOrder: newOrder,
-        key_id: process.env.RAZORPAY_KEY_ID, 
+        user, 
+        key_id: process.env.RAZORPAY_KEY_ID,
       });
-    } catch (error) {
-      console.error("Error saving order or creating Razorpay order:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
     }
- 
+    
+    const {
+      totalAmount,
+      totalDiscount,
+      deliveryCharge,
+      paymentMethod,
+      userInfo,
+      addressId,
+      coupponCode,
+      coupponDiscount,
+      coupponId,
+    } = orderData;
+
+    if (!totalAmount || !paymentMethod || !userInfo || !addressId) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const userAddress = await Address.findOne({ userId: req.user });
+    if (!userAddress || !userAddress.addresses) {
+      return res.status(404).json({ error: "Address not found" });
+    }
+
+    const selectedAddress = userAddress.addresses.find(
+      (address) => address._id.toString() === addressId
+    );
+    if (!selectedAddress) {
+      return res.status(404).json({ error: "Selected address not found" });
+    }
+
+    const userCart = await Cart.findOne({ userId: req.user });
+    if (!userCart || !userCart.items.length) {
+      return res.status(404).json({ error: "Cart is empty" });
+    }
+    const pendingId = `PND${Date.now()}`;
+
+    const razorpayOrder = await razorpay.orders.create({
+      amount: totalAmount * 100,
+      currency: currency || "INR",
+      receipt: `receipt_${pendingId}`,
+    });
+
+    const newOrder = new PendingOrders({
+      userId: req.user,
+      totalAmount,
+      totalDiscount,
+      deliveryCharge,
+      username: userInfo.username,
+      email: userInfo.email,
+      code: pendingId,
+      selectedAddress: {
+        name: selectedAddress.name,
+        address: selectedAddress.address,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        pincode: selectedAddress.pincode,
+        phone: selectedAddress.phone,
+        email: selectedAddress.email,
+        _id: selectedAddress._id,
+        createdAt: selectedAddress.createdAt,
+      },
+      paymentMethod,
+      items: userCart.items.map((item) => ({
+        productId: item.productId,
+        productname: item.productname,
+        quantity: item.quantity,
+        saleprice: item.saleprice,
+        regularprice: item.regularprice,
+        discountprice: item.discountprice || 0,
+      })),
+      totalRegularprice: userCart.items.reduce(
+        (acc, item) => acc + item.regularprice * item.quantity,
+        0
+      ),
+      razorPayOrderId: razorpayOrder.id,
+    });
+
+    if (coupponCode && coupponDiscount && coupponId) {
+      newOrder.coupponCode = coupponCode;
+      newOrder.coupponDiscount = coupponDiscount;
+      newOrder.coupponId = coupponId;
+      newOrder.coupponUsed = true;
+      const coupon = await CouponModel.findById(coupponId);
+
+      if (!coupon) {
+        return res.status(404).json({ error: "Coupon not found" });
+      }
+      if (!coupon.noUsageLimit && coupon.usageLimit > 0) {
+        coupon.usageLimit -= 1;
+      }
+      coupon.usedBy.push(req.user);
+      await coupon.save();
+    }
+
+    for (const item of userCart.items) {
+      const product = await ProductModel.findById(item.productId);
+
+      if (!product) {
+        await newOrder.delete();
+        return res.status(404).json({
+          error: `Product not found: ${item.productname || "Unknown Product"}`,
+        });
+      }
+
+      if (product.stock < item.quantity) {
+        await newOrder.delete();
+        return res.status(400).json({
+          error: `Insufficient stock for product: ${product.productname}`,
+        });
+      }
+    }
+
+    await newOrder.save();
+
+    // Create Razorpay order
+
+    return res.status(200).json({
+      message: "Razorpay order created successfully",
+      razorpayOrder,
+      pendingOrder: newOrder,
+      key_id: process.env.RAZORPAY_KEY_ID,
+    });
+  } catch (error) {
+    console.error("Error saving order or creating Razorpay order:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
 };
 
+
+
+
+
+module.exports.razorpayPaymentVerifyWallet = async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      description,
+      type,
+      amount
+    } = req.body;
+
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({ error: "Missing payment details." });
+    }
+
+    const generated_signature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest("hex");
+
+    if (generated_signature !== razorpay_signature) {
+      return res.status(400).json({ error: "Invalid payment signature." });
+    }
+
+    const userId = req.user;
+    if (!userId) {
+      return res.status(400).json({ error: "User not found." });
+    }
+
+    let wallet = await Wallet.findOne({ userId });
+    if (!wallet) {
+      wallet = new Wallet({ userId, balance: 0 });
+    }
+
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ error: "Invalid amount." });
+    }
+
+    wallet.balance += amount;
+    await wallet.save();
+
+    const transaction = new walletTransaction({
+      transactionId: `txn-${Date.now()}`,
+      walletId: wallet._id,
+      userId,
+      type: type || "CREDIT",
+      amount,
+      description: description || "Wallet top-up via Razorpay",
+      date: new Date(),
+    });
+    await transaction.save();
+
+    return res.status(200).json({
+      message: "Payment verified and wallet updated successfully.",
+      wallet,
+      transaction,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error in payment verification:", error);
+    return res.status(500).json({ error: "Internal Server Error." });
+  }
+};
+
+
 module.exports.razorpayPaymentVerify = async (req, res) => {
-  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, pendingOrderId } = req.body;
+  const {
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+    pendingOrderId,
+  } = req.body;
   // const {
   //   totalAmount,
   //   totalDiscount,
@@ -565,7 +658,6 @@ module.exports.razorpayPaymentVerify = async (req, res) => {
   //   coupponId,
   // } = orderData;
 
-  
   try {
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
@@ -573,20 +665,25 @@ module.exports.razorpayPaymentVerify = async (req, res) => {
       .digest("hex");
 
     if (generatedSignature === razorpay_signature) {
-      console.log("Payment verified successfully:", req.body);
-
       const pendingOrder = await PendingOrders.findById(pendingOrderId);
-      console.log("lll");
 
       if (!pendingOrder) {
         return res.status(404).json({ error: "Pending order not found" });
       }
-      console.log("lll");
 
+      const {
+        username,
+        email,
+        selectedAddress,
+        totalAmount,
+        totalDiscount,
+        deliveryCharge,
+        items,
+        coupponCode,
+        coupponDiscount,
+        coupponId,
+      } = pendingOrder;
 
-      const { username , email , selectedAddress , totalAmount, totalDiscount, deliveryCharge, items , coupponCode , coupponDiscount , coupponId } = pendingOrder;
-
-    
       if (!selectedAddress) {
         return res.status(404).json({ error: "Selected address not found" });
       }
@@ -638,38 +735,31 @@ module.exports.razorpayPaymentVerify = async (req, res) => {
         await coupon.save();
       }
 
-
       for (const item of newOrder.items) {
         const product = await ProductModel.findById(item.productId);
-  
+
         if (!product) {
           await newOrder.delete();
-          return res
-            .status(404)
-            .json({
-              error: `Product not found: ${
-                item.productname || "Unknown Product"
-              }`,
-            });
+          return res.status(404).json({
+            error: `Product not found: ${
+              item.productname || "Unknown Product"
+            }`,
+          });
         }
-  
+
         if (product.stock < item.quantity) {
           await newOrder.delete();
-          return res
-            .status(400)
-            .json({
-              error: `Insufficient stock for product: ${product.productname}`,
-            });
+          return res.status(400).json({
+            error: `Insufficient stock for product: ${product.productname}`,
+          });
         }
-  
+
         product.stock -= item.quantity;
         product.sales += item.quantity;
         await product.save();
       }
 
-
       await PendingOrders.findByIdAndDelete(pendingOrderId);
-      console.log("lll");
 
       await newOrder.save();
 
@@ -682,10 +772,6 @@ module.exports.razorpayPaymentVerify = async (req, res) => {
           totaldiscountamount: 0,
         }
       );
-
-
-      
-      console.log("Order saved as Paid:", newOrder);
 
       return res.status(200).json({
         success: true,
@@ -701,15 +787,13 @@ module.exports.razorpayPaymentVerify = async (req, res) => {
     }
   } catch (error) {
     console.error("Error verifying payment:", error);
-    return res.status(500).json({ success: false, message: "Something went wrong!" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Something went wrong!" });
   }
 };
 
-
-
 module.exports.ordersReturnPost = async (req, res) => {
-  console.log(req.body);
-
   const {
     returnReason,
     name,
@@ -741,14 +825,12 @@ module.exports.ordersReturnPost = async (req, res) => {
   ) {
     return res.status(400).json({ message: "All fields are required" });
   }
-  console.log(productId, "is iddddd");
 
   try {
     const order = await Order.findById(orderId).populate("items.productId");
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
-    console.log(productId, "is iddddd");
 
     const item = order.items.find(
       (item) => item.productId._id.toString() === productId
@@ -759,10 +841,8 @@ module.exports.ordersReturnPost = async (req, res) => {
 
     item.returnRequest = true;
     item.returnStatus = "Pending";
-    console.log(productId, "is iddddd");
 
     await order.save();
-    console.log(productId, "is iddddd");
 
     const returnRequest = new Return({
       reason: returnReason,
@@ -782,41 +862,42 @@ module.exports.ordersReturnPost = async (req, res) => {
     });
 
     const savedReturnRequest = await returnRequest.save();
-    console.log(productId, "is iddddd");
 
-    return res
-      .status(200)
-      .json({
-        done: true,
-        message: "Return request submitted successfully",
-        return: savedReturnRequest,
-        order,
-      });
+    return res.status(200).json({
+      done: true,
+      message: "Return request submitted successfully",
+      return: savedReturnRequest,
+      order,
+    });
   } catch (error) {
     console.error("Error submitting return request:", error);
-    res
-      .status(500)
-      .json({
-        message: "An error occurred while submitting your return request.",
-      });
+    res.status(500).json({
+      message: "An error occurred while submitting your return request.",
+    });
   }
 };
+
 module.exports.cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
-    const { paymentMethod } = req.body;
+    const { paymentMethod, reason } = req.body; 
 
     const order = await Order.findById(orderId).populate("items.productId");
 
     if (!order) {
-      return res.status(404).json({ error: "Order not found" });
+      return res.status(404).json({ message: "Order not found" });
     }
 
     if (order.orderstatus === "Cancelled") {
-      return res.status(400).json({ error: "Order has already been cancelled" });
+      return res
+        .status(400)
+        .json({ message: "Order has already been cancelled" });
     }
 
-    if (paymentMethod.includes("Razorpay") || paymentMethod.includes("Wallet") ) {
+    if (
+      paymentMethod.includes("Razorpay") ||
+      paymentMethod.includes("Wallet")
+    ) {
       const refundResult = await walletFunction.walletTransaction(
         order.totalAmount,
         "CREDIT",
@@ -824,17 +905,52 @@ module.exports.cancelOrder = async (req, res) => {
         req.user
       );
 
-      if (!refundResult.success) {
-        return res.status(400).json({ error: refundResult.message });
+     
+    }
+
+    for (const item of order.items) {
+      const { productId, quantity } = item;
+
+      const productUpdateResult = await ProductModel.findByIdAndUpdate(
+        productId,
+        {
+          $inc: {
+            stock: quantity, 
+            sales: -quantity, 
+          },
+        },
+        { new: true } 
+      );
+
+      if (!productUpdateResult) {
+        return res
+          .status(404)
+          .json({ message: 'Product not found' });
       }
     }
 
     order.orderstatus = "Cancelled";
     await order.save();
 
-    return res.json({
-      message: "Order cancelled successfully",
+    const cancelledOrder = new CancelledOrder({
+      userId: req.user, 
+      orderId: order._id,
+      reason: reason || "No reason provided", 
+      items: order.items.map((item) => ({
+        productId: item.productId._id,
+        productname: item.productname,
+        quantity: item.quantity,
+        saleprice: item.saleprice,
+      })),
+      cancellationDate: new Date(),
+    });
+
+    await cancelledOrder.save();
+
+    return res.status(200).json({
+      message: "Order cancelled successfully,",
       order: order,
+      cancelledOrder: cancelledOrder,
     });
   } catch (error) {
     console.error("Error canceling order:", error);
@@ -844,30 +960,28 @@ module.exports.cancelOrder = async (req, res) => {
 
 module.exports.orderInvoice = async (req, res) => {
   const orderId = req.params.id;
-console.log("here");
 
   try {
-    const order = await Order.findById(orderId).populate('items.productId');
+    const order = await Order.findById(orderId).populate("items.productId");
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: "Order not found" });
     }
 
     const invoicePdf = await generateInvoicePdf(order);
-console.log(invoicePdf);
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=invoice-${order.code}.pdf`);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=invoice-${order.code}.pdf`
+    );
 
     res.send(invoicePdf);
-    
   } catch (error) {
-    console.error('Error generating invoice:', error);
-    res.status(500).json({ error: 'Failed to generate invoice' });
+    console.error("Error generating invoice:", error);
+    res.status(500).json({ error: "Failed to generate invoice" });
   }
 };
-
-
 
 module.exports.pendingOrders = async (req, res) => {
   try {
@@ -877,7 +991,10 @@ module.exports.pendingOrders = async (req, res) => {
       return res.status(400).json({ error: "User ID is required" });
     }
 
-    const pendingOrders = await PendingOrders.find({ userId, paymentStatus: "Pending" });
+    const pendingOrders = await PendingOrders.find({
+      userId,
+      paymentStatus: "Pending",
+    });
 
     if (!pendingOrders || pendingOrders.length === 0) {
       return res.status(404).json({ message: "No pending orders found" });

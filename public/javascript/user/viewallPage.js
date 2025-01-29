@@ -35,7 +35,6 @@ async function fetchFilteredProducts() {
   }
 
   try {
-    console.log("Fetching products...");
     const response = await fetch("/products/viewallproducts/filter", {
       method: "POST",
       headers: {
@@ -57,7 +56,6 @@ async function fetchFilteredProducts() {
     const { categories, products, Pages } = await response.json();
     totalPages = Pages;
 
-    // Update UI
     updateCategoryList(categories, selectedCategories);
     updateProductList(products);
     updatePagination();
@@ -136,7 +134,7 @@ function updateProductList(products) {
               : ""
           }
         </p>
-        <div class="flex justify-start space-x-1 text-black text-sm mt-2">★★★★☆</div>
+      
         <div class="mt-2 mb-2">
           <span class="text-black font-bold text-lg">₹${
             product.saleprice
@@ -162,12 +160,10 @@ function updateProductList(products) {
 function updatePagination() {
   pageNumbers.innerHTML = "";
 
-  // Generate page number buttons
   for (let i = 1; i <= totalPages; i++) {
     const pageButton = document.createElement("button");
     pageButton.textContent = i;
 
-    // Add active class for current page
     pageButton.classList.add(
       "w-8",
       "h-8",
@@ -176,7 +172,7 @@ function updatePagination() {
       "justify-center",
       "rounded-full",
       ...(i === currentPage
-        ? ["bg-gray-800","px-4","py-2","rounded-full" ,"text-white"]
+        ? ["bg-black","px-4","py-2","rounded-full" ,"text-white"]
         : ["hover:text-gray-400", "text-black"])
     );
     
@@ -190,7 +186,6 @@ function updatePagination() {
     pageNumbers.appendChild(pageButton);
   }
 
-  // Update previous button state
   prevPageBtn.disabled = currentPage === 1;
   prevPageBtn.classList.toggle("opacity-50", currentPage === 1);
 
@@ -201,7 +196,6 @@ function updatePagination() {
     }
   };
 
-  // Update next button state
   nextPageBtn.disabled = currentPage === totalPages;
   nextPageBtn.classList.toggle("opacity-50", currentPage === totalPages);
 
@@ -218,12 +212,10 @@ function redirectToProductPage(productId) {
   window.location.assign(`/productdetails/${productId}`);
 }
 
-// Debounced search and event listeners
 const debouncedSearch = debounce(fetchFilteredProducts, 300);
 searchInput.addEventListener("input", debouncedSearch);
 sortSelect.addEventListener("change", fetchFilteredProducts);
 
-// Initial fetch
 (async () => {
   await fetchFilteredProducts();
 })();

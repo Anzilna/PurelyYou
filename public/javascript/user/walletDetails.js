@@ -127,7 +127,7 @@ addMoneyForm.addEventListener("submit", async (e) => {
   amountError.classList.add("hidden");
 
   const amount = parseFloat(amountInput.value);
-  const description = "Deposit";
+  const description = "Wallet top-up via Razorpay";
   const type = "CREDIT";
 
   let isValid = true;
@@ -142,30 +142,105 @@ addMoneyForm.addEventListener("submit", async (e) => {
   }
 
   try {
-    const response = await fetch("/accountsettings/wallet/addmoney", {
+    const response = await fetch("/razorpay/createorder?type=wallet", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         amount: amount,
-        description: description,
-        type: type,
+        currency: "INR",
       }),
     });
 
-    const result = await response.json();
+    const { razorpayOrder, key_id, user } = await response.json();
 
-    if (response.ok) {
-      showNotification(
-        `Transaction successful: Rs. ${amount} ${type} added.`,
-        "success"
-      );
-      amountInput.value = "";
-      await fetchWalletDetails(currentPage); // Refresh the current page of transactions
-    } else {
-      showNotification(`Error: ${result.message}`, "error");
+    if (!response.ok) {
+      showNotification(result.message);
+      return;
     }
+
+    const options = {
+      key: key_id,
+      amount: razorpayOrder.amount,
+      currency: "INR",
+      name: "PurelyYou",
+      description: "Test Transaction",
+      order_id: razorpayOrder.id,
+      handler: async function (response) {
+        console.log("Payment successful!", response);
+
+        showNotification("Payment successful! Verifying your payment...");
+
+        try {
+          const verifyResponse = await fetch(
+            "/razorpay/verifywalletpayment",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                razorpay_order_id: razorpayOrder.id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                description: description,
+                type: type,
+                amount: amount,
+
+              }),
+            }
+          );
+
+          const { order, success } = await verifyResponse.json();
+
+          if (verifyResponse.ok && success) {
+            showNotification(
+              `Transaction successful: Rs. ${amount} ${type} added.`,
+              "success"
+            );
+            amountInput.value = "";
+            await fetchWalletDetails(currentPage);
+          } else {
+            showNotification(
+              "Payment verification failed. Please contact support."
+            );
+            console.error("Payment verification failed:");
+          }
+        } catch (error) {
+          console.error("Error verifying payment:", error);
+          showNotification(
+            "An error occurred during payment verification. Please try again."
+          );
+        }
+      },
+      prefill: {
+        name: user.username,
+        email: user.email,
+        contact: "9999999999",
+      },
+      theme: {
+        color: "#3399cc",
+      },
+      notes: {
+        address: "Razorpay HQ",
+      },
+      modal: {
+        ondismiss: function () {
+          console.log("Payment process closed by the user.");
+        },
+      },
+    };
+
+    options.method = ["card", "netbanking", "wallet", "upi"];
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+
+    rzp.on("payment.failed", function (response) {
+      console.error("Payment failed:", response.error);
+      showNotification("Payment failed. Please try again.");
+    });
   } catch (error) {
     console.error("Error adding money:", error);
     showNotification("Something went wrong. Please try again.", "error");
@@ -174,7 +249,11 @@ addMoneyForm.addEventListener("submit", async (e) => {
   addMoneyModal.classList.add("hidden");
 });
 
-function showNotification(message, type) {
+
+
+
+
+function showNotification(message) {
   const notification = document.getElementById("notification");
 
   notification.className = "";
@@ -189,29 +268,15 @@ function showNotification(message, type) {
     "right-4",
     "z-50",
     "min-w-[150px]",
+    "text-white",
+    "bg-black",
+    "dark:bg-gray-800",
+    "dark:text-green-400",
     "role",
     "alert"
   );
 
-  if (type === "success") {
-    notification.classList.add(
-      "text-white",
-      "bg-black",
-      "dark:bg-gray-800",
-      "dark:text-green-400"
-    );
-  } else if (type === "error") {
-    notification.classList.add(
-      "text-white",
-      "bg-black",
-      "dark:bg-gray-800",
-      "dark:text-red-400"
-    );
-  }
-
-  notification.innerHTML = `<span class="font-medium">${
-    type === "success" ? "Success!" : "Error!"
-  }</span> ${message}`;
+  notification.innerHTML = ` ${message}`;
 
   notification.classList.remove("hidden");
 

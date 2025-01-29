@@ -25,7 +25,6 @@ const adminSchema=new mongoose.Schema({
 //password hashing
 adminSchema.pre('save',async function(next){
     if(this.isModified('password')){
-        console.log("hasing preee");
         
         try {
             const salt=await bcrypt.genSalt()
@@ -76,6 +75,7 @@ const ProductSchema = new mongoose.Schema(
     productname: {
       type: String,
       required: true,
+      
     },
     productcode: {
       type: String,
@@ -115,6 +115,7 @@ const ProductSchema = new mongoose.Schema(
     mlQuantity: {
       type: String,
       required: true,
+      default:"30ml"
     },
     discountpercentage: {
       type: Number,
@@ -170,7 +171,7 @@ const ProductSchema = new mongoose.Schema(
 
 //product pre hook
 
-ProductSchema.pre('save', function (next) {
+ProductSchema.pre('validate', function (next) {
 
   if (this.stock > 10) {
     this.stockstatus = 'Available';

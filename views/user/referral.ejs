@@ -5,12 +5,12 @@
 
 <%- include("partials/headerForUserManagement"); -%>
 
-<div class="grid-cols-12 grid px-[250px] py-14 gap-3 min-h-screen">
+<div class="grid-cols-12 grid lg:px-[250px] py-14 gap-3 min-h-screen">
 
    <%- include("partials/sidebarForUserManagement"); -%>
 
-   <div class="col-span-8">
-    <div class="font-light items-center text-lg pb-[40px] flex justify-center">
+   <div class="col-span-10 md:col-span-8">
+    <div class="font-light items-center text-sm md:text-lg pb-[40px] flex justify-center">
       <p>You can invite a friend</p>
     </div>
     <div class="grid grid-cols-12 gap-7">
@@ -18,7 +18,7 @@
         <div class="h-[300px] bg-white flex justify-center items-center flex-col gap-1">
           <div><i class="bi bi-gift text-6xl"></i></div>
           <div class="font-normal text-2xl">Referral Program</div>
-          <div class="font-light text-sm">
+          <div class="font-light text-xs lg:text-sm">
             Share this link with a friend so you will get <span class="font-medium">Rs.100</span> reward to your wallet.
           </div>
   
@@ -47,22 +47,7 @@
   
   
 </div>
-
-<script>
-     const copyButton = document.getElementById('copyButton');
-  const referralLink = document.getElementById('referralLink');
-
-  const token = referralLink.dataset.token;
-
-  if (token) {
-    referralLink.value = `${referralLink.value}?ref=${token}`;
-  }
-
-  copyButton.addEventListener('click', () => {
-    referralLink.select();
-    referralLink.setSelectionRange(0, 99999); 
-    document.execCommand('copy');
-  });
-  </script>
+<div id="notification" class="text-sm mt-2"></div>
+<script src="/javascript/user/referral.js"></script>
 
 <%- include('partials/footer'); -%>

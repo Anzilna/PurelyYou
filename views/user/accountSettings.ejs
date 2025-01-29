@@ -5,16 +5,16 @@
 
 <%- include("partials/headerForUserManagement"); -%>
 
-<div class="grid-cols-12 grid px-[250px] py-14 gap-3 min-h-screen">
+<div class="grid-cols-12 grid lg:px-[250px] px-2 py-14 gap-3 min-h-screen">
 
    <%- include("partials/sidebarForUserManagement"); -%>
 
-    <div class="col-span-8 ">
-        <div class="font-light items-center text-lg pb-[40px] flex justify-center ">
+    <div class="col-span-10 md:col-span-8">
+        <div class="font-light items-center text-sm md:text-lg pb-[40px] flex justify-center ">
             <p>You can manage your account and subscriptions here</p>
         </div>
         <div class="grid grid-cols-12 gap-7">
-            <div class="col-span-5 bg-white">
+            <div class="col-span-12 md:col-span-5 bg-white">
                 <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div class="flex md:col-span-1 text-sm justify-start font-medium">My details</div>
                     <div class="flex md:col-span-1 text-sm justify-end">
@@ -41,7 +41,7 @@
                 </div>
             </div>
             <% if(address){ %>
-            <div class="col-span-7 bg-white p-4">
+            <div class=" col-span-12 md:col-span-7 bg-white p-4">
                 <% if (address.addresses && address.addresses.length > 0) { %>
                     <div class="grid grid-cols-2">
                         <div class="flex col-span-1 text-sm justify-start">Address</div>
@@ -69,14 +69,8 @@
         </div>
     </div>
 </div>
+
+
+<script src="/javascript/user/accountSettings.js"></script>
 <%- include('partials/footer'); -%>
 
-<script>
-    function editdetails(id) {
-        console.log(id);
-        location.assign(`/accountsettings/mydetailsedit/`);
-    }
-</script>
-
-</body>
-</html>

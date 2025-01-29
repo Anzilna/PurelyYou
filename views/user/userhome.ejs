@@ -127,11 +127,7 @@
                       <%= Array.isArray(product.ingredients) ?
                       product.ingredients.join(', ') : '' %>
                     </p>
-                    <div
-                      class="flex justify-start space-x-1 text-black text-sm mt-2"
-                    >
-                      ★★★★☆
-                    </div>
+                   
                     <div class="mt-2 mb-2">
                       <span class="text-black font-bold text-lg"
                         ><%= `₹${product.saleprice}` %></span
@@ -245,10 +241,11 @@
       <h1>Subscribe to our newsletter to get amazing offers in future.</h1>
     </div>
     <div class="flex justify-center p-5">
-      <form action="">
+      <form id="newsletter-form">
         <input
           type="text"
           name="newsletter"
+          id="email-input"
           class="p-3 rounded-md border-2 border-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-800 transition-all duration-300 transform focus:scale-10"
           placeholder="Enter your email"
         />
@@ -257,39 +254,8 @@
         </button>
       </form>
     </div>
-  </div>
-  <script>
-    const prevBtn = document.getElementById("prevBtn");
-    const nextBtn = document.getElementById("nextBtn");
-    const productContainer = document.getElementById("productContainer");
-    const productCard = productContainer.querySelector("div");
-    const productCardWidth = productCard.offsetWidth + 24;
-    const scrollAmount = productCardWidth * 5;
-
-    nextBtn.addEventListener("click", () => {
-      productContainer.scrollBy({
-        left: scrollAmount,
-        behavior: "smooth",
-      });
-    });
-
-    prevBtn.addEventListener("click", () => {
-      productContainer.scrollBy({
-        left: -scrollAmount,
-        behavior: "smooth",
-      });
-    });
-
-    function categoryview(id) {
-      location.assign(`/products/viewallproducts/?filterbycategory=${id}`);
-    }
-    function getProduct(id) {
-      location.assign(`/productdetails/${id}`);
-    }
-    function viewall() {
-      location.assign(`/products/viewallproducts`);
-    }
-  </script>
-
+</div>
+<div id="notification" class=" text-sm mt-2 ">
+</div>
+<script src="/javascript/user/userhome.js"></script>
   <%- include('partials/footer'); -%>
-</body>
