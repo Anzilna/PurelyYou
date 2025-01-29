@@ -21,7 +21,7 @@ router.get("/newpassword", checklogin, userController.newPassword);
 router.post("/newpassword", userController.newPasswordPost);
 router.post("/forgotpassword", checkUser, userController.forgotPasswordPost);
 router.get("/google/auth", userController.googleLoginRoute);
-router.get("/user/auth/google/callback", userController.googleAuthCallback);
+router.get("/auth/google/callback", userController.googleAuthCallback);
 router.get("/", checkUser, userController.userhomeget);
 router.get("/productdetails/:id", checkUser, userController.ProductDetails);
 router.get(
