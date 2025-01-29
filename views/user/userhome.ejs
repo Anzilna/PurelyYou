@@ -1,82 +1,56 @@
 <%- include("partials/header"); -%> <%- include("partials/navbar"); -%>
 <body class="mt-[85px] font-roboto">
   <div class="flex flex-col h-auto">
-    <!-- Main Carousel Section (without swiper) -->
-    <div id="carouselExampleCaptions" class="carousel slide cursor-pointer">
-      <div class="carousel-indicators">
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="0"
-          class="active"
-          aria-current="true"
-          aria-label="Slide 1"
-        ></button>
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="1"
-          aria-label="Slide 2"
-        ></button>
-        <button
-          type="button"
-          data-bs-target="#carouselExampleCaptions"
-          data-bs-slide-to="2"
-          aria-label="Slide 3"
-        ></button>
-      </div>
-      <div class="carousel-inner">
-        <div class="carousel-item active">
-          <div class="flex items-center justify-between">
-            <img
-              src="/images/7_6a3285a5-f428-4be5-941a-b018f9.jpg"
-              class="d-block w-full h-[600px] object-contain"
-              alt="..."
-            />
-            <div class="w-1/2 py-4 flex justify-center items-center">
-              <div class="text-center">
-                <h5 class="text-2xl font-bold">Salicylic Acid Face Serum</h5>
-                <p class="text-lg mt-2">
-                  A daily gentle exfoliant with 2% salicylic acid that wards off
-                  acne, blackheads and keeps your oils in check for that
-                  flawless matt looking skin.
-                </p>
-                <a
-                  href="#"
-                  class="no-underline mt-4 inline-block bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-all"
-                  >View More</a
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <button
-        class="carousel-control-prev"
-        type="button"
-        data-bs-target="#carouselExampleCaptions"
-        data-bs-slide="prev"
-      >
-        <span
-          class="carousel-control-prev-icon filter invert-0 brightness-0"
-          aria-hidden="true"
-        ></span>
-        <span class="visually-hidden"></span>
-      </button>
-      <button
-        class="carousel-control-next"
-        type="button"
-        data-bs-target="#carouselExampleCaptions"
-        data-bs-slide="next"
-      >
-        <span
-          class="carousel-control-next-icon filter invert-0 brightness-0"
-          aria-hidden="true"
-        ></span>
-        <span class="visually-hidden"></span>
-      </button>
-    </div>
 
+  
+<div class="w-full p-4">
+  <div class="hidden md:flex items-center">
+    <div class="w-2/3">
+      <img
+        src="/images/Skin_Insights_Banner_2_1600x (1).jpg"
+        class="w-full h-[600px] object-contain"
+        alt="Salicylic Acid Face Serum"
+      />
+    </div>
+    <div class="w-1/3 flex justify-center items-center p-6">
+      <div class="text-center">
+        <h5 class="text-2xl font-bold">Know Your Skin, Find the Perfect Care</h5>
+        <p class="text-sm mt-3">
+          Understand your skin concerns and shop with confidence. Whether you're dealing with acne,
+           pigmentation, 
+          or dryness, find the perfect product from our skincare category to restore your skin’s natural glow and health.
+        </p>
+        <a
+          href="/products/viewallproducts/?filterbycategory=67598bc2c2a08ec544d22d8c"
+          class="no-underline mt-4 inline-block bg-black text-white py-2 px-4 rounded-md hover:bg-gray-800 transition-all"
+          >Skin Care</a
+        >
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-col md:hidden items-center space-y-6">
+    <img
+      src="/images/7_6a3285a5-f428-4be5-941a-b018f9.jpg"
+      class="w-full max-h-[400px] object-contain"
+      alt="Salicylic Acid Face Serum"
+    />
+    <div class="text-center px-4">
+      <h5 class="text-xl font-bold">Salicylic Acid Face Serum</h5>
+      <p class="text-base mt-2">
+        A daily gentle exfoliant with 2% salicylic acid that wards off acne,
+        blackheads, and keeps your oils in check for that flawless matte look.
+      </p>
+      <a
+        href="#"
+        class="no-underline mt-4 inline-block bg-black text-white py-2 px-4 rounded hover:bg-gray-800 transition-all"
+        >View More</a
+      >
+    </div>
+  </div>
+</div>
+
+    
     <div class="flex justify-center  p-10"  >
 
       <div class="flex gap-2 w-full  justify-center">
@@ -180,19 +154,21 @@
 
   </div>
 
-  <div class="p-6 m-3">
+  <div class="p-4 md:p-6 m-2 md:m-3 text-center">
     <div class="flex justify-center">
-      <h1 class="font-semibold text-3xl">
+      <h1 class="font-semibold text-2xl md:text-5xl lg:text-4xl leading-tight max-w-[800px]">
         The future of personal care is here
       </h1>
     </div>
-    <div class="flex justify-center m-2">
-      <h1>
-        Embrace PurelyYou, where each element is chosen for its scientific
-        merit, offering you authentic, effective skincare solutions.
+  
+    <div class="flex justify-center items-center m-2">
+      <h1 class="text-sm md:text-base lg:text-lg text-gray-700 max-w-[700px]">
+        Embrace <strong>PurelyYou</strong>, where each element is chosen for its 
+        scientific merit, offering you authentic, effective skincare solutions.
       </h1>
     </div>
   </div>
+  
 
   <div class="h-auto p-10">
     <div class="mb-6 flex justify-center md:justify-start ml-7">
