@@ -101,8 +101,12 @@ module.exports.userloginpost = async (req, res) => {
 
       const token = await jwtTokenCreation(user._id);
       res.cookie("jwt", token, {
-        httpOnly: true,
+        httpOnly: true,     
+        secure: process.env.NODE_ENV === "production",  
+        sameSite: "Strict", 
+        maxAge: 1000 * 60 * 60 * 24,  
       });
+      
 
       let wallet = await Wallet.findOne({ userId: user._id });
       if (!wallet) {
@@ -749,7 +753,7 @@ module.exports.googleLoginRoute = (req, res, next) => {
 
 //for handling the callback which google provide
 module.exports.googleAuthCallback = (req, res, next) => {
-  passport.authenticate("google", { session: false }, (err, user, info) => {
+  passport.authenticate("google", { session: false }, async (err, user, info) => {
     if (err && err.message) {
       if (err.message.includes("E11000")) {
         console.error("Error during authentication:");
@@ -768,7 +772,32 @@ module.exports.googleAuthCallback = (req, res, next) => {
     }
 
     const token = user.token;
-    res.cookie("jwt", token, { httpOnly: true });
+
+    res.cookie("jwt", token, {
+      httpOnly: true,     
+      secure: process.env.NODE_ENV === "production",  
+      sameSite: "Strict", 
+      maxAge: 1000 * 60 * 60 * 24,  
+    });
+    
+
+    let wallet = await Wallet.findOne({ userId: user._id });
+    if (!wallet) {
+      wallet = new Wallet({
+        userId: user._id,
+        balance: 0,
+      });
+      await wallet.save();
+    }
+
+    let address = await Address.findOne({ userId: user._id });
+    if (!address) {
+      address = new Address({
+        userId: user._id,
+        addresses: [],
+      });
+      await address.save();
+    }
 
     res.redirect("/");
   })(req, res, next);
