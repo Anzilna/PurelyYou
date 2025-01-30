@@ -98,7 +98,7 @@ async function fetchCheckoutData() {
           <div
             class="flex-[2] flex justify-start flex-col gap-[1px] items-start"
           >
-            <div class="text-lg font-medium">
+            <div class="text-sm lg:text-lg font-medium">
               ${item.productId.productname}
             </div>
             <div class="text-xs font-medium">

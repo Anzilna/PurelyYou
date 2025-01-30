@@ -31,7 +31,7 @@
 
   <div class="flex flex-col md:hidden items-center space-y-6">
     <img
-      src="/images/7_6a3285a5-f428-4be5-941a-b018f9.jpg"
+      src="/images/Skin_Insights_Banner_2_1600x (1).jpg"
       class="w-full max-h-[400px] object-contain"
       alt="Salicylic Acid Face Serum"
     />
@@ -51,11 +51,11 @@
 </div>
 
     
-    <div class="flex justify-center  p-10"  >
+    <div class="flex justify-center  lg:p-10"  >
 
       <div class="flex gap-2 w-full  justify-center">
       
-        <section class="w-full max-w-[1430px] bg-white p-10">
+        <section class="w-full max-w-[1430px] bg-white p-3 lg:p-10">
           <div class="container py-6 w-full">
             <h2 class="text-2xl font-bold mb-6">New Launches</h2>
   
@@ -63,7 +63,7 @@
               
               <div
                 id="productContainer"
-                class="flex gap-6 overflow-hidden no-scrollbar"
+                class="flex gap-6 overflow-hidden lg:no-scrollbar"
               >
                 <% if (products) { %> <% products.forEach((product) => { %>
                 <div
@@ -210,27 +210,33 @@
   </div>
 
   <div class="p-6 m-3">
+    <!-- Title Section -->
     <div class="flex justify-center">
-      <h1 class="font-semibold text-3xl">Subscribe To Newsletter</h1>
+      <h1 class="font-semibold text-3xl sm:text-2xl text-center">Subscribe To Newsletter</h1>
     </div>
+  
+    <!-- Subtitle Section -->
     <div class="flex justify-center p-3">
-      <h1>Subscribe to our newsletter to get amazing offers in future.</h1>
+      <h1 class="text-center text-base sm:text-sm">Subscribe to our newsletter to get amazing offers in future.</h1>
     </div>
+  
+    <!-- Form Section -->
     <div class="flex justify-center p-5">
-      <form id="newsletter-form">
+      <form id="newsletter-form" class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
         <input
-          type="text"
+          type="email"
           name="newsletter"
           id="email-input"
-          class="p-3 rounded-md border-2 border-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-800 transition-all duration-300 transform focus:scale-10"
+          class="p-3 rounded-md border-2 border-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-800 transition-all duration-300 transform focus:scale-100 w-full sm:w-64"
           placeholder="Enter your email"
         />
-        <button type="submit" class="text-white bg-black rounded-md p-3">
+        <button type="submit" class="text-white bg-black rounded-md p-3 w-full sm:w-auto">
           Get in touch
         </button>
       </form>
     </div>
-</div>
+  </div>
+  
 <div id="notification" class=" text-sm mt-2 ">
 </div>
 <script src="/javascript/user/userhome.js"></script>

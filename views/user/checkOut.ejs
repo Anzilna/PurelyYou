@@ -1,10 +1,10 @@
 <%- include("partials/header"); -%>
 <body class="bg-gray-50">
   <div class="relative flex items-center justify-between p-4 text-xs">
-    <div class="flex items-center space-x-1 text-gray-700">
+    <div class="flex items-center text-[10px] lg:text-xs space-x-1 text-gray-700">
       <a href="/shoppingcart" class="flex justify-center">
         <i class="bi bi-arrow-left-short text-lg"></i>
-        <button class="focus:outline-none">Back to Shopping Cart</button>
+        <button class="focus:outline-none">Back</button>
       </a>
     </div>
 
@@ -21,8 +21,8 @@
 
   <% if(cart){ %>
 
-  <div class="p-[60px] grid grid-cols-12 gap-4">
-    <div class="col-span-8">
+  <div class="p-4 lg:p-[60px] grid grid-cols-12 gap-4">
+    <div class="lg:col-span-8 col-span-12">
       <div class="flex w-full h-full flex-col gap-4">
         <div
           class="p-3 bg-white cursor-pointer"
@@ -80,7 +80,7 @@
         </div>
       </div>
     </div>
-    <div class="col-span-4">
+    <div class="lg:col-span-4 col-span-12">
       <div class="flex w-full h-full flex-col gap-4">
         <div class="p-3 pb-0 bg-white">
           <div class="cursor-pointer">

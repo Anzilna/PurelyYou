@@ -767,19 +767,16 @@ module.exports.googleAuthCallback = (req, res, next) => {
       }
     }
     if (!user) {
-      console.warn("Authentication failed: No user found.");
       return res.status(401).json({ error: "Unauthorized" });
     }
 
     const token = await jwtTokenCreation(user._id)
-    console.log("tokennnn",token,"userr",user);
 
     res.cookie("jwt", token, {
       httpOnly: true, 
       maxAge: 1000 * 60 * 60 * 24,  
     });
     
-console.log("cookie set seccessfully");
 
     let wallet = await Wallet.findOne({ userId: user._id });
     if (!wallet) {
@@ -789,7 +786,6 @@ console.log("cookie set seccessfully");
       });
       await wallet.save();
     }
-    console.log("wallet set seccessfully");
 
     let address = await Address.findOne({ userId: user._id });
     if (!address) {
@@ -799,7 +795,6 @@ console.log("cookie set seccessfully");
       });
       await address.save();
     }
-    console.log("address set seccessfully");
 
     return res.redirect("/");
   })(req, res, next);
