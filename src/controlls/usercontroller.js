@@ -751,61 +751,77 @@ module.exports.googleLoginRoute = (req, res, next) => {
   })(req, res, next);
 };
 
-//for handling the callback which google provide
 module.exports.googleAuthCallback = (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
-    if (err && err.message) {
-      if (err.message.includes("E11000")) {
-        console.error("Error during authentication:");
-        return res
-          .status(500)
-          .redirect(
-            `/login/?errorDuplicate=${encodeURIComponent(
-              "email already registered through normal login"
-            )}`
-          );
+    try {
+      if (err && err.message) {
+        if (err.message.includes("E11000")) {
+          console.error("Error during authentication:");
+          return res
+            .status(500)
+            .redirect(
+              `/login/?errorDuplicate=${encodeURIComponent(
+                "email already registered through normal login"
+              )}`
+            );
+        }
       }
-    }
-    
-    if (!user) {
-      console.warn("Authentication failed: No user found.");
-      return res.status(401).json({ error: "Unauthorized" });
-    }
 
-    const token = await jwtTokenCreation(user._id);
-    console.log("tokennnn", token, "userr", user);
+      if (!user) {
+        console.warn("Authentication failed: No user found.");
+        return res.status(401).json({ error: "Unauthorized" });
+      }
 
-    res.cookie("jwt", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
-      maxAge: 1000 * 60 * 60 * 24,
-    });
-    
-    console.log("cookie set successfully");
+      // Log user info to ensure it's populated
+      console.log("User authenticated successfully", user);
 
-    let wallet = await Wallet.findOne({ userId: user._id });
-    if (!wallet) {
-      wallet = new Wallet({
-        userId: user._id,
-        balance: 0,
+      // Create JWT token
+      const token = await jwtTokenCreation(user._id);
+      console.log("JWT token created:", token);
+
+      // Set the cookie
+      res.cookie("jwt", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "Strict",
+        maxAge: 1000 * 60 * 60 * 24, // 1 day
       });
-      await wallet.save();
+      console.log("JWT cookie set successfully");
+
+      // Handle Wallet setup
+      let wallet = await Wallet.findOne({ userId: user._id });
+      if (!wallet) {
+        wallet = new Wallet({
+          userId: user._id,
+          balance: 0,
+        });
+        await wallet.save();
+        console.log("Wallet created and saved");
+      } else {
+        console.log("Existing wallet found");
+      }
+
+      // Handle Address setup
+      let address = await Address.findOne({ userId: user._id });
+      if (!address) {
+        address = new Address({
+          userId: user._id,
+          addresses: [],
+        });
+        await address.save();
+        console.log("Address created and saved");
+      } else {
+        console.log("Existing address found");
+      }
+
+      // Check that all async operations are done before redirect
+      console.log("All operations complete. Redirecting...");
+      return res.redirect("/");
+
+    } catch (error) {
+      console.error("Error during Google Auth callback:", error);
+      return res.status(500).json({ error: "Internal Server Error" });
     }
-    console.log("wallet set successfully");
-
-    let address = await Address.findOne({ userId: user._id });
-    if (!address) {
-      address = new Address({
-        userId: user._id,
-        addresses: [],
-      });
-      await address.save();
-    }
-    console.log("address set successfully");
-
-    return res.redirect("/");
-
   })(req, res, next);
 };
 
