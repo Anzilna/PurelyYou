@@ -772,23 +772,20 @@ module.exports.googleAuthCallback = (req, res, next) => {
         return res.status(401).json({ error: "Unauthorized" });
       }
 
-      // Log user info to ensure it's populated
       console.log("User authenticated successfully", user);
 
-      // Create JWT token
-      const token = await jwtTokenCreation(user._id);
-      console.log("JWT token created:", token);
+      const token = user.token
+      console.log("JWT token ", token);
 
-      // Set the cookie
       res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "Strict",
-        maxAge: 1000 * 60 * 60 * 24, // 1 day
+        maxAge: 1000 * 60 * 60 * 24, 
       });
+
       console.log("JWT cookie set successfully");
 
-      // Handle Wallet setup
       let wallet = await Wallet.findOne({ userId: user._id });
       if (!wallet) {
         wallet = new Wallet({
@@ -813,10 +810,12 @@ module.exports.googleAuthCallback = (req, res, next) => {
       } else {
         console.log("Existing address found");
       }
-
-      // Check that all async operations are done before redirect
+      console.log("Checking res.cookies before redirect:", res.getHeaders()["set-cookie"]);
       console.log("All operations complete. Redirecting...");
-      return res.redirect("/");
+      setTimeout(() => {
+        console.log("Redirecting now...");
+        res.redirect("/");
+      }, 500);
 
     } catch (error) {
       console.error("Error during Google Auth callback:", error);
