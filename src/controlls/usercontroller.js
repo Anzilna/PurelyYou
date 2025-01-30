@@ -775,9 +775,7 @@ module.exports.googleAuthCallback = (req, res, next) => {
     console.log("tokennnn",token,"userr",user);
 
     res.cookie("jwt", token, {
-      httpOnly: true,     
-      secure: process.env.NODE_ENV === "production",  
-      sameSite: "none", 
+      httpOnly: true, 
       maxAge: 1000 * 60 * 60 * 24,  
     });
     
@@ -803,7 +801,7 @@ console.log("cookie set seccessfully");
     }
     console.log("address set seccessfully");
 
-    res.redirect("/");
+    return res.redirect("/");
   })(req, res, next);
 };
 
