@@ -751,7 +751,7 @@ module.exports.googleLoginRoute = (req, res, next) => {
   })(req, res, next);
 };
 
-module.exports.googleAuthCallback = async(req, res, next) => {
+module.exports.googleAuthCallback = (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
     try {
       if (err && err.message) {
