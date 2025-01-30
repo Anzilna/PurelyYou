@@ -816,7 +816,6 @@ module.exports.googleAuthCallback = (req, res, next) => {
 
       // Check that all async operations are done before redirect
       console.log("All operations complete. Redirecting...");
-      res.flush();
       return res.redirect("/");
 
     } catch (error) {
