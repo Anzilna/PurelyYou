@@ -790,40 +790,17 @@ module.exports.googleAuthCallback = (req, res, next) => {
       });
       await address.save();
     }
-    console.log("address set seccessfully");
-
-
-
-
+   
     const token = req.authToken;  
 
     console.log("JWT token before setting cookie:", token);
 
-    // Step 1: Set cookie with SameSite=None
     res.cookie("jwt", token, {
       httpOnly: true,
-      secure: true,  // Required for SameSite=None
-      sameSite: "None", // Allows cross-origin authentication
+      secure: true,  
+      sameSite: "None", 
       maxAge: 1000 * 60 * 60 * 24,
     });
-
-    console.log("SameSite=None cookie set");
-
-    // Step 2: Override with SameSite=Strict
-    setTimeout(() => {
-      res.cookie("jwt", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict", // Now make it strict
-        maxAge: 1000 * 60 * 60 * 24,
-      });
-
-      console.log("SameSite=Strict cookie overridden");
-
-      return res.redirect("/");
-    }, 500);
-
-
 
   })(req, res, next);
 };
