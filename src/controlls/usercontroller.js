@@ -761,27 +761,28 @@ module.exports.googleAuthCallback = (req, res, next) => {
           .status(500)
           .redirect(
             `/login/?errorDuplicate=${encodeURIComponent(
-              "email already registerd through nomal login"
+              "email already registered through normal login"
             )}`
           );
       }
     }
+    
     if (!user) {
       console.warn("Authentication failed: No user found.");
       return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const token = await jwtTokenCreation(user._id)
-    console.log("tokennnn",token,"userr",user);
+    const token = await jwtTokenCreation(user._id);
+    console.log("tokennnn", token, "userr", user);
 
     res.cookie("jwt", token, {
-      httpOnly: true,     
-      secure: process.env.NODE_ENV === "production",  
-      sameSite: "Strict", 
-      maxAge: 1000 * 60 * 60 * 24,  
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 1000 * 60 * 60 * 24,
     });
     
-console.log("cookie set seccessfully");
+    console.log("cookie set successfully");
 
     let wallet = await Wallet.findOne({ userId: user._id });
     if (!wallet) {
@@ -791,7 +792,7 @@ console.log("cookie set seccessfully");
       });
       await wallet.save();
     }
-    console.log("wallet set seccessfully");
+    console.log("wallet set successfully");
 
     let address = await Address.findOne({ userId: user._id });
     if (!address) {
@@ -801,11 +802,13 @@ console.log("cookie set seccessfully");
       });
       await address.save();
     }
-    console.log("address set seccessfully");
+    console.log("address set successfully");
 
     return res.redirect("/");
+
   })(req, res, next);
 };
+
 
 module.exports.myAccountSettings = async (req, res) => {
   try {
