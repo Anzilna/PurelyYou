@@ -1011,6 +1011,10 @@ video {
   max-height: 00px;
 }
 
+.max-h-\[550px\] {
+  max-height: 550px;
+}
+
 .min-h-\[30px\] {
   min-height: 30px;
 }
