@@ -58,93 +58,70 @@
         <section class="w-full max-w-[1430px] bg-white p-3 lg:p-10">
           <div class="container py-6 w-full">
             <h2 class="text-2xl font-bold mb-6">New Launches</h2>
-  
+          
             <div class="relative">
-              
+              <!-- Enable horizontal scrolling on small screens -->
               <div
                 id="productContainer"
-                class="flex gap-6 overflow-hidden lg:no-scrollbar"
+                class="flex gap-6 overflow-x-auto md:overflow-hidden scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200"
               >
-                <% if (products) { %> <% products.forEach((product) => { %>
+                <% if (products) { %> 
+                <% products.forEach((product) => { %>
                 <div
                   class="min-w-[250px] max-w-[250px] min-h-[640px] relative bg-white rounded-md p-4 cursor-pointer flex flex-col justify-between group"
                   onclick="getProduct('<%= product._id %>')"
                 >
                   <% if (product.discountpercentage) { %>
-                  <div
-                    class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10"
-                  >
+                  <div class="absolute top-2 left-3 bg-black text-white text-sm font-bold px-2 py-1 rounded z-10">
                     <%= `-${product.discountpercentage}%` %>
                   </div>
                   <% } %>
-                  <div
-                    class="overflow-hidden min-h-[350px] w-full flex justify-center items-center"
-                  >
+                  <div class="overflow-hidden min-h-[350px] w-full flex justify-center items-center">
                     <img
                       src="<%= product.images[0] %>"
                       alt="Product Name"
-                      class="w-full h-full object-fit transform transition-transform duration-500 hover:scale-110"
+                      class="w-full h-full object-cover transform transition-transform duration-500 hover:scale-110"
                     />
                   </div>
-                  <div
-                    class="flex flex-col justify-start items-start mt-4 text-left"
-                  >
-                    <h3
-                      class="text-lg font-semibold relative group-hover:text-black"
-                    >
+                  <div class="flex flex-col justify-start items-start mt-4 text-left">
+                    <h3 class="text-lg font-semibold relative group-hover:text-black">
                       <%= product.productname %>
-                      <div
-                        class="absolute bottom-0 left-0 w-0 h-[2px] bg-black transition-all duration-500 ease-out group-hover:w-full"
-                      ></div>
+                      <div class="absolute bottom-0 left-0 w-0 h-[2px] bg-black transition-all duration-500 ease-out group-hover:w-full"></div>
                     </h3>
                     <p class="text-gray-500 text-sm mt-2">
-                      <%= Array.isArray(product.ingredients) ?
-                      product.ingredients.join(', ') : '' %>
+                      <%= Array.isArray(product.ingredients) ? product.ingredients.join(', ') : '' %>
                     </p>
-                   
                     <div class="mt-2 mb-2">
-                      <span class="text-black font-bold text-lg"
-                        ><%= `₹${product.saleprice}` %></span
-                      >
+                      <span class="text-black font-bold text-lg"><%= `₹${product.saleprice}` %></span>
                       <% if (product.discountpercentage) { %>
-                      <span class="line-through text-gray-500 text-sm ml-2"
-                        ><%= `₹${product.regularprice}` %></span
-                      >
+                      <span class="line-through text-gray-500 text-sm ml-2"><%= `₹${product.regularprice}` %></span>
                       <% } %>
                     </div>
                   </div>
-                  <button
-                    class="bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all mt-auto"
-                  >
+                  <button class="bg-black text-white px-4 py-2 w-full hover:bg-gray-800 transition-all mt-auto">
                     View item
                   </button>
                 </div>
-                <% }) %> <% } %>
+                <% }) %> 
+                <% } %>
               </div>
-  
-              <div
-                class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block"
-                id="prevBtn"
-              >
+          
+              <!-- Navigation Buttons -->
+              <div class="absolute top-1/2 left-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block" id="prevBtn">
                 <span class="text-xl"><i class="bi bi-chevron-left"></i></span>
               </div>
-              <div
-                class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block"
-                id="nextBtn"
-              >
+              <div class="absolute top-1/2 right-0 transform -translate-y-1/2 p-2 text-black cursor-pointer hidden md:block" id="nextBtn">
                 <span class="text-xl"><i class="bi bi-chevron-right"></i></span>
               </div>
             </div>
-  
+          
             <div class="flex justify-center mt-8">
-              <button
-                class="border border-black font-semibold px-6 py-2 hover:bg-black hover:text-white transition-all"
-                onclick="viewall()"
-              >
+              <button class="border border-black font-semibold px-6 py-2 hover:bg-black hover:text-white transition-all" onclick="viewall()">
                 View all products
               </button>
             </div>
           </div>
+          
         </section>
       </div>
       
@@ -210,17 +187,14 @@
   </div>
 
   <div class="p-6 m-3">
-    <!-- Title Section -->
     <div class="flex justify-center">
       <h1 class="font-semibold text-3xl sm:text-2xl text-center">Subscribe To Newsletter</h1>
     </div>
   
-    <!-- Subtitle Section -->
     <div class="flex justify-center p-3">
       <h1 class="text-center text-base sm:text-sm">Subscribe to our newsletter to get amazing offers in future.</h1>
     </div>
   
-    <!-- Form Section -->
     <div class="flex justify-center p-5">
       <form id="newsletter-form" class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
         <input

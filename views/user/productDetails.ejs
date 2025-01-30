@@ -4,7 +4,7 @@
   <% if (product) { %>
     <div id="notification" class=" text-sm mt-2 ">
     </div>
-  <div class="p-10 md:flex-row flex-col flex h-auto justify-center gap-10">
+  <div class="p-4 lg:p-10 md:flex-row flex-col flex h-auto justify-center gap-10">
     <div class="w-full flex flex-col lg:items-end items-center">
       <div class="relative group ">
         <div id="imageContainer" class="relative h-[400px] lg:h-[750px] lg:w-[600px] overflow-hidden">
@@ -71,9 +71,7 @@
       <div class="flex gap-2">
         
         <div class="flex items-center justify-center space-x-4">
-          <!-- Quantity Buttons -->
           <div class="flex items-center border max-w-[120px] border-slate-600 space-x-2">
-            <!-- Decrement Button -->
             <button
               class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200"
               onclick="decrementQuantity()"
@@ -81,7 +79,6 @@
               -
             </button>
             <span id="quantity" class="text-xl font-light">1</span>
-            <!-- Increment Button -->
             <button
               class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200"
               onclick="incrementQuantity()"
@@ -94,9 +91,9 @@
        
         <div>
           <% if (!product.stockstatus.includes("Out Of Stock")) { %>
-            <button class="px-[70px] h-full py-[10px] text-white bg-black" onclick="addtocart('<%=product._id %>','<%= product.stock %>')">ADD TO CART</button>
+            <button class="lg:px-[70px] text-xs lg:text-md h-full p-4 lg:py-[10px] text-white bg-black" onclick="addtocart('<%=product._id %>','<%= product.stock %>')">ADD TO CART</button>
           <% } else { %>
-            <button class="px-[70px] h-full py-[10px] text-white bg-black">OUT OF STOCK</button>
+            <button class="lg:px-[70px] h-full lg:py-[10px] text-white bg-black">OUT OF STOCK</button>
           <% } %>
         </div>
         <div class="flex justify-center items-center cursor-pointer">
