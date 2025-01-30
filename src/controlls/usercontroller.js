@@ -803,7 +803,7 @@ console.log("cookie set seccessfully");
     }
     console.log("address set seccessfully");
 
-    res.redirect("/");
+    return res.redirect("/");
   })(req, res, next);
 };
 
