@@ -751,79 +751,82 @@ module.exports.googleLoginRoute = (req, res, next) => {
   })(req, res, next);
 };
 
+//for handling the callback which google provide
 module.exports.googleAuthCallback = (req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
-    try {
-      if (err && err.message) {
-        if (err.message.includes("E11000")) {
-          console.error("Error during authentication:");
-          return res
-            .status(500)
-            .redirect(
-              `/login/?errorDuplicate=${encodeURIComponent(
-                "email already registered through normal login"
-              )}`
-            );
-        }
+    if (err && err.message) {
+      if (err.message.includes("E11000")) {
+        console.error("Error during authentication:");
+        return res
+          .status(500)
+          .redirect(
+            `/login/?errorDuplicate=${encodeURIComponent(
+              "email already registerd through nomal login"
+            )}`
+          );
       }
+    }
+    if (!user) {
+      console.warn("Authentication failed: No user found.");
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-      if (!user) {
-        console.warn("Authentication failed: No user found.");
-        return res.status(401).json({ error: "Unauthorized" });
-      }
 
-      console.log("User authenticated successfully", user);
+    let wallet = await Wallet.findOne({ userId: user._id });
+    if (!wallet) {
+      wallet = new Wallet({
+        userId: user._id,
+        balance: 0,
+      });
+      await wallet.save();
+    }
+    console.log("wallet set seccessfully");
 
-      const token = user.token
-      console.log("JWT token ", token);
+    let address = await Address.findOne({ userId: user._id });
+    if (!address) {
+      address = new Address({
+        userId: user._id,
+        addresses: [],
+      });
+      await address.save();
+    }
+    console.log("address set seccessfully");
 
+
+
+
+    const token = req.authToken;  
+
+    console.log("JWT token before setting cookie:", token);
+
+    // Step 1: Set cookie with SameSite=None
+    res.cookie("jwt", token, {
+      httpOnly: true,
+      secure: true,  // Required for SameSite=None
+      sameSite: "None", // Allows cross-origin authentication
+      maxAge: 1000 * 60 * 60 * 24,
+    });
+
+    console.log("SameSite=None cookie set");
+
+    // Step 2: Override with SameSite=Strict
+    setTimeout(() => {
       res.cookie("jwt", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "Strict",
-        maxAge: 1000 * 60 * 60 * 24, 
+        sameSite: "Strict", // Now make it strict
+        maxAge: 1000 * 60 * 60 * 24,
       });
 
-      console.log("JWT cookie set successfully");
+      console.log("SameSite=Strict cookie overridden");
 
-      let wallet = await Wallet.findOne({ userId: user._id });
-      if (!wallet) {
-        wallet = new Wallet({
-          userId: user._id,
-          balance: 0,
-        });
-        await wallet.save();
-        console.log("Wallet created and saved");
-      } else {
-        console.log("Existing wallet found");
-      }
+      return res.redirect("/");
+    }, 500);
 
-      // Handle Address setup
-      let address = await Address.findOne({ userId: user._id });
-      if (!address) {
-        address = new Address({
-          userId: user._id,
-          addresses: [],
-        });
-        await address.save();
-        console.log("Address created and saved");
-      } else {
-        console.log("Existing address found");
-      }
-      console.log("Checking res.cookies before redirect:", res.getHeaders()["set-cookie"]);
-      console.log("All operations complete. Redirecting...");
-      setTimeout(() => {
-        console.log("Redirecting now...");
-        res.redirect("/");
-      }, 500);
 
-    } catch (error) {
-      console.error("Error during Google Auth callback:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
+
   })(req, res, next);
 };
-
 
 module.exports.myAccountSettings = async (req, res) => {
   try {

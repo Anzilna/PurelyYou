@@ -7,14 +7,17 @@ require('dotenv').config()
 passport.use(new googleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'https://purelyyou.beauty/auth/google/callback'
-}, async (accessToken, refreshToken, profile, done) => {
+    callbackURL: 'https://purelyyou.beauty/auth/google/callback',
+    passReqToCallback: true 
+}, async (req,accessToken, refreshToken, profile, done) => {
     try {
         let user = await User.findOne({ googleId: profile.id });
 
         if (user) {
-            user = user.toObject(); 
-            user.token = await jwtTokenCreation(user._id); 
+            const token = await jwtTokenCreation(user._id); 
+            req.authToken = token;
+    
+            console.log("SameSite=None cookie set in strategy");
             return done(null, user);
         } else {
             const email = profile.emails && profile.emails[0] ? profile.emails[0].value : null;
@@ -31,7 +34,10 @@ passport.use(new googleStrategy({
             });
 
             const savedUser = await newUser.save();
-            savedUser.token = await jwtTokenCreation(savedUser._id); 
+            const token = await jwtTokenCreation(savedUser._id); 
+            req.authToken = token;
+
+            console.log("SameSite=None cookie set in strategy");
             return done(null, savedUser);
         }
     } catch (error) {
