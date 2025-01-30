@@ -751,7 +751,7 @@ module.exports.googleLoginRoute = (req, res, next) => {
   })(req, res, next);
 };
 
-module.exports.googleAuthCallback = (req, res, next) => {
+module.exports.googleAuthCallback = async(req, res, next) => {
   passport.authenticate("google", { session: false }, async (err, user, info) => {
     try {
       if (err && err.message) {
@@ -816,6 +816,7 @@ module.exports.googleAuthCallback = (req, res, next) => {
 
       // Check that all async operations are done before redirect
       console.log("All operations complete. Redirecting...");
+      res.flush();
       return res.redirect("/");
 
     } catch (error) {
