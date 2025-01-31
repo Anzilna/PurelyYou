@@ -653,7 +653,7 @@ module.exports.adminOrdersDetailsGet = async (req, res) => {
 
 module.exports.adminCoupons = async (req, res) => {
   try {
-    res.render("admin/Coupons", {
+    res.render("admin/coupons", {
       route: "coupons",
       title: "Coupons",
       side: "Coupons",
