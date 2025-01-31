@@ -711,7 +711,7 @@ module.exports.adminReturnDetailsGet = async (req, res) => {
 
     const returnDetails = await Return.findById(returnId).populate("productId");
 
-    res.render("admin/ReturnDetails", {
+    res.render("admin/returnDetails", {
       returnDetails,
       subroute: "returns",
       mainroute: "details",
