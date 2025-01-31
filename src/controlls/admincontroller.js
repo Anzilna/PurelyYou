@@ -15,7 +15,7 @@ const path = require("path");
 require("dotenv").config();
 
 module.exports.adminLoginGet = (req, res) => {
-  res.render("admin/adminlogin");
+  res.render("admin/adminLogin");
 };
 module.exports.adminLoginPost = async (req, res) => {
   const { password, email } = req.body;
