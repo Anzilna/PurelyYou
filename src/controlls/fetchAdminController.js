@@ -418,9 +418,7 @@ module.exports.adminSalesFetch = async (req, res) => {
     // Fetch Orders
     const orders = await Order.find(dateFilter).sort({ createdAt: -1 });
 
-    const filteredOrders = orders.filter(order => {
-      return order.items.some(item => item.returnApproved === false);
-    });
+    
     
     
     const summary = await Order.aggregate([
@@ -435,7 +433,7 @@ module.exports.adminSalesFetch = async (req, res) => {
           totalCouponDiscount: {
             $sum: { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] }, // Sum the coupon discount if coupon is used
           },
-          totalDeliveryCharge: { $sum: "$deliveryCharge" }, // Sum the delivery charge
+          totalDeliveryCharge: { $sum: "$deliveryCharge" }, 
         },
       },
     ]);
@@ -476,7 +474,7 @@ module.exports.adminSalesFetch = async (req, res) => {
       totalDeliveryCharge: summary.length > 0 ? summary[0].totalDeliveryCharge : 0,
       totalRegularPrice: totalRegularPrice.length > 0 ? totalRegularPrice[0].totalRegularPrice : 0,
       totalReturnedAmount,
-      orders:filteredOrders,
+      orders,
     };
 
     res.status(200).json({ summaryData });
@@ -514,10 +512,7 @@ module.exports.generateExcelReport = async (req, res) => {
 
     let orders = await Order.find(dateFilter).sort({ createdAt: -1 });
 
-    orders = orders.filter(order =>
-      order.items.some(item => item.returnApproved !== true)
-    );
-
+    
     const summary = await Order.aggregate([
       { $match: dateFilter },
       {
@@ -611,7 +606,7 @@ module.exports.generateExcelReport = async (req, res) => {
         order.code || "N/A",
         order.username || "N/A",
         order.email || "N/A",
-        order.totalAmount ? order.totalAmount.toFixed(2) : "0.00",
+        order.totalAmount ? order.GrandtotalAmount.toFixed(2) : "0.00",
         order.totalDiscount ? order.totalDiscount.toFixed(2) : "0.00",
         order.coupponCode || "N/A",
         order.coupponDiscount ? order.coupponDiscount.toFixed(2) : "0.00",
@@ -670,9 +665,7 @@ module.exports.generatePDFReport = async (req, res) => {
 
     const orders = await Order.find(dateFilter).sort({ createdAt: -1 });
 
-    const filteredOrders = orders.filter(order => {
-      return order.items.some(item => item.returnApproved === false);
-    });
+    
     
 
     // Aggregate summary data
@@ -730,7 +723,7 @@ module.exports.generatePDFReport = async (req, res) => {
       totalDiscount: summary.length > 0 ? summary[0].totalDiscount : 0,
       totalCouponDiscount: summary.length > 0 ? summary[0].totalCouponDiscount : 0,
       totalDeliveryCharge: summary.length > 0 ? summary[0].totalDeliveryCharge : 0,
-      orders:filteredOrders,
+      orders,
       totalReturnedAmount,
       totalRegularPrice: totalRegularPrice.length > 0 ? totalRegularPrice[0].totalRegularPrice : 0,
     };
@@ -788,7 +781,7 @@ module.exports.generatePDFReport = async (req, res) => {
       const orderDetails = [
         order.code,
         order.username,
-        order.totalAmount.toFixed(2),
+        order.GrandtotalAmount.toFixed(2),
         (order.totalDiscount + (order.coupponDiscount || 0)).toFixed(2),
         new Date(order.createdAt).toLocaleString(),
         order.orderstatus,

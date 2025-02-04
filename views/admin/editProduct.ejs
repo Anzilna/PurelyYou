@@ -1,10 +1,8 @@
 <%- include("partials/adminHeader"); -%>
-<!-- Main Container -->
 <%- include("partials/sidebar"); -%> <%- include("partials/head"); -%>
 <div class="p-6">
   <% if (product) { %>
   <div class="w-full max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
-    <!-- Heading -->
     <div class="flex justify-center">
       <h2 class="text-2xl font-semibold text-black mb-4">Edit Product</h2>
     </div>
@@ -15,9 +13,7 @@
       enctype="multipart/form-data"
       data-id="<%= product._id %>"
     >
-      <!-- Left Side -->
       <div class="space-y-4">
-        <!-- Product Name -->
         <div>
           <label class="block text-sm font-medium text-black mb-1"
             >Product Name</label
@@ -32,7 +28,6 @@
           />
         </div>
 
-        <!-- Price -->
         <div>
           <label class="block text-sm font-medium text-black mb-1"
             >Regular Price</label
@@ -47,7 +42,6 @@
           />
         </div>
 
-        <!-- Stock -->
         <div>
           <label class="block text-sm font-medium text-black mb-1">Stock</label>
           <div class="error text-red-500 mb-1" id="error-stock"></div>
@@ -60,7 +54,6 @@
           />
         </div>
 
-        <!-- Category -->
         <div>
           <label class="block text-sm font-medium text-black mb-1"
             >Category</label
@@ -92,7 +85,6 @@
           </select>
         </div>
 
-        <!-- mlQuantity -->
         <div>
           <label class="block text-sm font-medium text-black mb-1"
             >Select Quantity (ml)</label
@@ -112,7 +104,6 @@
           </select>
         </div>
 
-        <!-- Product Code -->
         <div>
           <label class="block text-sm font-medium text-black mb-1"
             >Product Code</label
@@ -126,7 +117,6 @@
           />
         </div>
 
-        <!-- Ingredients -->
         <div>
           <label class="block text-sm font-medium text-black mb-1"
             >Ingredients</label
@@ -141,7 +131,6 @@
         </div>
       </div>
 
-      <!-- Right Side -->
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-black mb-1"
