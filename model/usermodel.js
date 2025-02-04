@@ -185,6 +185,13 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    GrandtotalAmount: {
+      type: Number,
+      required: true,
+      default: function () {
+        return this.totalAmount; 
+      },
+    },
     totalDiscount: {
       type: Number,
       required: true,
@@ -286,6 +293,10 @@ const orderSchema = new mongoose.Schema(
           default: 0,
         },
         returnRequest: {
+          type: Boolean,
+          default: false,
+        },
+        returnApproved: {
           type: Boolean,
           default: false,
         },

@@ -3,6 +3,9 @@ const zoomLens = document.getElementById("zoomLens");
 const imageContainer = document.getElementById("imageContainer");
 const subImages = document.querySelectorAll(".sub-image");
 const notification = document.getElementById("notification");
+const userDataDiv = document.getElementById("localsUserData");
+const userDataDivNew = document.getElementById("localsUserDataNew");
+
 
 let quantity = 1; 
 
@@ -11,6 +14,20 @@ function incrementQuantity() {
   updateQuantity();
   hideNotification(); 
 }
+
+
+
+function UpdateCartCount(Cart) {
+  console.log(Cart,"from count cart");
+  
+  document.getElementById("cart-count").textContent = Cart;
+}
+
+function UpdateFavCount(Fav) {
+  console.log(Fav,"from count FAv");
+  document.getElementById("favourites-count").textContent = Fav;
+}
+
 
 async function addtocart(id, stock) {
   const quantityToSend = quantity;
@@ -34,7 +51,11 @@ async function addtocart(id, stock) {
       });
 
       const result = await fetchResult.json();
-      if (result.success) {
+      if (fetchResult.ok) {
+        console.log(result.cartLength);
+        
+        UpdateCartCount(result.cartLength)
+
         showNotification(
           "Product successfully added to cart!"
         ); 
@@ -49,6 +70,8 @@ async function addtocart(id, stock) {
     }
   }
 }
+
+
 
 async function addToFavorites(id) {
   try {
@@ -68,6 +91,7 @@ async function addToFavorites(id) {
     console.log('Response data:', data);
 
     if (data.success) {
+      UpdateFavCount(data.favLength)
       showNotification("Product successfully added to favorites!");
     } else {
      

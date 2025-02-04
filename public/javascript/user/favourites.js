@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
     </td>
    <td class="py-4 px-6 pr-2 text-right">
 <button 
-  class="px-4 py-2  bg-black text-white text-sm font-medium rounded hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-white" 
+  class="px-4 py-2  bg-black text-white text-sm font-medium rounded hover:bg-slate-900 " 
   onclick="addtocart('${item.productId}','${item.productId.stock}')">
   Add to Cart
 </button>

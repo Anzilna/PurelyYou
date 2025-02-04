@@ -178,173 +178,189 @@ const daysDifference = timeDifference / (1000 * 3600 * 24);
 
 const orderDetailsHTML = `
 <div class="flex justify-center bg-white p-2 font-medium">
-<div>ORDER DETAILS</div>
+  <div>ORDER DETAILS</div>
 </div>
 <input type="hidden" id="orderId" value="${order._id}"/>
 
 <div class="p-4 bg-white flex flex-col cursor-pointer gap-2" id="fororderboxes">
-<div class="flex flex-col gap-4">
-  <div class="flex flex-col">
-    <div class="flex justify-between gap-1">
-      <div class="text-sm font-medium">Order code</div>
-      <div class="text-sm font-medium">Order date</div>
-    </div>
-    <div class="flex justify-between">
-      <div class="text-sm">${order.code}</div>
-      <div class="text-xs">${new Date(order.createdAt).toLocaleDateString()}</div>
-    </div>
-  </div>
-
-  <div class="flex flex-col text-xs">
-    <div class="font-medium text-sm">Mode of Payment</div>
-    <div>${order.paymentMethod}</div>
-  </div>
-
-  <div class="flex flex-col gap-1 text-xs">
-    <div class="font-medium text-sm">Delivery Address</div>
+  <div class="flex flex-col gap-4">
     <div class="flex flex-col">
-      <div>${order.selectedAddress.name}</div>
-      <div>${order.selectedAddress.phone}</div>
-      <div>${order.selectedAddress.address}</div>
-      <div>${order.selectedAddress.city}</div>
-      <div>${order.selectedAddress.state}</div>
-      <div>${order.selectedAddress.pincode}</div>
+      <div class="flex justify-between gap-1">
+        <div class="text-sm font-medium">Order code</div>
+        <div class="text-sm font-medium">Order date</div>
+      </div>
+      <div class="flex justify-between">
+        <div class="text-sm">${order.code}</div>
+        <div class="text-xs">${new Date(order.createdAt).toLocaleDateString()}</div>
+      </div>
     </div>
-  </div>
 
-  <div class="flex-col" id="orderid">
-    <div id="title" class="flex justify-center">
-      <h1 class="font-semibold">ORDER SUMMARY</h1>
+    <div class="flex flex-col text-xs">
+      <div class="font-medium text-sm">Mode of Payment</div>
+      <div>${order.paymentMethod}</div>
     </div>
-    ${order.items
-      .map((item) => {
-        const isReturnDisabled =
-          isOrderCancelled || 
-          isNotDelivered || 
-          (isOrderDelivered && daysDifference > 7) ||
-          item.returnRequest;
 
-        const returnStatusText = item.returnStatus
-          ? "Return Status: " + item.returnStatus
-          : "";
-        const OrderCancelledText = isOrderCancelled ? "Cancelled" : "";
+    <div class="flex flex-col gap-1 text-xs">
+      <div class="font-medium text-sm">Delivery Address</div>
+      <div class="flex flex-col">
+        <div>${order.selectedAddress.name}</div>
+        <div>${order.selectedAddress.phone}</div>
+        <div>${order.selectedAddress.address}</div>
+        <div>${order.selectedAddress.city}</div>
+        <div>${order.selectedAddress.state}</div>
+        <div>${order.selectedAddress.pincode}</div>
+      </div>
+    </div>
 
-        let returnButtonText = "Return Option Only Available for 7 days";
-        if (isOrderCancelled) {
-          returnButtonText = "Cancelled"; 
-        } else if (isReturnDisabled) {
-          returnButtonText = returnStatusText || OrderCancelledText;
-        } else {
-          returnButtonText = "Return";
-        }
+    <div class="flex-col" id="orderid">
+      <div id="title" class="flex justify-center">
+        <h1 class="font-semibold">ORDER SUMMARY</h1>
+      </div>
+      ${order.items
+        .map((item) => {
+          const isReturnDisabled =
+            isOrderCancelled || 
+            isNotDelivered || 
+            (isOrderDelivered && daysDifference > 7) ||
+            item.returnRequest;
 
-        if (isNotDelivered||isRepayment) {
-          return `
-            <div id="itemsdisplay" class="flex flex-col gap">
-              <div class="flex flex-row gap-3 m-3">
-                <div class="flex-[2]">
-                  <img src="${item.productId.images[0]}" class="h-full w-full" alt="" />
-                </div>
-                <div class="flex-[6]">
-                  <div class="flex flex-col h-full w-full">
-                    <div class="flex-[2] flex justify-start flex-col gap-[1px] items-start">
-                      <div class="text-sm font-medium">${item.productId.productname}</div>
-                      <div class="text-xs font-normal">Rs.${item.productId.saleprice}</div>
-                    </div>
-                    <div class="flex-[5] flex justify-end flex-col align-bottom">
-                      <div class="flex">
-                        <div class="flex-[2] flex text-xs font-normal justify-start flex-col">
-                          <div>Quantity</div>
-                          <div>Regular Price</div>
-                          <div>Total</div>
-                        </div>
-                        <div class="flex-[5] text-xs font-normal flex justify-start flex-col">
-                          <div>${item.quantity}</div>
-                          <div>Rs.${item.regularprice}</div>
-                          <div>Rs.${item.saleprice}</div>
+          const returnStatusText = item.returnStatus
+            ? "Return Status: " + item.returnStatus
+            : "";
+          const OrderCancelledText = isOrderCancelled ? "Cancelled" : "";
+
+          let returnButtonText = "Return Option Only Available for 7 days";
+          if (isOrderCancelled) {
+            returnButtonText = "Cancelled"; 
+          } else if (isReturnDisabled) {
+            returnButtonText = returnStatusText || OrderCancelledText;
+          } else {
+            returnButtonText = "Return";
+          }
+
+          if (isNotDelivered || isRepayment) {
+            return `
+              <div id="itemsdisplay" class="flex flex-col gap">
+                <div class="flex flex-row gap-3 m-3">
+                  <div class="flex-[2]">
+                    <img src="${item.productId.images[0]}" class="h-full w-full" alt="" />
+                  </div>
+                  <div class="flex-[6]">
+                    <div class="flex flex-col h-full w-full">
+                      <div class="flex-[2] flex justify-start flex-col gap-[1px] items-start">
+                        <div class="text-sm font-medium">${item.productId.productname}</div>
+                        <div class="text-xs font-normal">Rs.${item.productId.saleprice}</div>
+                      </div>
+                      <div class="flex-[5] flex justify-end flex-col align-bottom">
+                        <div class="flex">
+                          <div class="flex-[2] flex text-xs font-normal justify-start flex-col">
+                            <div>Quantity</div>
+                            <div>Regular Price</div>
+                            <div>Total</div>
+                          </div>
+                          <div class="flex-[5] text-xs font-normal flex justify-start flex-col">
+                            <div>${item.quantity}</div>
+                            <div>Rs.${item.regularprice}</div>
+                            <div>Rs.${item.saleprice}</div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
-          `;
-        }
+            `;
+          }
 
-        return `
-        <div id="itemsdisplay" class="flex flex-col gap">
-          <div class="flex flex-row gap-3 m-3">
-            <div class="flex-[2]">
-              <img src="${item.productId.images[0]}" class="h-full w-full" alt="" />
-            </div>
-            <div class="flex-[6]">
-              <div class="flex flex-col h-full w-full">
-                <div class="flex-[2] flex justify-start flex-col gap-[1px] items-start">
-                  <div class="text-sm font-medium">${item.productId.productname}</div>
-                  <div class="text-xs font-normal">Rs.${item.productId.saleprice}</div>
-                </div>
-                <div class="flex-[5] flex justify-end flex-col align-bottom">
-                  <div class="flex">
-                    <div class="flex-[2] flex text-xs font-normal justify-start flex-col">
-                      <div>Quantity</div>
-                      <div>Regular Price</div>
-                      <div>Total</div>
-                    </div>
-                    <div class="flex-[5] text-xs font-normal flex justify-start flex-col">
-                      <div>${item.quantity}</div>
-                      <div>Rs.${item.regularprice}</div>
-                      <div>Rs.${item.saleprice}</div>
+          return `
+          <div id="itemsdisplay" class="flex flex-col gap">
+            <div class="flex flex-row gap-3 m-3">
+              <div class="flex-[2]">
+                <img src="${item.productId.images[0]}" class="h-full w-full" alt="" />
+              </div>
+              <div class="flex-[6]">
+                <div class="flex flex-col h-full w-full">
+                  <div class="flex-[2] flex justify-start flex-col gap-[1px] items-start">
+                    <div class="text-sm font-medium">${item.productId.productname}</div>
+                    <div class="text-xs font-normal">Rs.${item.productId.saleprice}</div>
+                  </div>
+                  <div class="flex-[5] flex justify-end flex-col align-bottom">
+                    <div class="flex">
+                      <div class="flex-[2] flex text-xs font-normal justify-start flex-col">
+                        <div>Quantity</div>
+                        <div>Regular Price</div>
+                        <div>Total</div>
+                      </div>
+                      <div class="flex-[5] text-xs font-normal flex justify-start flex-col">
+                        <div>${item.quantity}</div>
+                        <div>Rs.${item.regularprice}</div>
+                        <div>Rs.${item.saleprice}</div>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div class="mt-3 flex justify-end">
-                  <button 
-                    id="returnbtn"
-                    class="py-2 border border-black px-6 text-black text-xs rounded" 
-                    onclick="showReturnModal('${item.productId._id}','${item.saleprice }','${item.quantity }')" 
-                    ${isReturnDisabled ? "disabled" : ""}>
-                    ${returnButtonText}
-                  </button>
+                  <div class="mt-3 flex justify-end">
+                    <button 
+                      id="returnbtn"
+                      class="py-2 border border-black px-6 text-black text-xs rounded" 
+                      onclick="showReturnModal('${item.productId._id}','${item.saleprice }','${item.quantity }')" 
+                      ${isReturnDisabled ? "disabled" : ""}>
+                      ${returnButtonText}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      `;
-      })
-      .join("")}
+        `;
+        })
+        .join("")}
 
-    <div class="flex justify-end mt-3 gap-3">
-      ${!isOrderCancelled && isOrderDelivered
-        ? `<button onclick="fetchAndPrintInvoice('${order._id}')" class="px-4 py-2 border  border-black text-black ">Print Invoice</button>`
-        : ""}
-         ${isRepayment 
-        ? `<button onclick="initiateRepayment('${order.razorPayOrderId}','${order.keyid}','${order.totalAmount}','${order._id}','${order.username}','${order.email}')" class="px-4 py-2 border  border-black text-black ">Repay Now</button>`
-        : ""}
-      ${!isOrderCancelled && !isOrderDelivered &&!isRepayment
-        ? `<button class="py-2 px-5 border mr-3 border-black text-black"
-        onclick="openCancelOrderModal('${order._id}', '${order.paymentMethod}')">Cancel Order</button>`
-        : ""}
-      <a href="/accountsettings/orders">
-        <button class="py-2 px-5 border  border-black bg-black text-white">Back</button>
-      </a>
+      <div class="mt-4 p-3 border-t">
+      <div class="text-sm font-medium mb-2">Amount</div>
+      <div class="flex justify-between text-xs">
+        <span>Total Regular Price:</span>
+        <span>Rs.${order.totalRegularprice}</span>
+      </div>
+      <div class="flex justify-between text-xs">
+        <span>Discount:</span>
+        <span>- Rs.${order.totalDiscount}</span>
+      </div>
+      <div class="flex justify-between text-xs">
+        <span>Delivery Charge:</span>
+        <span>+ Rs.${order.deliveryCharge}</span>
+      </div>
+      ${order.coupponUsed ? `
+        <div class="flex justify-between text-xs">
+          <span>Coupon (${order.coupponCode}):</span>
+          <span>- Rs.${order.coupponDiscount}</span>
+        </div>
+      ` : ""}
+      <div class="flex justify-between text-sm font-medium mt-2">
+        <span>Final Amount:</span>
+        <span>Rs.${order.totalAmount}</span>
+      </div>
+    </div>
+
+      <div class="flex justify-end mt-3 gap-3">
+        ${!isOrderCancelled && isOrderDelivered
+          ? `<button onclick="fetchAndPrintInvoice('${order._id}')" class="px-4 py-2 border border-black text-black ">Print Invoice</button>`
+          : ""}
+        ${isRepayment 
+          ? `<button onclick="initiateRepayment('${order.razorPayOrderId}','${order.keyid}','${order.totalAmount}','${order._id}','${order.username}','${order.email}')" class="px-4 py-2 border border-black text-black ">Repay Now</button>`
+          : ""}
+        ${!isOrderCancelled && !isOrderDelivered && !isRepayment
+          ? `<button class="py-2 px-5 border border-black text-black"
+          onclick="openCancelOrderModal('${order._id}', '${order.paymentMethod}')">Cancel Order</button>`
+          : ""}
+        <a href="/accountsettings/orders">
+          <button class="py-2 px-5 border border-black bg-black text-white">Back</button>
+        </a>
+      </div>
     </div>
   </div>
-
-  <!-- Show cancellation message if order is cancelled -->
-  ${isOrderCancelled ? `
-  <div class="text-center text-red-500 font-semibold mt-4">
-    Order has been Cancelled.
-  </div>` : ""}
-
-  ${isOrderDelivered && order.deliveryStatus === "Cancelled" ? `
-  <div class="text-center text-red-500 font-semibold mt-4">
-    Delivery has been Cancelled.
-  </div>` : ""}
-</div>
 </div>
 `;
+
 
 const orderDetailsContainer = document.getElementById("orderdisplay");
 orderDetailsContainer.innerHTML = orderDetailsHTML;

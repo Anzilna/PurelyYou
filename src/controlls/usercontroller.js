@@ -125,6 +125,24 @@ module.exports.userloginpost = async (req, res) => {
         });
         await address.save();
       }
+      let cart = await Cart.findOne({ userId: user._id });
+      if (!cart) {
+        cart = new Cart({
+          userId: user._id,
+          items: [],
+        });
+        await cart.save();
+      }
+
+      let favorites = await Favourite.findOne({ userId: user._id });
+      if (!favorites) {
+        favorites = new Favourite({
+          userId: user._id,
+          items: [],
+        });
+        await favorites.save();
+      }
+
 
       return res.status(200).json({ redirect: "/" });
     } else {
@@ -266,7 +284,7 @@ module.exports.addFavourites = async (req, res) => {
 
     return res
       .status(200)
-      .json({ success: true, message: "Added to favorites" });
+      .json({ success: true, message: "Added to favorites" ,favLength:favorites.items.length});
   } catch (error) {
     console.error("Error while adding to favorites:", error);
     return res.status(500).json({ success: false, message: "Server error" });
@@ -424,7 +442,7 @@ module.exports.addToCart = async (req, res) => {
     await cart.save();
     return res
       .status(200)
-      .json({ status: "success", message: "Product added to cart" });
+      .json({ status: "success", message: "Product added to cart" ,cartLength:cart.items.length});
   } catch (error) {
     console.error(error);
     return res

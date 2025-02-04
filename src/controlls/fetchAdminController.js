@@ -296,20 +296,20 @@ module.exports.updateReturnStatus = async (req, res) => {
         return res.status(404).json({ message: "Order not found." });
       }
 
-      let couponShare = 0;
+      // let couponShare = 0;
 
-      if (order.coupponUsed) {
-        const totalItems = order.items.reduce(
-          (sum, item) => sum + item.quantity,
-          0
-        );
-        if (totalItems > 0) {
-          couponShare = (order.coupponDiscount / totalItems) * quantity;
-        }
-      }
+      // if (order.coupponUsed) {
+      //   const totalItems = order.items.reduce(
+      //     (sum, item) => sum + item.quantity,
+      //     0
+      //   );
+      //   if (totalItems > 0) {
+      //     couponShare = (order.coupponDiscount / totalItems) * quantity;
+      //   }
+      // }
 
-      const adjustedAmount = amount - couponShare;
-      wallet.balance += Number(adjustedAmount);
+      // const adjustedAmount = amount - couponShare;
+      wallet.balance += Number(amount);
       await wallet.save();
 
       const newWalletTransaction = new walletTransaction({
@@ -317,7 +317,7 @@ module.exports.updateReturnStatus = async (req, res) => {
         userId: userId,
         transactionId: `txn-${Date.now()}`,
         type: "CREDIT",
-        amount: adjustedAmount,
+        amount: amount,
         description: "Return approved. Credit added.",
       });
       await newWalletTransaction.save();
@@ -333,6 +333,7 @@ module.exports.updateReturnStatus = async (req, res) => {
       await product.save();
 
       returnRequest.status = "Approved";
+
       await returnRequest.save();
 
       // Update the order total and item details
@@ -342,13 +343,10 @@ module.exports.updateReturnStatus = async (req, res) => {
       );
 
       if (item) {
-        order.totalDiscount -= item.discountprice + couponShare;
-        order.totalAmount -= adjustedAmount;
+      
         item.returnStatus = "Approved";
-        item.saleprice = 0;
-        item.quantity = 0;
-        item.regularprice = 0;
-        item.discountprice = 0;
+        item.returnApproved = true;
+        order.GrandtotalAmount -= amount*quantity
         await order.save();
       }
 
@@ -391,84 +389,103 @@ module.exports.updateReturnStatus = async (req, res) => {
 module.exports.adminSalesFetch = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
-    let dateFilter = { orderstatus: "Delivered" };
     const now = new Date();
+
+    // Initialize Filters
+    let dateFilter = { orderstatus: "Delivered" };
+    let returnFilter = { orderstatus: "Delivered", "items.returnApproved": true };
 
     if (filter === "today") {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      dateFilter.createdAt = { $gte: startOfDay, $lte: new Date() };
+      dateFilter.createdAt = { $gte: startOfDay, $lte: now };
+      returnFilter.createdAt = { $gte: startOfDay, $lte: now };
     } else if (filter === "last7days") {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(now.getDate() - 7);
       sevenDaysAgo.setHours(0, 0, 0, 0);
-      dateFilter.createdAt = { $gte: sevenDaysAgo, $lte: new Date() };
+      dateFilter.createdAt = { $gte: sevenDaysAgo, $lte: now };
+      returnFilter.createdAt = { $gte: sevenDaysAgo, $lte: now };
     } else if (startDate && endDate) {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
       const end = new Date(endDate);
       end.setHours(23, 59, 59, 999);
       dateFilter.createdAt = { $gte: start, $lte: end };
+      returnFilter.createdAt = { $gte: start, $lte: end };
     }
 
+    // Fetch Orders
     const orders = await Order.find(dateFilter).sort({ createdAt: -1 });
 
+    const filteredOrders = orders.filter(order => {
+      return order.items.some(item => item.returnApproved === false);
+    });
+    
+    
     const summary = await Order.aggregate([
-      { $match: dateFilter },
+      { $match: dateFilter }, // Apply the date filter
       {
         $group: {
           _id: null,
           totalRevenue: {
-            $sum: { $subtract: ["$totalAmount", "$deliveryCharge"] },
+            $sum: { $subtract: ["$GrandtotalAmount", "$deliveryCharge"] }, // Subtract deliveryCharge from GrandtotalAmount for revenue
+          }, // Sum the GrandTotal field for revenue
+          totalDiscount: { $sum: "$totalDiscount" }, // Sum the totalDiscount field
+          totalCouponDiscount: {
+            $sum: { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] }, // Sum the coupon discount if coupon is used
           },
-          totalDiscount: {
-            $sum: {
-              $add: [
-                "$totalDiscount",
-                {
-                  $cond: [
-                    { $eq: ["$coupponUsed", true] },
-                    "$coupponDiscount",
-                    0,
-                  ],
-                },
-              ],
-            },
-          },
+          totalDeliveryCharge: { $sum: "$deliveryCharge" }, // Sum the delivery charge
         },
       },
     ]);
+        
 
+    
     const totalRegularPrice = await Order.aggregate([
-      {
-        $match: {
-          $and: [{ orderstatus: "Delivered" }, dateFilter],
-        },
-      },
+      { $match: dateFilter },
+      { $unwind: "$items" },
       {
         $group: {
           _id: null,
-          totalRegularPrice: { $sum: "$totalRegularprice" },
+          totalRegularPrice: { $sum: "$items.regularprice" },
         },
       },
     ]);
 
+    const totalReturnedAmountResult = await Order.aggregate([
+      { $match: returnFilter },
+      { $unwind: "$items" },
+      { $match: { "items.returnApproved": true } },
+      {
+        $group: {
+          _id: null,
+          totalReturnedAmount: { $sum: "$items.saleprice" },
+        },
+      },
+    ]);
+
+    const totalReturnedAmount =
+      totalReturnedAmountResult.length > 0 ? totalReturnedAmountResult[0].totalReturnedAmount : 0;
+
+    // Final Summary Response
     const summaryData = {
       revenue: summary.length > 0 ? summary[0].totalRevenue : 0,
       totalDiscount: summary.length > 0 ? summary[0].totalDiscount : 0,
-      totalRegularPrice:
-        totalRegularPrice.length > 0
-          ? totalRegularPrice[0].totalRegularPrice
-          : 0,
-      orders,
+      totalCouponDiscount: summary.length > 0 ? summary[0].totalCouponDiscount : 0,
+      totalDeliveryCharge: summary.length > 0 ? summary[0].totalDeliveryCharge : 0,
+      totalRegularPrice: totalRegularPrice.length > 0 ? totalRegularPrice[0].totalRegularPrice : 0,
+      totalReturnedAmount,
+      orders:filteredOrders,
     };
 
-    res.status(200).json(summaryData);
+    res.status(200).json({ summaryData });
   } catch (error) {
     console.error("Error fetching admin summary:", error);
     res.status(500).json({ error: "Failed to fetch summary data" });
   }
 };
+
 
 module.exports.generateExcelReport = async (req, res) => {
   try {
@@ -479,12 +496,12 @@ module.exports.generateExcelReport = async (req, res) => {
     if (filter === "today") {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
-      dateFilter.createdAt = { $gte: startOfDay, $lte: new Date() };
+      dateFilter.createdAt = { $gte: startOfDay, $lte: now };
     } else if (filter === "last7days") {
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(now.getDate() - 7);
       sevenDaysAgo.setHours(0, 0, 0, 0);
-      dateFilter.createdAt = { $gte: sevenDaysAgo, $lte: new Date() };
+      dateFilter.createdAt = { $gte: sevenDaysAgo, $lte: now };
     } else if (startDate && endDate) {
       const start = new Date(startDate);
       start.setHours(0, 0, 0, 0);
@@ -493,43 +510,89 @@ module.exports.generateExcelReport = async (req, res) => {
       dateFilter.createdAt = { $gte: start, $lte: end };
     }
 
-    const orders = await Order.find(dateFilter).sort({ createdAt: -1 });
+    const returnFilter = { ...dateFilter };
+
+    let orders = await Order.find(dateFilter).sort({ createdAt: -1 });
+
+    orders = orders.filter(order =>
+      order.items.some(item => item.returnApproved !== true)
+    );
 
     const summary = await Order.aggregate([
       { $match: dateFilter },
       {
         $group: {
           _id: null,
-          totalSales: { $sum: 1 },
-          totalRevenue: { $sum: "$totalAmount" },
-          totalDiscounts: {
-            $sum: {
-              $add: [
-                "$totalDiscount",
-                {
-                  $cond: [
-                    { $eq: ["$coupponUsed", true] },
-                    "$coupponDiscount",
-                    0,
-                  ],
-                },
-              ],
-            },
+          totalRevenue: {
+            $sum: { $subtract: ["$GrandtotalAmount", "$deliveryCharge"] },
           },
+          totalDiscounts: { $sum: "$totalDiscount" },
+          totalCouponDiscount: {
+            $sum: { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] },
+          },
+          totalDeliveryCharge: { $sum: "$deliveryCharge" },
+          totalSales: { $sum: 1 },
         },
       },
     ]);
 
-    const uniqueCustomers = await Order.distinct("userId", dateFilter);
+    // **Total Regular Price Calculation**
+    const totalRegularPriceResult = await Order.aggregate([
+      { $match: dateFilter },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: null,
+          totalRegularPrice: { $sum: "$items.regularprice" },
+        },
+      },
+    ]);
+    const totalRegularPrice = totalRegularPriceResult[0]?.totalRegularPrice || 0;
+
+    // **Total Returned Amount Calculation**
+    const totalReturnedAmountResult = await Order.aggregate([
+      { $match: returnFilter },
+      { $unwind: "$items" },
+      { $match: { "items.returnApproved": true } },
+      {
+        $group: {
+          _id: null,
+          totalReturnedAmount: { $sum: "$items.saleprice" },
+        },
+      },
+    ]);
+    const totalReturnedAmount = totalReturnedAmountResult[0]?.totalReturnedAmount || 0;
+
+    // **Unique Customer Count**
+    const uniqueCustomers = await Order.distinct("userId", {
+      ...dateFilter,
+      items: { $elemMatch: { returnApproved: false } },
+    });
+
     const summaryData = {
-      sales: summary.length > 0 ? summary[0].totalSales : 0,
-      revenue: summary.length > 0 ? summary[0].totalRevenue : 0,
-      discounts: summary.length > 0 ? summary[0].totalDiscounts : 0,
+      sales: summary[0]?.totalSales || 0,
+      revenue: summary[0]?.totalRevenue || 0,
+      discounts: summary[0]?.totalDiscounts || 0,
+      couponDiscounts: summary[0]?.totalCouponDiscount || 0,
+      deliveryCharges: summary[0]?.totalDeliveryCharge || 0,
+      regularPrice: totalRegularPrice,
+      returnedAmount: totalReturnedAmount,
       customers: uniqueCustomers.length,
       orders,
     };
 
+    // **Prepare Excel Data**
     const ws_data = [
+      ["Sales Summary"],
+      ["Total Sales", summaryData.sales],
+      ["Total Revenue", summaryData.revenue.toFixed(2)],
+      ["Total Discounts", summaryData.discounts.toFixed(2)],
+      ["Total Coupon Discounts", summaryData.couponDiscounts.toFixed(2)],
+      ["Total Delivery Charges", summaryData.deliveryCharges.toFixed(2)],
+      ["Total Regular Price", summaryData.regularPrice.toFixed(2)],
+      ["Total Returned Amount", summaryData.returnedAmount.toFixed(2)],
+      ["Unique Customers", summaryData.customers],
+      [], // Empty row for spacing
       [
         "Order ID",
         "Customer",
@@ -562,6 +625,7 @@ module.exports.generateExcelReport = async (req, res) => {
       ]),
     ];
 
+    // **Create and Send Excel File**
     const ws = XLSX.utils.aoa_to_sheet(ws_data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
@@ -579,12 +643,14 @@ module.exports.generateExcelReport = async (req, res) => {
   }
 };
 
+
 module.exports.generatePDFReport = async (req, res) => {
   try {
     const { filter, startDate, endDate } = req.query;
     let dateFilter = { orderstatus: "Delivered" };
     const now = new Date();
 
+    // Handle Date Filters
     if (filter === "today") {
       const startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
@@ -603,40 +669,73 @@ module.exports.generatePDFReport = async (req, res) => {
     }
 
     const orders = await Order.find(dateFilter).sort({ createdAt: -1 });
+
+    const filteredOrders = orders.filter(order => {
+      return order.items.some(item => item.returnApproved === false);
+    });
+    
+
+    // Aggregate summary data
     const summary = await Order.aggregate([
-      { $match: dateFilter },
+      { $match: dateFilter }, // Apply the date filter
       {
         $group: {
           _id: null,
-          totalSales: { $sum: 1 },
-          totalRevenue: { $sum: "$totalAmount" },
-          totalDiscount: {
-            $sum: {
-              $add: [
-                "$totalDiscount",
-                {
-                  $cond: [
-                    { $eq: ["$coupponUsed", true] },
-                    "$coupponDiscount",
-                    0,
-                  ],
-                },
-              ],
-            },
+          totalRevenue: {
+            $sum: { $subtract: ["$GrandtotalAmount", "$deliveryCharge"] }, // Subtract deliveryCharge from GrandtotalAmount for revenue
+          }, // Sum the GrandTotal field for revenue
+          totalDiscount: { $sum: "$totalDiscount" }, // Sum the totalDiscount field
+          totalCouponDiscount: {
+            $sum: { $cond: [{ $eq: ["$coupponUsed", true] }, "$coupponDiscount", 0] }, // Sum the coupon discount if coupon is used
           },
+          totalDeliveryCharge: { $sum: "$deliveryCharge" }, // Sum the delivery charge
+          totalSales: { $sum: 1 }, // Track total sales count
         },
       },
     ]);
 
+    const totalRegularPrice = await Order.aggregate([
+      { $match: dateFilter },
+      { $unwind: "$items" },
+      {
+        $group: {
+          _id: null,
+          totalRegularPrice: { $sum: "$items.regularprice" },
+        },
+      },
+    ]);
+
+    const totalReturnedAmountResult = await Order.aggregate([
+      { $match: dateFilter },
+      { $unwind: "$items" },
+      { $match: { "items.returnApproved": true } },
+      {
+        $group: {
+          _id: null,
+          totalReturnedAmount: { $sum: "$items.saleprice" },
+        },
+      },
+    ]);
+
+    const totalReturnedAmount =
+      totalReturnedAmountResult.length > 0 ? totalReturnedAmountResult[0].totalReturnedAmount : 0;
+
+    // Get unique customers
     const uniqueCustomers = await Order.distinct("userId", dateFilter);
+
+    // Prepare summary data
     const summaryData = {
       sales: summary.length > 0 ? summary[0].totalSales : 0,
       revenue: summary.length > 0 ? summary[0].totalRevenue : 0,
       totalDiscount: summary.length > 0 ? summary[0].totalDiscount : 0,
-      customers: uniqueCustomers.length,
-      orders,
+      totalCouponDiscount: summary.length > 0 ? summary[0].totalCouponDiscount : 0,
+      totalDeliveryCharge: summary.length > 0 ? summary[0].totalDeliveryCharge : 0,
+      orders:filteredOrders,
+      totalReturnedAmount,
+      totalRegularPrice: totalRegularPrice.length > 0 ? totalRegularPrice[0].totalRegularPrice : 0,
     };
 
+    // Generate PDF Document
     const doc = new PDFDocument();
 
     res.setHeader("Content-Type", "application/pdf");
@@ -649,12 +748,15 @@ module.exports.generatePDFReport = async (req, res) => {
     doc.moveDown();
 
     doc.fontSize(12).text(`Total Sales: ${summaryData.sales}`);
+    doc.text(`Total Regular Price: ${summaryData.totalRegularPrice.toFixed(2)}`);
     doc.text(`Total Revenue: ${summaryData.revenue.toFixed(2)}`);
     doc.text(`Total Discount: ${summaryData.totalDiscount.toFixed(2)}`);
-    doc.text(`Total Customers: ${summaryData.customers}`);
+    doc.text(`Total Coupon Discount: ${summaryData.totalCouponDiscount.toFixed(2)}`);
+    doc.text(`Total Delivery Charge: ${summaryData.totalDeliveryCharge.toFixed(2)}`);
+    doc.text(`Total Returned Amount: ${summaryData.totalReturnedAmount.toFixed(2)}`);
     doc.moveDown();
 
-    doc.moveDown(1.5);
+    doc.moveDown(3.5);
     const columnWidths = [80, 110, 80, 80, 100, 80, 100, 90];
     const startX = 40;
     let currentY = doc.y;
@@ -713,6 +815,7 @@ module.exports.generatePDFReport = async (req, res) => {
   }
 };
 
+
 module.exports.updateOfferStatus = async (req, res) => {
   try {
     const offerId = req.params.id;
@@ -769,8 +872,15 @@ module.exports.updateOfferStatus = async (req, res) => {
 module.exports.adminDashboardFetch = async (req, res) => {
   try {
     const totalRevenue = await Order.aggregate([
-      { $match: { orderstatus: "Delivered" } },
-      { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } },
+      { $match: { orderstatus: "Delivered" } }, // Match only "Delivered" orders
+      {
+        $group: {
+          _id: null,
+          totalRevenue: {
+            $sum: { $subtract: ["$GrandtotalAmount", "$deliveryCharge"] }, // Subtract deliveryCharge from totalAmount
+          },
+        },
+      },
     ]);
 
     const totalCustomers = await User.countDocuments();
@@ -872,15 +982,18 @@ module.exports.dashBoardChart = async (req, res) => {
 
   try {
     const salesData = await Order.aggregate([
-      { $match: dateFilter },
+      { $match: dateFilter }, // Apply the date filter
       {
         $group: {
-          _id: groupBy,
-          totalSales: { $sum: "$totalAmount" },
+          _id: groupBy, 
+          totalSales: {
+            $sum: { $subtract: ["$GrandtotalAmount", "$deliveryCharge"] }, // Subtract deliveryCharge from totalAmount
+          },
         },
       },
-      { $sort: { _id: 1 } },
+      { $sort: { _id: 1 } }, // Sort by the group identifier
     ]);
+    
 
     const formattedSalesData = salesData.map((item) => ({
       label: formatLabel(item._id),

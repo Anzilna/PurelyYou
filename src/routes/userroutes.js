@@ -40,6 +40,8 @@ router.post(
   checkUser,
   userController.addFavourites
 );
+
+
 router.post(
   "/productdetails/addtocart",
   logInNotification,

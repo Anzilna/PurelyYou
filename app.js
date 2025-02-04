@@ -8,9 +8,16 @@ const cookieParser=require('cookie-parser')
 const adminRoutes=require('./src/routes/adminroutes')
 const {CategoryModel} = require('./model/adminmodel'); 
 const checkUser=require('./middleware/checkUser')
-
+const cron = require("node-cron");
+const { deactivateExpiredCoupons } = require("./src/functions/deactivateExpiredCoupons");
 require('dotenv').config()
 
+
+// Run every hour 
+cron.schedule("0 * * * *", async () => {
+  console.log("Checking and deactivating expired coupons...");
+  await deactivateExpiredCoupons();
+});
 
 app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'no-store');  
