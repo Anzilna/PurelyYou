@@ -24,6 +24,8 @@ console.log(cart,favourites);
 
                     user.cartCount = cart.items.length || 0;
                     user.favouritesCount = favourites.items.length || 0;
+                    user.userCart = cart || '';
+                    user.userFavourites = favourites || '';
 
                     res.locals.localsUser = user;
                     req.userdata = user;

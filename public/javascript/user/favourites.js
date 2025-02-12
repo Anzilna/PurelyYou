@@ -79,8 +79,11 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
         const result = await fetchResult.json();
-        if (result.success) {
+        if (fetchResult.ok) {
+          
+          UpdateCartCount(result.cartLength)
           showNotification("Product successfully added to cart!");
+
         } else if (result.message) {
           showNotification(result.message);
         }
@@ -97,6 +100,21 @@ document.addEventListener("DOMContentLoaded", function () {
     location.assign(`/productdetails/${productId}`);
   }
 
+
+
+  function UpdateFavCount(Fav) {
+
+    document.getElementById("favourites-count").textContent = Fav;
+  }
+  
+  function UpdateCartCount(Cart) {
+    
+    document.getElementById("cart-count").textContent = Cart;
+  }
+
+
+
+
   async function removeProduct(productId) {
     try {
       const response = await fetch("/favourites/remove", {
@@ -110,6 +128,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const result = await response.json();
 
       if (response.ok) {
+        UpdateFavCount(result.favLength)
         favouritesFetch();
         showNotification("Product successfully deleted from favourites!");
         cartItems();

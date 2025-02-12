@@ -6,7 +6,6 @@ document
         const form = event.target;
         const addressId = form.dataset.adressid;
         if (!form) {
-          console.error("Form not found.");
           return;
         }
 
@@ -40,7 +39,6 @@ document
 
           const result = await response.json();
           if (result.limit) {
-            console.log(result.limit);
 
             showNotification(result.limit);
           }

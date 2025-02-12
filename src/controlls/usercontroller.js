@@ -467,7 +467,7 @@ module.exports.CartRemove = async (req, res) => {
 
     await cart.save();
 
-    return res.json({ success: true, cart });
+    return res.json({ success: true, cart ,cartLength:cart.items.length});
   } catch (error) {
     console.error("Error removing product:", error);
     return res.status(500).json({ error: "Server error" });
@@ -519,10 +519,9 @@ module.exports.quantityEdit = async (req, res) => {
       return res.status(400).json({ message: "Invalid quantity edit value" });
     }
 
-    // Save the cart
     await cart.save();
 
-    res.status(200).json({ saved: "Quantity updated successfully", cart });
+    res.status(200).json({ saved: "Quantity updated successfully", cart ,});
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
@@ -814,9 +813,29 @@ module.exports.googleAuthCallback = (req, res, next) => {
       await address.save();
     }
 
+    let cart = await Cart.findOne({ userId: user._id });
+    if (!cart) {
+      cart = new Cart({
+        userId: user._id,
+        items: [],
+      });
+      await cart.save();
+    }
+
+    let favorites = await Favourite.findOne({ userId: user._id });
+    if (!favorites) {
+      favorites = new Favourite({
+        userId: user._id,
+        items: [],
+      });
+      await favorites.save();
+    }
+
+
     return res.redirect("/");
   })(req, res, next);
 };
+
 
 module.exports.myAccountSettings = async (req, res) => {
   try {

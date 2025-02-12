@@ -6,7 +6,6 @@ document
         const form = event.target;
 
         if (!form) {
-          console.error("Form not found.");
           return;
         }
 
@@ -37,7 +36,6 @@ document
 
           const result = await response.json();
           if (result.limit) {
-            console.log(result.limit);
 
             showNotification(result.limit, "error");
           }

@@ -2,7 +2,6 @@ fetchCheckoutData();
 const lastTotalAmountElement = document.getElementById("last-total-amount");
 const addressesElement = document.getElementById("addresses-data");
 const addressList = JSON.parse(addressesElement.getAttribute("data-addresses"));
-console.log("Address List:", addressList);
 
 const addressRadios = document.querySelectorAll('input[name="billingAddress"]');
 const defaultCheckedRadio = document.querySelector(
@@ -14,7 +13,6 @@ if (defaultCheckedRadio) {
 
 addressRadios.forEach((radio) => {
   radio.addEventListener("change", function () {
-    console.log("Radio selected:", this.value);
     const selectedAddressId = this.value;
     updateAddressPreview(selectedAddressId);
   });
@@ -50,7 +48,6 @@ let totalDiscount = parseFloat(cartData.getAttribute("data-total-discount"));
 let deliveryCharge = parseFloat(cartData.getAttribute("data-delivery-charge"));
 let finalOrderAmount = totalAmount - totalDiscount + deliveryCharge;
 
-console.log("totallllllll", finalOrderAmount);
 
 const username = cartData.getAttribute("data-username");
 const email = cartData.getAttribute("data-email");
@@ -59,11 +56,7 @@ let OrderCoupponCode = "";
 let OrderCoupponDiscountedValue = "";
 let OrderCoupponID = "";
 
-console.log("Total Amount:", totalAmount);
-console.log("Total Discount:", totalDiscount);
-console.log("Delivery Charge:", deliveryCharge);
-console.log("Username:", username);
-console.log("Email:", email);
+
 
 async function fetchCheckoutData() {
   const itemsDetails = document.getElementById("itemsdetails");
@@ -80,7 +73,6 @@ async function fetchCheckoutData() {
     }
 
     const data = await response.json();
-    console.log("Checkout Data:", data);
     itemsDetails.innerHTML = data.cart.items
       .map((item) => {
         return `
@@ -148,8 +140,6 @@ document
       'input[name="paymentMethod"]:checked'
     )?.value;
 
-    console.log("Selected Address:", selectedAddress);
-    console.log("Selected Payment Method:", paymentMethod);
 
     if (!selectedAddress || !paymentMethod) {
       showNotification("Please select both address and payment method.");
@@ -162,7 +152,6 @@ document
       );
     }
 
-    console.log("Final Amount:", finalOrderAmount);
 
     const orderData = {
       totalAmount: finalOrderAmount,
@@ -182,7 +171,6 @@ document
       orderData.coupponId = OrderCoupponID;
     }
     if (paymentMethod.includes("Razorpay")) {
-      console.log("Inside Razorpay");
 
       try {
         const response = await fetch("/razorpay/createorder", {
@@ -211,7 +199,6 @@ document
           description: "Test Transaction",
           order_id: razorpayOrder.id,
           handler: async function (response) {
-            console.log("Payment successful!", response);
 
             showNotification("Payment successful! Verifying your payment...");
 
@@ -264,7 +251,6 @@ document
           },
           modal: {
             ondismiss: function () {
-              console.log("Payment process closed by the user.");
             },
           },
         };
@@ -275,14 +261,12 @@ document
         rzp.open();
 
         rzp.on("payment.failed", function (response) {
-          console.error("Payment failed:", response.error);
           showNotification("Payment failed. Please try again.");
         });
       } catch (error) {
         console.error("Error occurred while making Razorpay API call:", error);
       }
     } else {
-      console.log("Order Data:", orderData);
 
       try {
         const response = await fetch("/shoppingcart/checkout/order", {
@@ -296,7 +280,6 @@ document
         const data = await response.json();
 
         if (response.ok) {
-          console.log("Order completed successfully:", data);
           showNotification(data.message);
           location.assign(
             `/shoppingcart/checkout/orderplaced/${data.order._id}`
@@ -456,7 +439,6 @@ function showPaymentDetails(showId, hideIds) {
   const hideElements = hideIds.map((id) => document.getElementById(id));
 
   if (showElement) {
-    console.log("Showing payment details for:", showId);
     showElement.classList.remove("hidden");
   } else {
     console.log("Element not found for show payment details:", showId);
@@ -464,7 +446,6 @@ function showPaymentDetails(showId, hideIds) {
 
   hideElements.forEach((element) => {
     if (element) {
-      console.log("Hiding element:", element.id);
       element.classList.add("hidden");
     }
   });
@@ -477,7 +458,6 @@ const addressesDataString = addressesDataDiv.getAttribute("data-addresses");
 let addressesData;
 try {
   addressesData = JSON.parse(addressesDataString);
-  console.log("address", addressesData);
 } catch (error) {
   console.error("Error parsing addresses data:", error);
 }
@@ -487,7 +467,6 @@ function renderAddressDetails(addresses) {
   const addressBox = document.getElementById("address-box");
 
   if (!addressBox) {
-    console.error("Address box element not found.");
     return;
   }
 
@@ -646,7 +625,6 @@ document
   .getElementById("billingAddressForm")
   .addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("heeeee");
 
     const formData = new FormData(event.target);
     const data = Object.fromEntries(formData.entries());

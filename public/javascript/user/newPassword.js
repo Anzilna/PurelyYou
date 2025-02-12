@@ -81,7 +81,6 @@ form.addEventListener('submit', async (e) => {
       });
 
       const fetchResult = await result.json();
-      console.log(fetchResult);
 
       if (fetchResult.redirect) {
   

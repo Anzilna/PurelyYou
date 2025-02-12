@@ -81,7 +81,7 @@ async function fetchData(filter = "today", startDate = "", endDate = "") {
         const response = await fetch(`/admin/generatepdfreport${queryParams}`, {
           method: "GET",
         });
-        console.log(response.status); // Log the status
+        console.log(response.status); 
 
         if (!response.ok) {
           throw new Error("Failed to generate PDF");

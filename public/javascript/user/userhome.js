@@ -29,7 +29,7 @@ const prevBtn = document.getElementById("prevBtn");
       location.assign(`/products/viewallproducts`);
     }
 
-    const form = document.getElementById("newsletter-form");
+  const form = document.getElementById("newsletter-form");
   const emailInput = document.getElementById("email-input");
 
   form.addEventListener("submit", async (event) => {

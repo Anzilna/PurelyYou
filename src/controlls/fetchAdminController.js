@@ -296,20 +296,32 @@ module.exports.updateReturnStatus = async (req, res) => {
         return res.status(404).json({ message: "Order not found." });
       }
 
-      // let couponShare = 0;
+      let couponShare = 0;
 
-      // if (order.coupponUsed) {
-      //   const totalItems = order.items.reduce(
-      //     (sum, item) => sum + item.quantity,
-      //     0
-      //   );
-      //   if (totalItems > 0) {
-      //     couponShare = (order.coupponDiscount / totalItems) * quantity;
-      //   }
-      // }
+      // If a coupon was used, calculate the proportionate share for the returned item
+      if (order.coupponUsed) {
+        const totalOrderAmount = order.totalAmount;
+        const totalItems = order.items.reduce(
+          (sum, item) => sum + item.quantity * item.saleprice,
+          0
+        );
+        const couponAmount = order.coupponDiscount;
 
-      // const adjustedAmount = amount - couponShare;
-      wallet.balance += Number(amount);
+        // Find the item being returned
+        const item = order.items.find(
+          (item) =>
+            item.productId.toString() === returnRequest.productId._id.toString()
+        );
+
+        if (item) {
+          // Calculate the share of the coupon applied to the returned product
+          const productShare = (item.saleprice * item.quantity) / totalItems;
+          couponShare = (productShare * couponAmount) / item.quantity;
+        }
+      }
+
+      const adjustedAmount = amount - couponShare;  // Amount after coupon adjustment
+      wallet.balance += Number(adjustedAmount);
       await wallet.save();
 
       const newWalletTransaction = new walletTransaction({
@@ -317,7 +329,7 @@ module.exports.updateReturnStatus = async (req, res) => {
         userId: userId,
         transactionId: `txn-${Date.now()}`,
         type: "CREDIT",
-        amount: amount,
+        amount: adjustedAmount,
         description: "Return approved. Credit added.",
       });
       await newWalletTransaction.save();
@@ -343,10 +355,10 @@ module.exports.updateReturnStatus = async (req, res) => {
       );
 
       if (item) {
-      
         item.returnStatus = "Approved";
         item.returnApproved = true;
-        order.GrandtotalAmount -= amount*quantity
+        // Adjust the GrandtotalAmount with the adjusted amount
+        order.GrandtotalAmount -= adjustedAmount;
         await order.save();
       }
 
@@ -371,7 +383,6 @@ module.exports.updateReturnStatus = async (req, res) => {
 
       if (item) {
         item.returnStatus = status;
-
         await order.save();
       }
 
@@ -391,7 +402,6 @@ module.exports.adminSalesFetch = async (req, res) => {
     const { filter, startDate, endDate } = req.query;
     const now = new Date();
 
-    // Initialize Filters
     let dateFilter = { orderstatus: "Delivered" };
     let returnFilter = { orderstatus: "Delivered", "items.returnApproved": true };
 

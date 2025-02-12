@@ -168,7 +168,6 @@ addMoneyForm.addEventListener("submit", async (e) => {
       description: "Test Transaction",
       order_id: razorpayOrder.id,
       handler: async function (response) {
-        console.log("Payment successful!", response);
 
         showNotification("Payment successful! Verifying your payment...");
 

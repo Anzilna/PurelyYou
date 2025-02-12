@@ -1,11 +1,10 @@
-const orderData = document.getElementById("orderDetailsContainerData").dataset.order;
+const orderData = document.getElementById("orderDetailsContainerData").dataset
+  .order;
 const order = JSON.parse(orderData);
 
 renderOrderDetails(order);
 
-function showReturnModal(productId, amount ,quantity) {
-  console.log(productId, amount);
-
+function showReturnModal(productId, amount, quantity) {
   document.getElementById("returnItemId").value = productId;
   document.getElementById("amount").value = amount;
   document.getElementById("quantity").value = quantity;
@@ -16,31 +15,30 @@ function closeModal() {
   document.getElementById("returnModal").classList.add("hidden");
 }
 async function fetchAndPrintInvoice(orderId) {
-try {
-  const response = await fetch(`/accountsettings/orderinvoice/${orderId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/pdf',
-    },
-  });
+  try {
+    const response = await fetch(`/accountsettings/orderinvoice/${orderId}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/pdf",
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch invoice');
+    if (!response.ok) {
+      throw new Error("Failed to fetch invoice");
+    }
+
+    const blob = await response.blob();
+
+    const url = URL.createObjectURL(blob);
+    const newWindow = window.open(url, "_blank");
+
+    newWindow.onload = function () {
+      newWindow.print();
+    };
+  } catch (error) {
+    console.error("Error while fetching and printing invoice:", error);
   }
-
-  const blob = await response.blob();
-
-  const url = URL.createObjectURL(blob);
-  const newWindow = window.open(url, '_blank');
-
-  newWindow.onload = function() {
-    newWindow.print();
-  };
-} catch (error) {
-  console.error('Error while fetching and printing invoice:', error);
 }
-}
-
 
 document
   .getElementById("returnForm")
@@ -51,9 +49,7 @@ document
     const errorDivs = document.querySelectorAll(".text-red-500");
     errorDivs.forEach((div) => div.classList.add("hidden"));
 
-    const returnReason = document
-      .getElementById("returnReason")
-      .value.trim();
+    const returnReason = document.getElementById("returnReason").value.trim();
     const name = document.getElementById("name").value.trim();
     const phone = document.getElementById("phone").value.trim();
     const address = document.getElementById("address").value.trim();
@@ -66,14 +62,9 @@ document
     const amount = document.getElementById("amount").value;
     const quantity = document.getElementById("quantity").value;
 
-
-    console.log("amouuuunt", amount);
-
     let isValid = true;
     if (!returnReason) {
-      document
-        .getElementById("errorReturnReason")
-        .classList.remove("hidden");
+      document.getElementById("errorReturnReason").classList.remove("hidden");
       isValid = false;
     }
 
@@ -131,24 +122,20 @@ document
       };
 
       try {
-        const response = await fetch(
-          "/accountsettings/orderdetails/return",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(formData),
-          }
-        );
+        const response = await fetch("/accountsettings/orderdetails/return", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        });
 
         const result = await response.json();
 
         if (result.done) {
           closeModal();
           document.getElementById("returnForm").reset();
-          alert("Return request submitted successfully!");
-          console.log(result.order);
+          showNotification("Return request submitted successfully!");
           renderOrderDetails(result.order);
         } else {
           alert(result.message);
@@ -160,23 +147,20 @@ document
     }
   });
 
-document
-  .getElementById("cancelReturn")
-  .addEventListener("click", closeModal);
+document.getElementById("cancelReturn").addEventListener("click", closeModal);
 
-  function renderOrderDetails(order) {
+function renderOrderDetails(order) {
+  const isRepayment = order.orderstatus === "Payment Pending";
+  const isOrderCancelled = order.orderstatus === "Cancelled";
+  const isOrderDelivered = order.orderstatus === "Delivered";
+  const isNotDelivered = order.orderstatus !== "Delivered";
 
-const isRepayment = order.orderstatus === "Payment Pending";
-const isOrderCancelled = order.orderstatus === "Cancelled";
-const isOrderDelivered = order.orderstatus === "Delivered";
-const isNotDelivered = order.orderstatus !== "Delivered";
+  const orderDate = new Date(order.updatedAt);
+  const currentDate = new Date();
+  const timeDifference = currentDate - orderDate;
+  const daysDifference = timeDifference / (1000 * 3600 * 24);
 
-const orderDate = new Date(order.updatedAt);
-const currentDate = new Date();
-const timeDifference = currentDate - orderDate;
-const daysDifference = timeDifference / (1000 * 3600 * 24);
-
-const orderDetailsHTML = `
+  const orderDetailsHTML = `
 <div class="flex justify-center bg-white p-2 font-medium">
   <div>ORDER DETAILS</div>
 </div>
@@ -191,7 +175,9 @@ const orderDetailsHTML = `
       </div>
       <div class="flex justify-between">
         <div class="text-sm">${order.code}</div>
-        <div class="text-xs">${new Date(order.createdAt).toLocaleDateString()}</div>
+        <div class="text-xs">${new Date(
+          order.createdAt
+        ).toLocaleDateString()}</div>
       </div>
     </div>
 
@@ -219,19 +205,21 @@ const orderDetailsHTML = `
       ${order.items
         .map((item) => {
           const isReturnDisabled =
-            isOrderCancelled || 
-            isNotDelivered || 
+            isOrderCancelled ||
+            isNotDelivered ||
             (isOrderDelivered && daysDifference > 7) ||
             item.returnRequest;
 
           const returnStatusText = item.returnStatus
             ? "Return Status: " + item.returnStatus
             : "";
+
           const OrderCancelledText = isOrderCancelled ? "Cancelled" : "";
 
           let returnButtonText = "Return Option Only Available for 7 days";
+
           if (isOrderCancelled) {
-            returnButtonText = "Cancelled"; 
+            returnButtonText = "Cancelled";
           } else if (isReturnDisabled) {
             returnButtonText = returnStatusText || OrderCancelledText;
           } else {
@@ -276,13 +264,19 @@ const orderDetailsHTML = `
           <div id="itemsdisplay" class="flex flex-col gap">
             <div class="flex flex-row gap-3 m-3">
               <div class="flex-[2]">
-                <img src="${item.productId.images[0]}" class="h-full w-full" alt="" />
+                <img src="${
+                  item.productId.images[0]
+                }" class="h-full w-full" alt="" />
               </div>
               <div class="flex-[6]">
                 <div class="flex flex-col h-full w-full">
                   <div class="flex-[2] flex justify-start flex-col gap-[1px] items-start">
-                    <div class="text-sm font-medium">${item.productId.productname}</div>
-                    <div class="text-xs font-normal">Rs.${item.productId.saleprice}</div>
+                    <div class="text-sm font-medium">${
+                      item.productId.productname
+                    }</div>
+                    <div class="text-xs font-normal">Rs.${
+                      item.productId.saleprice
+                    }</div>
                   </div>
                   <div class="flex-[5] flex justify-end flex-col align-bottom">
                     <div class="flex">
@@ -302,7 +296,9 @@ const orderDetailsHTML = `
                     <button 
                       id="returnbtn"
                       class="py-2 border border-black px-6 text-black text-xs rounded" 
-                      onclick="showReturnModal('${item.productId._id}','${item.saleprice }','${item.quantity }')" 
+                      onclick="showReturnModal('${item.productId._id}','${
+            item.saleprice
+          }','${item.quantity}')" 
                       ${isReturnDisabled ? "disabled" : ""}>
                       ${returnButtonText}
                     </button>
@@ -329,12 +325,16 @@ const orderDetailsHTML = `
         <span>Delivery Charge:</span>
         <span>+ Rs.${order.deliveryCharge}</span>
       </div>
-      ${order.coupponUsed ? `
+      ${
+        order.coupponUsed
+          ? `
         <div class="flex justify-between text-xs">
           <span>Coupon (${order.coupponCode}):</span>
           <span>- Rs.${order.coupponDiscount}</span>
         </div>
-      ` : ""}
+      `
+          : ""
+      }
       <div class="flex justify-between text-sm font-medium mt-2">
         <span>Final Amount:</span>
         <span>Rs.${order.totalAmount}</span>
@@ -342,16 +342,22 @@ const orderDetailsHTML = `
     </div>
 
       <div class="flex justify-end mt-3 gap-3">
-        ${!isOrderCancelled && isOrderDelivered
-          ? `<button onclick="fetchAndPrintInvoice('${order._id}')" class="px-4 py-2 border border-black text-black ">Print Invoice</button>`
-          : ""}
-        ${isRepayment 
-          ? `<button onclick="initiateRepayment('${order.razorPayOrderId}','${order.keyid}','${order.totalAmount}','${order._id}','${order.username}','${order.email}')" class="px-4 py-2 border border-black text-black ">Repay Now</button>`
-          : ""}
-        ${!isOrderCancelled && !isOrderDelivered && !isRepayment
-          ? `<button class="py-2 px-5 border border-black text-black"
+        ${
+          !isOrderCancelled && isOrderDelivered
+            ? `<button onclick="fetchAndPrintInvoice('${order._id}')" class="px-4 py-2 border border-black text-black ">Print Invoice</button>`
+            : ""
+        }
+        ${
+          isRepayment
+            ? `<button onclick="initiateRepayment('${order.razorPayOrderId}','${order.keyid}','${order.totalAmount}','${order._id}','${order.username}','${order.email}')" class="px-4 py-2 border border-black text-black ">Repay Now</button>`
+            : ""
+        }
+        ${
+          !isOrderCancelled && !isOrderDelivered && !isRepayment
+            ? `<button class="py-2 px-5 border border-black text-black"
           onclick="openCancelOrderModal('${order._id}', '${order.paymentMethod}')">Cancel Order</button>`
-          : ""}
+            : ""
+        }
         <a href="/accountsettings/orders">
           <button class="py-2 px-5 border border-black bg-black text-white">Back</button>
         </a>
@@ -361,39 +367,37 @@ const orderDetailsHTML = `
 </div>
 `;
 
-
-const orderDetailsContainer = document.getElementById("orderdisplay");
-orderDetailsContainer.innerHTML = orderDetailsHTML;
+  const orderDetailsContainer = document.getElementById("orderdisplay");
+  orderDetailsContainer.innerHTML = orderDetailsHTML;
 }
 
+async function cancelOrder(orderId, paymentMethod) {
+  try {
+    const response = await fetch(`/accountsettings/cancelorders/${orderId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ paymentMethod }),
+    });
 
-async function cancelOrder(orderId,paymentMethod) {
-try {
-const response = await fetch(`/accountsettings/cancelorders/${orderId}`, {
-  method: 'PUT',  
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body:JSON.stringify({paymentMethod})
-});
+    const data = await response.json();
 
-const data = await response.json();  
+    if (data.message === "Order cancelled successfully") {
+      showNotification("Order has been cancelled");
 
-if (data.message === 'Order cancelled successfully') {
-  alert('Order has been cancelled');
-  
-  renderOrderDetails(data.order);  
-} else {
-  alert('Failed to cancel order');
+      renderOrderDetails(data.order);
+    } else {
+      showNotification("Failed to cancel order");
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    alert("An error occurred while canceling the order");
+  }
 }
-} catch (error) {
-console.error('Error:', error);
-alert('An error occurred while canceling the order');
-}
-}
 
-let currentOrderId = null; 
-let currentPaymentMethod = null; 
+let currentOrderId = null;
+let currentPaymentMethod = null;
 
 function openCancelOrderModal(orderId, paymentMethod) {
   currentOrderId = orderId;
@@ -411,28 +415,31 @@ async function confirmCancelOrder() {
   const cancelReason = document.getElementById("cancelReason").value.trim();
 
   if (!cancelReason) {
-    showNotification("Please provide a valid reason for cancellation.", "error");
+    showNotification("Please provide a valid reason for cancellation.");
     return;
   }
 
   try {
-    const response = await fetch(`/accountsettings/cancelorders/${currentOrderId}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        paymentMethod: currentPaymentMethod, 
-        reason: cancelReason,
-      }),
-    });
+    const response = await fetch(
+      `/accountsettings/cancelorders/${currentOrderId}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paymentMethod: currentPaymentMethod,
+          reason: cancelReason,
+        }),
+      }
+    );
 
     const data = await response.json();
 
-    if (response.ok ) {
+    if (response.ok) {
       showNotification(data.message);
-      renderOrderDetails(data.order); 
-      closeCancelOrderModal(); 
+      renderOrderDetails(data.order);
+      closeCancelOrderModal();
     } else {
       showNotification(data.message);
     }
@@ -442,116 +449,98 @@ async function confirmCancelOrder() {
   }
 }
 
+async function initiateRepayment(
+  razorPayOrderId,
+  keyid,
+  amount,
+  id,
+  username,
+  email
+) {
+  const response = await fetch("/razorpay/createorder?type=pending", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      amount: amount,
+      currency: "INR",
+    }),
+  });
 
-async function initiateRepayment(razorPayOrderId,keyid,amount,id,username,email) {
+  if (!response.ok) {
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
 
-console.log(razorPayOrderId,keyid,amount,id,username,email);
+  const { razorpayOrder } = await response.json();
 
+  const options = {
+    key: keyid,
+    amount: razorpayOrder.amount,
+    currency: "INR",
+    name: "PurelyYou",
+    description: "Test Transaction",
+    order_id: razorpayOrder.id,
+    handler: async function (response) {
+      showNotification("Payment successful! Verifying your payment...");
 
-const response = await fetch("/razorpay/createorder?type=pending", {
+      try {
+        const verifyResponse = await fetch("/razorpay/verifypayment", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            amount: amount,
-            currency: "INR",
+            razorpay_order_id: razorpayOrder.id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            pendingOrderId: id,
           }),
         });
+        const { order, success } = await verifyResponse.json();
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
+        if (verifyResponse.ok && success) {
+          showNotification(
+            "Payment verified successfully! Thank you for your purchase."
+          );
+          location.assign(`/shoppingcart/checkout/orderplaced/${order._id}`);
+        } else {
+          showNotification(
+            "Payment verification failed. Please contact support."
+          );
         }
+      } catch (error) {
+        console.error("Error verifying payment:", error);
+        showNotification(
+          "An error occurred during payment verification. Please try again"
+        );
+      }
+    },
+    prefill: {
+      name: username,
+      email: email,
+      contact: "9999999999",
+    },
+    theme: {
+      color: "#3399cc",
+    },
+    notes: {
+      address: "Razorpay HQ",
+    },
+    modal: {
+      ondismiss: function () {},
+    },
+  };
 
-        const {  razorpayOrder } = await response.json();
+  options.method = ["card", "netbanking", "wallet", "upi"];
 
+  const rzp = new Razorpay(options);
+  rzp.open();
 
-
-const options = {
-          key: keyid,
-          amount: razorpayOrder.amount,
-          currency: 'INR',
-          name: "PurelyYou",
-          description: "Test Transaction",
-          order_id: razorpayOrder.id,
-          handler: async function (response) {
-            console.log("Payment successful!", response);
-
-            showNotification(
-              "Payment successful! Verifying your payment..."
-            );
-
-            try {
-              const verifyResponse = await fetch(
-                "/razorpay/verifypayment",
-                {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    razorpay_order_id: razorpayOrder.id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    pendingOrderId:id,
-                  }),
-                }
-              );
-              const { order , success} = await verifyResponse.json();
-
-              if (verifyResponse.ok && success) {
-                showNotification(
-                  "Payment verified successfully! Thank you for your purchase."
-                );
-                location.assign(
-                    `/shoppingcart/checkout/orderplaced/${order._id}`
-                  );
-
-              } else {
-                showNotification(
-                  "Payment verification failed. Please contact support."
-                );
-
-                console.error("Payment verification failed:");
-              }
-            } catch (error) {
-              console.error("Error verifying payment:", error);
-              showNotification(
-                "An error occurred during payment verification. Please try again"
-              );
-            }
-          },
-          prefill: {
-            name: username,
-            email:email,
-            contact: "9999999999",
-          },
-          theme: {
-            color: "#3399cc",
-          },
-          notes: {
-            address: "Razorpay HQ",
-          },
-          modal: {
-            ondismiss: function () {
-              console.log("Payment process closed by the user.");
-            },
-          },
-        };
-
-        options.method = ["card", "netbanking", "wallet", "upi"];
-
-const rzp = new Razorpay(options);
-rzp.open();
-
-rzp.on("payment.failed", function (response) {
-console.error("Payment failed:", response.error);
-showNotification("Payment failed. Please try again.");
-});
-
-
+  rzp.on("payment.failed", function (response) {
+    showNotification("Payment failed. Please try again.");
+  });
 }
-
 
 function showNotification(message) {
   const notification = document.getElementById("notification");

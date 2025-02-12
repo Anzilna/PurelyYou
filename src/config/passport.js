@@ -7,7 +7,7 @@ require('dotenv').config()
 passport.use(new googleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: 'https://purelyyou.beauty/auth/google/callback',
+    callbackURL: 'http://localhost:8080/auth/google/callback',
     passReqToCallback: true 
 }, async (req,accessToken, refreshToken, profile, done) => {
     try {

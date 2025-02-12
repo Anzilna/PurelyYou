@@ -1,102 +1,126 @@
-<%- include("partials/header"); -%>
-<%- include("partials/navbar"); -%>
+<%- include("partials/header"); -%> <%- include("partials/navbar"); -%>
 <body class="mt-[80px] bg-gray-50 font-roboto">
-  <div id="notification" class=" text-sm mt-2 ">
-  </div>
+  <div id="notification" class="text-sm mt-2"></div>
   <div class="min-h-screen flex flex-col">
-    <div class="flext justify-center lg:justify-start ">
-      <div class="pt-[80px] pb-4 lg:px-[50px] justify-center lg:justify-start flex">
+    <div class="flext justify-center lg:justify-start">
+      <div
+        class="pt-[80px] pb-4 lg:px-[50px] justify-center lg:justify-start flex"
+      >
         <h1 class="text-3xl lg:text-4xl font-light">Shopping Cart</h1>
       </div>
     </div>
 
-    <div class="w-full grid-cols-12  grid p-3  lg:py-9 lg:px-[80px] gap-3 " id="soppingCartTable">
-      <div class="lg:col-span-8 col-span-12  rounded-lg">
-        <div class="overflow-x-auto ">
-          <table class="min-w-full bg-white  shadow-sm">
+    <div
+      class="w-full grid-cols-12 grid p-3 lg:py-9 lg:px-[80px] gap-3"
+      id="soppingCartTable"
+    >
+      <div class="lg:col-span-8 col-span-12 rounded-lg">
+        <div class="overflow-x-auto">
+          <table class="min-w-full bg-white shadow-sm">
             <thead>
-              <tr class=" text-gray-600 text-xs lg:text-sm">
+              <tr class="text-gray-600 text-xs lg:text-sm">
                 <th class="py-3 px-6 text-left">Product</th>
                 <th class="py-3 px-6 text-center">Quantity</th>
                 <th class="py-3 px-6 text-right">Total</th>
               </tr>
             </thead>
-            <tbody id="cartTableBody" >
-             
-            </tbody>
+            <tbody id="cartTableBody"></tbody>
           </table>
         </div>
       </div>
-      <div class="col-span-12 lg:col-span-4 lg:p-2 px-6 justify-center flex max-h-[550px]" id="totalBox">
-        
-      </div>
+      <div
+        class="col-span-12 lg:col-span-4 lg:p-2 px-6 justify-center flex max-h-[550px]"
+        id="totalBox"
+      ></div>
     </div>
   </div>
 
-  <script >
+  <script>
     document.addEventListener("DOMContentLoaded", function () {
-    cartItems();
-  });
-  
-  const totalBox = document.getElementById('totalBox');
-  const shoppingCartTable = document.getElementById('soppingCartTable');
-  const cartTableBody = document.getElementById('cartTableBody');
-  let quantity = 1; 
-  async function cartItems() {
-    try {
-      const fetchResult = await fetch('/shoppingcartfetch', {
-        method: 'get',
-      });
-  
-      const result = await fetchResult.json();
-  
-      if (result.cart && result.cart.items.length > 0) {
-  
-        cartTableBody.innerHTML = result.cart.items
-          .map(item => `
+      cartItems();
+    });
+
+    const totalBox = document.getElementById("totalBox");
+    const shoppingCartTable = document.getElementById("soppingCartTable");
+    const cartTableBody = document.getElementById("cartTableBody");
+    let quantity = 1;
+    async function cartItems() {
+      try {
+        const fetchResult = await fetch("/shoppingcartfetch", {
+          method: "get",
+        });
+
+        const result = await fetchResult.json();
+
+        if (result.cart && result.cart.items.length > 0) {
+          cartTableBody.innerHTML = result.cart.items
+            .map(
+              (item) => `
             <tr class="border-t border-gray-200">
-              <td class="py-4 px-6 flex items-center cursor-pointer" onclick="ProductDetail('${item.productId._id}')">
-                <img src="${item.productId.images[0]}" alt="Product Image" class="w-[60px] h-[60px] mr-4 object-contain" />
+              <td class="py-4 px-6 flex items-center cursor-pointer" onclick="ProductDetail('${
+                item.productId._id
+              }')">
+                <img src="${
+                  item.productId.images[0]
+                }" alt="Product Image" class="w-[60px] h-[60px] mr-4 object-contain" />
                 <div>
-                  <p class="text-sm font-medium text-gray-800">${item.productId.productname}</p>
-                  <p class="text-xs line-through text-gray-600">Rs. ${item.productId.regularprice}</p>
-                  <p class="text-xs text-gray-800 font-medium">Rs. ${item.productId.saleprice}</p>
+                  <p class="text-sm font-medium text-gray-800">${
+                    item.productId.productname
+                  }</p>
+                  <p class="text-xs line-through text-gray-600">Rs. ${
+                    item.productId.regularprice
+                  }</p>
+                  <p class="text-xs text-gray-800 font-medium">Rs. ${
+                    item.productId.saleprice
+                  }</p>
                 </div>
               </td>
               <td class="py-4 px-6 text-center">
                 <div class="flex items-center justify-center space-x-4">
                   <div class="flex items-center border max-w-[120px] border-slate-300 space-x-2">
-                    <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity('${item.productId._id}')">-</button>
-                    <span id="quantity-${item._id}" class="text-md font-light">${item.quantity}</span>
-                    <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="incrementQuantity('${item.productId._id}')">+</button>
+                    <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="decrementQuantity('${
+                      item.productId._id
+                    }')">-</button>
+                    <span id="quantity-${
+                      item._id
+                    }" class="text-md font-light">${item.quantity}</span>
+                    <button class="px-3 py-2 text-lg font-light hover:bg-gray-100 active:bg-gray-200" onclick="incrementQuantity('${
+                      item.productId._id
+                    }')">+</button>
                   </div>
-                  <button class="text-sm text-red-600 hover:underline" onclick="removeProduct('${item.productId._id}')">Remove</button>
+                  <button class="text-sm text-red-600 hover:underline" onclick="removeProduct('${
+                    item.productId._id
+                  }')">Remove</button>
                 </div>
               </td>
               <td class="py-4 px-6 text-right">
-                <p class="text-sm font-medium text-gray-800">Rs. ${item.saleprice * item.quantity}</p>
+                <p class="text-sm font-medium text-gray-800">Rs. ${
+                  item.saleprice * item.quantity
+                }</p>
               </td>
             </tr>
-          `).join('');
-  
-        const totalAmount = result.cart.totalregularamount;
-        const totalRegularAmount = result.cart.totalregularamount;
-        const totalDiscountAmount = result.cart.totaldiscountamount;
-  
-        const discount = totalDiscountAmount; 
-        const finalTotal = totalAmount - discount;  
-  
-        let discountSection = '';
-        if (discount > 0) {
-          discountSection = `
+          `
+            )
+            .join("");
+
+          const totalAmount = result.cart.totalregularamount;
+          const totalRegularAmount = result.cart.totalregularamount;
+          const totalDiscountAmount = result.cart.totaldiscountamount;
+
+          const discount = totalDiscountAmount;
+          const finalTotal = totalAmount - discount;
+
+          let discountSection = "";
+          if (discount > 0) {
+            discountSection = `
             <div class="flex justify-between">
               <div>Discount</div>
               <div class="text-red-600">Rs. -${discount}</div>
             </div>
           `;
-        }
-  
-        totalBox.innerHTML = `
+          }
+
+          totalBox.innerHTML = `
           <div class="h-auto p-3 max-w-[600px] lg:max-w-[300px] x grid   grid-rows bg-white  ">
             <div class="grid px-1 mb-1">
               <div class="flex justify-center border-slate-300 border-b-[1px]">
@@ -134,166 +158,167 @@
             </div>
           </div>
         `;
-      } else {
-        shoppingCartTable.innerHTML = `
+        } else {
+          shoppingCartTable.innerHTML = `
     <div class="col-span-12 h-[300px] flex items-center justify-center">
       <div class="flex"><h1>Your cart is empty</h1></div>
     </div>
   `;
-  
-      }
-  
-      if (result.errormessage) {
-        totalBox.style.display = 'none';
-        shoppingCartTable.innerHTML = `
+        }
+
+        if (result.errormessage) {
+          totalBox.style.display = "none";
+          shoppingCartTable.innerHTML = `
     <div class="col-span-12 h-[300px] flex items-center justify-center">
       <div class="flex"><h1>Your cart is empty</h1></div>
     </div>
   `;
-  
+        }
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
     }
-  }
-     
-  
-  
-  function checkOutLocation() {
-    console.log("click");
-    location.assign('/shoppingcart/checkout');
-  }
-  
-  
-  async function incrementQuantity(productId) {
-    try {    
-      const response = await fetch('/cart/quantityedit?quantityEdit=increment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId }),
-      });
-  
-      const result = await response.json();
-  
-      if (response.ok) {
-        cartItems();
-      } else if(result.message) {
-        showNotification(
-          `${result.message}`
-        );
-      }
-    } catch (error) {
-      console.error('Error incrementing quantity:', error);
+
+    function checkOutLocation() {
+      console.log("click");
+      location.assign("/shoppingcart/checkout");
     }
-  }
-  
-  
-  // Decrement Quantity
-  async function decrementQuantity(productId) {
-    try {
-      console.log(`Decrementing quantity for ${productId}`);
-      
-      const response = await fetch('/cart/quantityedit?quantityEdit=decrement', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId }),
-      });
-  
-      const result = await response.json();
-  
-      if (response.ok) {
-        console.log('Quantity decremented successfully:', result);
-        cartItems();
-      } else {
-        console.error('Failed to decrement quantity:', result.error);
-        showNotification(
-          result.error || 'An error occurred while decrementing the quantity.'   
-           );
-      }
-    } catch (error) {
-      console.error('Error decrementing quantity:', error);
-    }
-  }
-  
-  // Redirect to Product Details
-  function ProductDetail(productId) {
-    console.log(`Navigating to product details for ${productId}`);
-    location.assign(`/productdetails/${productId}`);
-  }
-  
-  function ProductDetail(productId){
-    location.assign(`/productdetails/${productId}`)
-  }
-  async function removeProduct(productId) {
-    try {
-      const response = await fetch('/cart/remove', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId }),
-      });
-  
-      const result = await response.json();
-  
-      if (response.ok) {
-        console.log(`Removed product: ${productId}`);
-        showNotification(
-          "Product successfully deleted from cart!"
-        );
-        cartItems();
-      } else {
-        showNotification(
-          "An error occurred while deleting the product from the cart. Please try again."
-        );
+
+    async function incrementQuantity(productId) {
+      try {
+        const response = await fetch(
+          "/cart/quantityedit?quantityEdit=increment",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ productId }),
           }
-    } catch (error) {
-      console.error('Error removing product:', error);
+        );
+
+        const result = await response.json();
+
+        if (response.ok) {
+          cartItems();
+        } else if (result.message) {
+          showNotification(`${result.message}`);
+        }
+      } catch (error) {
+        console.error("Error incrementing quantity:", error);
+      }
     }
-  }
-  
-  function showNotification(message) {
-    const notification = document.getElementById("notification");
-  
-    notification.className = "";
-  
-    notification.classList.add(
-      "p-4",
-      "mb-4",
-      "text-sm",
-      "rounded-lg",
-      "fixed",
-      "bottom-10",
-      "right-4",
-      "z-50",
-      "min-w-[150px]",
-      "text-white",
-      "bg-black",
-      "dark:bg-gray-800",
-      "dark:text-green-400",
-      "role",
-      "alert"
-    );
-  
-    notification.innerHTML = ` ${message}`;
-  
-    notification.classList.remove("hidden");
-  
-    setTimeout(() => {
-      hideNotification();
-    }, 5000);
-  }
-  
-  function hideNotification() {
-    const notification = document.getElementById("notification");
-    notification.className = "hidden";
-  }
-  
-  
+
+    // Decrement Quantity
+    async function decrementQuantity(productId) {
+      try {
+        console.log(`Decrementing quantity for ${productId}`);
+
+        const response = await fetch(
+          "/cart/quantityedit?quantityEdit=decrement",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ productId }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (response.ok) {
+          console.log("Quantity decremented successfully:", result);
+          cartItems();
+        } else {
+          console.error("Failed to decrement quantity:", result.error);
+          showNotification(
+            result.error || "An error occurred while decrementing the quantity."
+          );
+        }
+      } catch (error) {
+        console.error("Error decrementing quantity:", error);
+      }
+    }
+
+    // Redirect to Product Details
+    function ProductDetail(productId) {
+      console.log(`Navigating to product details for ${productId}`);
+      location.assign(`/productdetails/${productId}`);
+    }
+
+    function ProductDetail(productId) {
+      location.assign(`/productdetails/${productId}`);
+    }
+    async function removeProduct(productId) {
+      try {
+        const response = await fetch("/cart/remove", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ productId }),
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          UpdateCartCount(result.cartLength)
+          showNotification("Product successfully deleted from cart!");
+          cartItems();
+        } else {
+          showNotification(
+            "An error occurred while deleting the product from the cart. Please try again."
+          );
+        }
+      } catch (error) {
+        console.error("Error removing product:", error);
+      }
+    }
+
+    function showNotification(message) {
+      const notification = document.getElementById("notification");
+
+      notification.className = "";
+
+      notification.classList.add(
+        "p-4",
+        "mb-4",
+        "text-sm",
+        "rounded-lg",
+        "fixed",
+        "bottom-10",
+        "right-4",
+        "z-50",
+        "min-w-[150px]",
+        "text-white",
+        "bg-black",
+        "dark:bg-gray-800",
+        "dark:text-green-400",
+        "role",
+        "alert"
+      );
+
+      notification.innerHTML = ` ${message}`;
+
+      notification.classList.remove("hidden");
+
+      setTimeout(() => {
+        hideNotification();
+      }, 5000);
+    }
+
+    function hideNotification() {
+      const notification = document.getElementById("notification");
+      notification.className = "hidden";
+    }
+
+    function UpdateCartCount(Cart) {
+      console.log(Cart, "from count cart");
+
+      document.getElementById("cart-count").textContent = Cart;
+    }
   </script>
 
-<%- include('partials/footer'); -%>
+  <%- include('partials/footer'); -%>
+</body>

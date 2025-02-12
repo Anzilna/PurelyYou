@@ -17,21 +17,17 @@ function incrementQuantity() {
 
 
 
-function UpdateCartCount(Cart) {
-  console.log(Cart,"from count cart");
-  
+function UpdateCartCount(Cart) {  
   document.getElementById("cart-count").textContent = Cart;
 }
 
 function UpdateFavCount(Fav) {
-  console.log(Fav,"from count FAv");
   document.getElementById("favourites-count").textContent = Fav;
 }
 
 
 async function addtocart(id, stock) {
   const quantityToSend = quantity;
-  console.log(stock, id);
 
   if (quantityToSend > stock) {
     showNotification(
@@ -52,7 +48,6 @@ async function addtocart(id, stock) {
 
       const result = await fetchResult.json();
       if (fetchResult.ok) {
-        console.log(result.cartLength);
         
         UpdateCartCount(result.cartLength)
 
@@ -75,7 +70,6 @@ async function addtocart(id, stock) {
 
 async function addToFavorites(id) {
   try {
-    console.log(`Adding product with ID: ${id} to favorites...`);
 
     const fetchResult = await fetch('/productdetails/addfavourites', {
       method: 'POST',
@@ -88,7 +82,6 @@ async function addToFavorites(id) {
     }
 
     const data = await fetchResult.json();
-    console.log('Response data:', data);
 
     if (data.success) {
       UpdateFavCount(data.favLength)
@@ -162,7 +155,6 @@ function updateMainImage(imageSrc) {
 }
 
 function getProduct(id) {
-  console.log(id);
   location.assign(`/productdetails/${id}`);
 }
 

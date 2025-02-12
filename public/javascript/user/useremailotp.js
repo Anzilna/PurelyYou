@@ -7,11 +7,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let queryParams;
     if (window.location.search) {
       queryParams = window.location.search;
-      console.log(queryParams);
     }
     resendotptimer();
     function resendotptimer() {
-      console.log("inside timer");
 
       let countDown = 30;
       const newCountdown = setInterval(() => {
@@ -29,7 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
       let UrlToPost = "/emailotp";
       if (queryParams) {
         UrlToPost = `/emailotp${queryParams}`;
-        console.log("done", UrlToPost);
       }
       e.preventDefault();
       otperror.textContent = "";
@@ -45,10 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ userentredotp }),
         });
-        console.log("after fetch");
 
         const result = await fetchresult.json();
-        console.log(result);
         if (result.message) {
           otperror.textContent = result.message || "";
           otperror.style.color = "red";
@@ -71,7 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (queryParams) {
         UrlToPost = `/newemailotp${queryParams}`;
       }
-      console.log("clicked");
       try {
         const result = await fetch(UrlToPost, {
           method: "post",

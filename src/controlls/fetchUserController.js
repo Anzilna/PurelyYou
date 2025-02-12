@@ -129,7 +129,7 @@ module.exports.favouritesRemoveFetch = async (req, res) => {
 
     return res.status(200).json({
       message: "Product removed from favorites.",
-      favourites: userFavourites,
+      favourites: userFavourites,favLength:userFavourites.items.length,
     });
   } catch (error) {
     console.error("Error removing product from favorites:", error.message);

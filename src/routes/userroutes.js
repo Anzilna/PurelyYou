@@ -41,6 +41,24 @@ router.post(
   userController.addFavourites
 );
 
+// const {ProductModel} = require("../../model/adminmodel");
+
+// router.get("/resetsales", async (req, res) => {
+//   console.log("clearing sales to 0");
+  
+//   try {
+//     const result = await ProductModel.updateMany({}, { $set: { sales: 0 } });
+
+//     return res.status(200).json({
+//       message: "Sales field reset to 0 for all products",
+//       modifiedCount: result.modifiedCount,
+//     });
+//   } catch (error) {
+//     console.error("Error resetting sales field:", error);
+//     return res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
 
 router.post(
   "/productdetails/addtocart",
